@@ -52,6 +52,37 @@ byte[] certPdf = service.generatePdf(data, "certificate");   // 证书
 
 ## 快速开始
 
+### ⚠️ 中文字体配置（重要！）
+
+**如果您的PDF需要显示中文，必须配置 FontConfig，否则中文会显示为方框（□）**
+
+```java
+import com.finos.matcher.report.ReportService;
+import com.finos.matcher.report.config.FontConfig;
+
+ReportService service = new ReportService();
+service.setUseHtmlPipeline(true);
+
+// ✅ 必须配置 FontConfig 才能显示中文
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+service.getHtmlRenderer().setFontConfig(fontConfig);
+
+// 现在可以生成包含中文的PDF了
+byte[] pdf = service.generatePdf(reportData);
+```
+
+**快速验证：** 运行演示程序查看对比效果
+```bash
+java -cp "target/classes:..." com.finos.matcher.report.ChineseFontConfigurationDemo
+```
+
+**详细文档：**
+- 📖 [中文字体配置完整指南](FONT_CONFIGURATION.md)
+- 📖 [如何验证字体配置](HOW_TO_VERIFY_CHINESE_FONTS.md)
+- 📖 [技术方案分析](TECHNICAL_ANALYSIS_CHINESE_FONTS.md)
+
 ### 环境要求
 
 - Java 8 或更高版本 (JDK 1.8+)

@@ -34,6 +34,37 @@ ReportData → HtmlReportRenderer → Thymeleaf Template → HTML → Flying Sau
 
 ## Getting Started
 
+### ⚠️ Chinese/CJK Font Configuration (Important!)
+
+**If your PDF needs to display Chinese/Japanese/Korean characters, you MUST configure FontConfig, otherwise CJK text will show as boxes (□)**
+
+```java
+import com.finos.matcher.report.ReportService;
+import com.finos.matcher.report.config.FontConfig;
+
+ReportService service = new ReportService();
+service.setUseHtmlPipeline(true);
+
+// ✅ REQUIRED for Chinese/CJK character display
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+service.getHtmlRenderer().setFontConfig(fontConfig);
+
+// Now you can generate PDFs with Chinese text
+byte[] pdf = service.generatePdf(reportData);
+```
+
+**Quick Demo:** Run the demonstration to see the difference
+```bash
+java -cp "target/classes:..." com.finos.matcher.report.ChineseFontConfigurationDemo
+```
+
+**Documentation:**
+- 📖 [Complete Font Configuration Guide](FONT_CONFIGURATION.md)
+- 📖 [How to Verify Font Configuration](HOW_TO_VERIFY_CHINESE_FONTS.md)
+- 📖 [Technical Analysis](TECHNICAL_ANALYSIS_CHINESE_FONTS.md)
+
 ### Prerequisites
 - Java 8 or higher (JDK 1.8+)
 - Maven 3.6+
