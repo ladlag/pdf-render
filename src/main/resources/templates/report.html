@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${title}">Report</title>
+    <style>
+        /* Font configuration - can be customized with @font-face */
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @top-center {
+                content: element(header);
+            }
+            @bottom-center {
+                content: counter(page);
+            }
+        }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 24pt;
+            font-weight: bold;
+            margin-bottom: 10pt;
+            color: #000;
+        }
+
+        h2 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-top: 20pt;
+            margin-bottom: 10pt;
+            color: #000;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 15pt;
+            margin-bottom: 8pt;
+            color: #000;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin: 8pt 0;
+            text-align: justify;
+        }
+
+        /* Cover page */
+        .cover-page {
+            page-break-after: always;
+            padding-top: 100pt;
+        }
+
+        .cover-title {
+            font-size: 24pt;
+            font-weight: bold;
+            margin-bottom: 20pt;
+        }
+
+        .cover-subtitle {
+            font-size: 16pt;
+            margin-bottom: 30pt;
+        }
+
+        .cover-meta {
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+
+        /* Table styling with stable pagination */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10pt 0 20pt 0;
+            page-break-inside: auto;
+        }
+
+        thead {
+            display: table-header-group; /* Repeat header on each page */
+        }
+
+        tbody {
+            display: table-row-group;
+        }
+
+        tr {
+            page-break-inside: avoid; /* Prevent row splitting across pages */
+            page-break-after: auto;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            padding: 8pt 5pt;
+            border: 1pt solid #ccc;
+            text-align: left;
+        }
+
+        td {
+            padding: 6pt 5pt;
+            border: 1pt solid #ccc;
+        }
+
+        /* Table block - allow page breaks for large tables */
+        .table-block {
+            margin: 15pt 0;
+        }
+
+        .table-block-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 8pt;
+            page-break-after: avoid;
+        }
+
+        /* Section breaks */
+        .section {
+            page-break-before: always;
+        }
+
+        /* Analysis paragraphs */
+        .analysis-section p {
+            margin-bottom: 15pt;
+        }
+
+        /* Charts */
+        .chart-container {
+            text-align: center;
+            margin: 20pt 0;
+            page-break-inside: avoid;
+        }
+
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            margin-bottom: 10pt;
+        }
+
+        /* Notice section */
+        .notice {
+            background-color: #f9f9f9;
+            padding: 10pt;
+            border-left: 3pt solid #666;
+            margin: 15pt 0;
+        }
+
+        .metadata {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 20pt;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cover Page -->
+<div class="cover-page">
+    <div class="cover-title" th:text="${title}">Report Title</div>
+    <div class="cover-subtitle" th:text="${subtitle}">Report Subtitle</div>
+    <div class="cover-meta">
+        <p><strong>Report Number:</strong> <span th:text="${reportNumber}">N/A</span></p>
+        <p><strong>Report Date:</strong> <span th:text="${reportDate}">N/A</span></p>
+    </div>
+</div>
+
+<!-- Section 1: Detailed Analysis Tables -->
+<div class="section">
+    <h2>Section 1: Detailed Analysis</h2>
+    
+    <div th:each="block : ${tableBlocks}" class="table-block">
+        <div class="table-block-title" th:text="${block.blockId} + ' - ' + ${block.blockTitle}">
+            Block Title
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th th:each="header : ${block.tableData.headers}" th:text="${header}">Header</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row : ${block.tableData.rows}">
+                    <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 2: Analysis Paragraphs -->
+<div class="section analysis-section" th:if="${analysisParagraphs != null and !analysisParagraphs.isEmpty()}">
+    <h2>Section 2: Analysis</h2>
+    
+    <p th:each="paragraph : ${analysisParagraphs}" th:text="${paragraph}">
+        Analysis paragraph text goes here.
+    </p>
+</div>
+
+<!-- Section 3: Summary and Charts -->
+<div class="section">
+    <h2>Section 3: Summary</h2>
+    
+    <!-- Summary Table -->
+    <div th:if="${summaryTable != null}">
+        <h3>Summary Data</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th th:each="header : ${summaryTable.headers}" th:text="${header}">Header</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row : ${summaryTable.rows}">
+                    <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Charts -->
+    <div th:if="${charts != null and !charts.isEmpty()}">
+        <h3>Charts</h3>
+        <div th:each="chart : ${charts}" class="chart-container">
+            <div class="chart-title" th:text="${chart.title}">Chart Title</div>
+            <img th:src="'data:image/png;base64,' + ${chart.base64Image}" alt="Chart"/>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4: Notice and Metadata -->
+<div class="section">
+    <h2>Section 4: Notice and Metadata</h2>
+    
+    <div th:if="${reportNotice != null}" class="notice">
+        <p th:text="${reportNotice}">Notice text</p>
+    </div>
+    
+    <div th:if="${metadata != null}" class="metadata">
+        <p th:text="${metadata}">Metadata</p>
+    </div>
+</div>
+
+</body>
+</html>
