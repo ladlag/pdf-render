@@ -1,5 +1,6 @@
 package com.finos.matcher.report;
 
+import com.finos.matcher.report.config.FontConfig;
 import com.finos.matcher.report.model.ChartData;
 import com.finos.matcher.report.model.ReportData;
 import com.finos.matcher.report.model.Section;
@@ -25,10 +26,12 @@ public class HtmlReportRenderer {
     private final ChartRenderer chartRenderer;
     private boolean cacheTemplates = true; // Enable caching by default for production
     private String defaultTemplateName = "report"; // Default template name
+    private FontConfig fontConfig; // Optional font configuration
     
     public HtmlReportRenderer() {
         this.chartRenderer = new ChartRenderer();
         this.templateEngine = createTemplateEngine();
+        this.fontConfig = null; // No custom fonts by default
     }
     
     /**
@@ -59,6 +62,25 @@ public class HtmlReportRenderer {
                 ((ClassLoaderTemplateResolver) resolver).setCacheable(cacheTemplates);
             }
         });
+    }
+    
+    /**
+     * Sets the font configuration for custom fonts.
+     * This allows specification of custom fonts for regular text, bold text, and CJK text.
+     * 
+     * @param fontConfig Font configuration object
+     */
+    public void setFontConfig(FontConfig fontConfig) {
+        this.fontConfig = fontConfig;
+    }
+    
+    /**
+     * Gets the current font configuration
+     * 
+     * @return Current font configuration, or null if not set
+     */
+    public FontConfig getFontConfig() {
+        return fontConfig;
     }
     
     /**
@@ -143,6 +165,18 @@ public class HtmlReportRenderer {
             data.put("metadata", reportData.getMetadata());
         }
         
+        // Add font configuration if available
+        if (fontConfig != null) {
+            data.put("fontFaceDeclaration", fontConfig.getCssFontFaceDeclaration());
+            data.put("fontFamily", fontConfig.getFontFamilyCss());
+            data.put("cjkFontFamily", fontConfig.getCjkFontFamily());
+        } else {
+            // Provide empty strings as defaults
+            data.put("fontFaceDeclaration", "");
+            data.put("fontFamily", "DejaVu Sans, Arial, sans-serif");
+            data.put("cjkFontFamily", "");
+        }
+        
         return data;
     }
     
@@ -163,11 +197,65 @@ public class HtmlReportRenderer {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         ITextRenderer renderer = new ITextRenderer();
+        
+        // Register custom fonts if configured
+        if (fontConfig != null) {
+            registerFontsWithRenderer(renderer);
+        }
+        
         renderer.setDocumentFromString(html);
         renderer.layout();
         renderer.createPDF(baos);
         
         return baos.toByteArray();
+    }
+    
+    /**
+     * Registers custom fonts with the Flying Saucer renderer for PDF embedding
+     */
+    private void registerFontsWithRenderer(ITextRenderer renderer) {
+        try {
+            // Register regular font
+            if (fontConfig.getRegularFontPath() != null) {
+                String fontPath = resolveFontPath(fontConfig.getRegularFontPath());
+                renderer.getFontResolver().addFont(fontPath, true);
+            }
+            
+            // Register bold font
+            if (fontConfig.getBoldFontPath() != null) {
+                String fontPath = resolveFontPath(fontConfig.getBoldFontPath());
+                renderer.getFontResolver().addFont(fontPath, true);
+            }
+            
+            // Register CJK font
+            if (fontConfig.getCjkFontPath() != null) {
+                String fontPath = resolveFontPath(fontConfig.getCjkFontPath());
+                renderer.getFontResolver().addFont(fontPath, true);
+            }
+        } catch (Exception e) {
+            // Log the error but don't fail - fall back to default fonts
+            System.err.println("Warning: Failed to register custom fonts: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Resolves a font path, handling both classpath and file system paths
+     */
+    private String resolveFontPath(String path) throws IOException {
+        if (path.startsWith("classpath:")) {
+            // Load from classpath
+            String resourcePath = path.substring("classpath:".length());
+            // Return the classpath URL - Flying Saucer can handle it
+            java.net.URL resource = getClass().getResource(resourcePath);
+            if (resource == null) {
+                throw new IOException("Font not found in classpath: " + resourcePath);
+            }
+            return resource.toString();
+        } else {
+            // Direct file path
+            return path;
+        }
     }
     
     /**

@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${title}">Executive Summary</title>
-    <style>
+    <style th:inline="text">
+        /* Custom font declarations (if configured) */
+        [(${fontFaceDeclaration})]
+        
         @page {
             size: A4;
             margin: 2cm;
         }
         
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-family: [(${fontFamily})];
             font-size: 11pt;
             line-height: 1.6;
             color: #333;

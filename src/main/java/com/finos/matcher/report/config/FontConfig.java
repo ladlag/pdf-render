@@ -53,10 +53,22 @@ public class FontConfig {
      * Gets the font-family CSS value to use in the template
      */
     public String getFontFamilyCss() {
+        StringBuilder fontFamily = new StringBuilder();
+        
+        // Add custom font if configured
         if (regularFontPath != null) {
-            return "'CustomFont', " + defaultFontFamily;
+            fontFamily.append("'CustomFont', ");
         }
-        return defaultFontFamily;
+        
+        // Add CJK font if configured
+        if (cjkFontPath != null) {
+            fontFamily.append("'CustomCJKFont', ");
+        }
+        
+        // Add default fallback fonts
+        fontFamily.append(defaultFontFamily);
+        
+        return fontFamily.toString();
     }
     
     public String getRegularFontPath() {
