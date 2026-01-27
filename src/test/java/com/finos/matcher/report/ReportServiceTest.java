@@ -1,12 +1,16 @@
 package com.finos.matcher.report;
 
 import com.finos.matcher.report.model.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,6 +24,18 @@ public class ReportServiceTest {
     
     @TempDir
     Path tempDir;
+    
+    private static final String TEST_OUTPUT_DIR = "test-output";
+    
+    @BeforeAll
+    public static void setupTestOutputDirectory() throws IOException {
+        // Create test-output directory for visible PDF files
+        File outputDir = new File(TEST_OUTPUT_DIR);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+        System.out.println("Test PDFs will be saved to: " + outputDir.getAbsolutePath());
+    }
 
     @Test
     public void testReportGenerationWithPdfBox() throws IOException {
@@ -33,11 +49,16 @@ public class ReportServiceTest {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
         
-        // Save to file for manual inspection
-        Path outputPath = tempDir.resolve("report_pdfbox.pdf");
-        try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
+        // Save to temp directory for JUnit cleanup
+        Path tempOutputPath = tempDir.resolve("report_pdfbox.pdf");
+        try (FileOutputStream fos = new FileOutputStream(tempOutputPath.toFile())) {
             fos.write(pdfBytes);
         }
+        
+        // Also save to test-output directory for visibility
+        Path visibleOutputPath = Paths.get(TEST_OUTPUT_DIR, "report_pdfbox.pdf");
+        Files.write(visibleOutputPath, pdfBytes);
+        System.out.println("✓ PDFBox PDF generated: " + visibleOutputPath.toAbsolutePath());
     }
 
     @Test
@@ -52,11 +73,16 @@ public class ReportServiceTest {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
         
-        // Save to file for manual inspection
-        Path outputPath = tempDir.resolve("report_html.pdf");
-        try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
+        // Save to temp directory for JUnit cleanup
+        Path tempOutputPath = tempDir.resolve("report_html.pdf");
+        try (FileOutputStream fos = new FileOutputStream(tempOutputPath.toFile())) {
             fos.write(pdfBytes);
         }
+        
+        // Also save to test-output directory for visibility
+        Path visibleOutputPath = Paths.get(TEST_OUTPUT_DIR, "report_html.pdf");
+        Files.write(visibleOutputPath, pdfBytes);
+        System.out.println("✓ HTML Pipeline PDF generated: " + visibleOutputPath.toAbsolutePath());
     }
 
     @Test
@@ -70,6 +96,11 @@ public class ReportServiceTest {
         
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
+        
+        // Save to test-output directory for visibility
+        Path visibleOutputPath = Paths.get(TEST_OUTPUT_DIR, "report_default.pdf");
+        Files.write(visibleOutputPath, pdfBytes);
+        System.out.println("✓ Default Pipeline PDF generated: " + visibleOutputPath.toAbsolutePath());
     }
     
     @Test
@@ -83,10 +114,20 @@ public class ReportServiceTest {
         assertNotNull(defaultPdf);
         assertTrue(defaultPdf.length > 0);
         
+        // Save to test-output directory
+        Path defaultOutputPath = Paths.get(TEST_OUTPUT_DIR, "report_template_default.pdf");
+        Files.write(defaultOutputPath, defaultPdf);
+        System.out.println("✓ Default Template PDF generated: " + defaultOutputPath.toAbsolutePath());
+        
         // Generate with invoice template
         byte[] invoicePdf = service.generatePdf(reportData, "invoice");
         assertNotNull(invoicePdf);
         assertTrue(invoicePdf.length > 0);
+        
+        // Save to test-output directory
+        Path invoiceOutputPath = Paths.get(TEST_OUTPUT_DIR, "report_template_invoice.pdf");
+        Files.write(invoiceOutputPath, invoicePdf);
+        System.out.println("✓ Invoice Template PDF generated: " + invoiceOutputPath.toAbsolutePath());
         
         // PDFs should be different due to different templates
         assertNotEquals(defaultPdf.length, invoicePdf.length);
