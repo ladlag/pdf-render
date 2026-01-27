@@ -64,9 +64,15 @@ ReportService service = new ReportService();
 service.setUseHtmlPipeline(true);
 
 // ✅ 必须配置 FontConfig 才能显示中文
+// 方案1：使用鸿蒙字体（推荐用于中文显示）
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
-fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+
+// 方案2：使用思源黑体 Noto Sans（备选方案）
+// fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+// fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+
 service.getHtmlRenderer().setFontConfig(fontConfig);
 
 // 现在可以生成包含中文的PDF了

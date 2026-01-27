@@ -46,9 +46,15 @@ ReportService service = new ReportService();
 service.setUseHtmlPipeline(true);
 
 // ✅ REQUIRED for Chinese/CJK character display
+// Option 1: Using HarmonyOS Sans SC (recommended for Chinese)
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
-fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+
+// Option 2: Using Noto Sans CJK SC (alternative)
+// fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+// fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+
 service.getHtmlRenderer().setFontConfig(fontConfig);
 
 // Now you can generate PDFs with Chinese text
