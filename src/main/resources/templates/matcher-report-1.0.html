@@ -4,7 +4,10 @@
   <meta charset="UTF-8"/>
   <title th:text="${title}">需求预审报告</title>
 
-  <style>
+  <style th:inline="text">
+    /* Custom font declarations (if configured) */
+    [(${fontFaceDeclaration})]
+    
     @page {
       size: A4;
       margin: 22mm 18mm 18mm 18mm;
@@ -16,7 +19,7 @@
     }
 
     body {
-      font-family: "Noto Sans CJK SC", "DejaVu Sans", sans-serif;
+      font-family: [(${fontFamily})];
       font-size: 10.5pt;
       line-height: 1.65;
       color: #1f1f1f;

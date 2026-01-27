@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${title}">Report</title>
-    <style>
+    <style th:inline="text">
+        /* Custom font declarations (if configured) */
+        [(${fontFaceDeclaration})]
+        
         /* Font configuration - can be customized with @font-face */
         @page {
             size: A4;
@@ -17,7 +20,7 @@
         }
 
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-family: [(${fontFamily})];
             font-size: 10pt;
             line-height: 1.4;
             color: #333;

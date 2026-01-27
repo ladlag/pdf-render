@@ -577,9 +577,35 @@ public class ReportController {
 - `bar` - 柱状图
 - `pie` - 饼图
 
-### Q5: 如何添加自定义字体？
+### Q5: 如何添加自定义字体？中文显示为方框怎么办？
 
-**A:** 
+**A:** 本项目支持通过 `FontConfig` 配置中文字体。**详细指南请查看 [FONT_CONFIGURATION.md](FONT_CONFIGURATION.md)**
+
+**编程方式：**
+```java
+import com.finos.matcher.report.config.FontConfig;
+
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
+fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+**Spring Boot配置方式：**
+```yaml
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_SansSC_Regular.ttf
+    bold-path: classpath:/fonts/HarmonyOS_SansSC_Bold.ttf
+    default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif
+```
+
+**推荐中文字体：**
+- 鸿蒙字体 (HarmonyOS Sans SC) - 免费商用
+- 思源黑体 (Noto Sans CJK SC) - 开源免费
+- 文泉驿字体 - 开源免费
+
+**手动模板配置方式（不推荐）：**
 1. 将字体文件放在`src/main/resources/fonts/`
 2. 在模板的CSS中添加：
 ```css

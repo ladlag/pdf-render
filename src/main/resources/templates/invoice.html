@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${title}">Invoice</title>
-    <style>
+    <style th:inline="text">
+        /* Custom font declarations (if configured) */
+        [(${fontFaceDeclaration})]
+        
         /* Example alternative template - Invoice style */
         @page {
             size: A4;
@@ -11,7 +14,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: [(${fontFamily})];
             font-size: 11pt;
             line-height: 1.5;
             color: #333;

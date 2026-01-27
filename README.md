@@ -329,8 +329,36 @@ tr {
 
 ### Adding Custom Fonts
 
+**For Chinese/Japanese/Korean (CJK) Support, see [FONT_CONFIGURATION.md](FONT_CONFIGURATION.md)**
+
+The project supports custom font configuration for proper CJK character rendering:
+
+```java
+import com.finos.matcher.report.config.FontConfig;
+
+// Configure fonts
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
+fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
+
+// Apply to renderer
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+Or via Spring Boot `application.yml`:
+
+```yaml
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_SansSC_Regular.ttf
+    bold-path: classpath:/fonts/HarmonyOS_SansSC_Bold.ttf
+    default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif
+```
+
+For manual template-level font configuration:
+
 1. Place font files in `src/main/resources/fonts/`
-2. Add `@font-face` rules in the template:
+2. Add `@font-face` rules in the template (note: fonts configured via `FontConfig` are automatically embedded):
 
 ```css
 @font-face {

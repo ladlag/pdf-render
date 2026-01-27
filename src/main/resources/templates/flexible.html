@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${title}">Flexible Report</title>
-    <style>
+    <style th:inline="text">
+        /* Custom font declarations (if configured) */
+        [(${fontFaceDeclaration})]
+        
         @page {
             size: A4;
             margin: 1.5cm;
@@ -16,7 +19,7 @@
         }
         
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-family: [(${fontFamily})];
             font-size: 10pt;
             line-height: 1.5;
             color: #333;

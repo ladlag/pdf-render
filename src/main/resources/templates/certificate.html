@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${title}">Certificate</title>
-    <style>
+    <style th:inline="text">
+        /* Custom font declarations (if configured) */
+        [(${fontFaceDeclaration})]
+        
         @page {
             size: A4 landscape;
             margin: 2cm;
         }
         
         body {
-            font-family: 'DejaVu Serif', Georgia, serif;
+            font-family: [(${fontFamily})];
             text-align: center;
             color: #2c3e50;
             background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
