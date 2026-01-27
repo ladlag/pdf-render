@@ -141,7 +141,7 @@
         
         <div class="signature-line"></div>
         <div style="margin-top: 10px; font-size: 10pt; color: #999;">
-            <span th:text="${metadata ?: 'Authorized Signature'}">Authorized Signature</span>
+            <span th:text="${metadata != null ? metadata : 'Authorized Signature'}">Authorized Signature</span>
         </div>
     </div>
 </body>
