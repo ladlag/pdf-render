@@ -3,6 +3,7 @@ package com.finos.matcher.report;
 import com.finos.matcher.report.model.ChartData;
 import com.finos.matcher.report.model.ReportData;
 import com.finos.matcher.report.model.TableBlock;
+import com.lowagie.text.DocumentException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -18,8 +19,8 @@ import java.io.IOException;
 
 /**
  * Main service for generating PDF reports.
- * Initially uses PDFBox with manual table pagination (Phase 1).
- * Will be refactored to use HTML/CSS -> PDF pipeline (Phase 2).
+ * Now uses HTML/CSS -> PDF pipeline by default (Flying Saucer + OpenPDF).
+ * The old PDFBox implementation is kept for reference but deprecated.
  */
 public class ReportService {
     
@@ -29,9 +30,10 @@ public class ReportService {
     private static final float NORMAL_FONT_SIZE = 12;
     private static final float LINE_HEIGHT = 15;
     
-    private boolean useHtmlPipeline = false; // Toggle for new implementation
+    private boolean useHtmlPipeline = true; // Now defaults to true
     private TableRenderer tableRenderer = new TableRenderer();
     private ChartRenderer chartRenderer = new ChartRenderer();
+    private HtmlReportRenderer htmlRenderer = new HtmlReportRenderer();
 
     /**
      * Generates a PDF report and returns it as a byte array.
@@ -53,8 +55,11 @@ public class ReportService {
     }
     
     /**
-     * Phase 1: PDFBox-based implementation (current/buggy approach)
+     * Phase 1: PDFBox-based implementation (deprecated, kept for reference)
+     * @deprecated Use HTML pipeline instead (default). This method has known issues
+     * with table pagination where rows can be lost at page boundaries.
      */
+    @Deprecated
     private byte[] generatePdfWithPdfBox(ReportData reportData) throws IOException {
         try (PDDocument document = new PDDocument()) {
             
@@ -80,11 +85,14 @@ public class ReportService {
     }
     
     /**
-     * Phase 2: HTML/CSS-based implementation (to be implemented)
+     * Phase 2: HTML/CSS-based implementation (now the default)
      */
     private byte[] generatePdfWithHtmlPipeline(ReportData reportData) throws IOException {
-        // Will be implemented in Phase 2 using Flying Saucer + OpenPDF
-        throw new UnsupportedOperationException("HTML pipeline not yet implemented");
+        try {
+            return htmlRenderer.generatePdf(reportData);
+        } catch (DocumentException e) {
+            throw new IOException("Failed to generate PDF from HTML", e);
+        }
     }
     
     private void addCoverPage(PDDocument document, ReportData reportData) throws IOException {

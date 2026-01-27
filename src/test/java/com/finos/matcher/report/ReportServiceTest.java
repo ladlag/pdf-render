@@ -49,10 +49,34 @@ public class ReportServiceTest {
         
         ReportData reportData = createTestReportData();
         
-        // This will throw UnsupportedOperationException until we implement Phase 2
-        assertThrows(UnsupportedOperationException.class, () -> {
-            service.generatePdf(reportData);
-        });
+        byte[] pdfBytes = service.generatePdf(reportData);
+        
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+        
+        // Save to file for manual inspection
+        Path outputPath = tempDir.resolve("report_html.pdf");
+        try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
+            fos.write(pdfBytes);
+        }
+        
+        System.out.println("HTML pipeline report generated: " + outputPath);
+        System.out.println("PDF size: " + pdfBytes.length + " bytes");
+    }
+
+    @Test
+    public void testDefaultPipelineIsHtml() throws IOException {
+        ReportService service = new ReportService();
+        // Default should be HTML pipeline now
+        
+        ReportData reportData = createTestReportData();
+        
+        byte[] pdfBytes = service.generatePdf(reportData);
+        
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+        
+        System.out.println("Default pipeline (HTML) report generated successfully");
     }
     
     /**

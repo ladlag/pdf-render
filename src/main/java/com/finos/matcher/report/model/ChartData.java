@@ -9,6 +9,7 @@ public class ChartData {
     private String title;
     private String chartType; // "bar", "pie", "line"
     private Map<String, Double> data;
+    private String base64Image; // For HTML rendering
 
     public ChartData() {
     }
@@ -41,5 +42,13 @@ public class ChartData {
 
     public void setData(Map<String, Double> data) {
         this.data = data;
+    }
+
+    public String getBase64Image() {
+        return base64Image;
+    }
+
+    public void setBase64Image(String base64Image) {
+        this.base64Image = base64Image;
     }
 }
