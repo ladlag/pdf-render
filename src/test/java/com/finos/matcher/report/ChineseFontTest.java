@@ -59,11 +59,10 @@ public class ChineseFontTest {
 
         // Configure custom fonts
         FontConfig fontConfig = new FontConfig();
-        // Note: In real usage, these fonts should exist in classpath
-        // For testing purposes, we set paths that would be used if fonts were available
-        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
-        fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        // Use the Noto Sans CJK font that we downloaded
+        fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+        // Set the font family to match the font's internal name
+        fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, Arial, sans-serif");
 
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
@@ -79,11 +78,11 @@ public class ChineseFontTest {
             Path outputPath = Paths.get(TEST_OUTPUT_DIR, "chinese_text_custom_fonts.pdf");
             Files.write(outputPath, pdfBytes);
             System.out.println("✓ Chinese text PDF (custom fonts) generated: " + outputPath.toAbsolutePath());
+            System.out.println("  Chinese characters should now render correctly!");
         } catch (Exception e) {
-            System.err.println("⚠ Custom fonts not found (expected if fonts are not installed)");
-            System.err.println("  To test with custom fonts, add font files to src/main/resources/fonts/");
+            System.err.println("⚠ Failed to generate PDF with custom fonts");
             System.err.println("  Error: " + e.getMessage());
-            // Don't fail the test - this is expected if fonts aren't available
+            throw e;
         }
     }
 
@@ -95,9 +94,8 @@ public class ChineseFontTest {
 
         // Configure custom fonts for Chinese
         FontConfig fontConfig = new FontConfig();
-        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
-        fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+        fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, Arial, sans-serif");
 
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
@@ -114,9 +112,9 @@ public class ChineseFontTest {
             Files.write(outputPath, pdfBytes);
             System.out.println("✓ Matcher report with Chinese fonts generated: " + outputPath.toAbsolutePath());
         } catch (Exception e) {
-            System.err.println("⚠ Custom fonts not found (expected if fonts are not installed)");
+            System.err.println("⚠ Failed to generate matcher report with Chinese fonts");
             System.err.println("  Error: " + e.getMessage());
-            // Don't fail the test - this is expected if fonts aren't available
+            throw e;
         }
     }
 

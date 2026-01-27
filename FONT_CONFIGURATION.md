@@ -48,9 +48,9 @@ ReportService service = new ReportService();
 
 // 配置中文字体
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
-fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+// 重要：font family 必须匹配字体文件的内部名称
+fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
 
 // 应用字体配置
 service.getHtmlRenderer().setFontConfig(fontConfig);
@@ -59,6 +59,12 @@ service.getHtmlRenderer().setFontConfig(fontConfig);
 ReportData reportData = createYourReportData();  // 包含中文内容
 byte[] pdfBytes = service.generatePdf(reportData);
 ```
+
+**重要提示：**
+- `defaultFontFamily` 必须设置为字体文件的内部字体名称（不是文件名）
+- Noto Sans CJK SC 的内部名称是 "Noto Sans CJK SC"
+- HarmonyOS Sans SC 的内部名称是 "HarmonyOS Sans SC"
+- 思源黑体的内部名称是 "Source Han Sans SC"
 
 #### 3. Spring Boot 配置方式
 
@@ -153,10 +159,25 @@ public class PdfReportService {
 
 #### 字体嵌入原理
 
-1. **Thymeleaf 模板处理**：`FontConfig` 的配置会被注入到模板变量中
-2. **CSS 生成**：`@font-face` 规则动态生成，定义字体族
-3. **Flying Saucer 注册**：使用 `ITextRenderer.getFontResolver().addFont()` 注册字体
-4. **PDF 嵌入**：OpenPDF 将字体文件嵌入到生成的 PDF 中
+1. **Flying Saucer 字体注册**：使用 `ITextRenderer.getFontResolver().addFont(fontPath, "Identity-H", true)` 注册字体
+   - `fontPath`: 字体文件路径（支持 classpath: 和文件系统路径）
+   - `"Identity-H"`: Unicode 编码方式，对 CJK 字符支持至关重要
+   - `true`: 将字体嵌入到 PDF 文件中
+
+2. **CSS 字体引用**：模板中使用 `font-family` 引用字体的内部名称
+   - 不需要 `@font-face` CSS 声明（Flying Saucer 不支持 classpath: URLs）
+   - 字体通过 addFont() 注册后自动可用
+   
+3. **PDF 嵌入**：OpenPDF 将完整字体文件嵌入到生成的 PDF 中
+   - 确保 PDF 在任何设备上都能正确显示
+   - 文件大小会增加（中文字体通常 10-20MB）
+
+#### Identity-H 编码的重要性
+
+**Identity-H** 是 Adobe 定义的 CMap（Character Map）编码：
+- 允许 Unicode 字符直接映射到字体字形
+- 是 CJK 字体的标准编码方式
+- **没有 Identity-H 编码，中文字符会被过滤掉，无法显示**
 
 #### 支持的字体格式
 
@@ -210,12 +231,23 @@ ReportService service = new ReportService();
 
 // Configure Chinese fonts
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
-fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+// IMPORTANT: defaultFontFamily must match the font's internal name
+fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
 
 // Apply font configuration
 service.getHtmlRenderer().setFontConfig(fontConfig);
+
+// Generate PDF
+ReportData reportData = createYourReportData();  // With Chinese content
+byte[] pdfBytes = service.generatePdf(reportData);
+```
+
+**Important Notes:**
+- `defaultFontFamily` must be set to the font file's internal font name (not the filename)
+- Noto Sans CJK SC internal name is "Noto Sans CJK SC"
+- HarmonyOS Sans SC internal name is "HarmonyOS Sans SC"  
+- Source Han Sans internal name is "Source Han Sans SC"
 
 // Generate PDF
 ReportData reportData = createYourReportData();  // With Chinese content
@@ -275,13 +307,16 @@ public class PdfReportService {
 
 ### FAQ
 
-#### Q1: Chinese characters still showing as boxes?
+#### Q1: Chinese characters still showing as boxes or missing?
 
 **Checklist:**
 1. Verify font files exist in `src/main/resources/fonts/`
-2. Verify path is correct (use `classpath:/fonts/font-file.ttf`)
-3. Verify font file supports Chinese character set
-4. Check console for font loading errors
+2. Verify path is correct (use `classpath:/fonts/font-file.otf`)
+3. Verify `defaultFontFamily` matches the font's internal name (e.g., "Noto Sans CJK SC")
+4. Ensure the font file supports Chinese character set
+5. Check console for font loading errors
+
+**Common issue:** If `defaultFontFamily` doesn't match the font's internal name, Chinese characters will be filtered out during PDF generation.
 
 #### Q2: Where to download free Chinese fonts?
 
@@ -315,10 +350,25 @@ Yes. Use fonts that support Traditional Chinese, such as:
 
 #### Font Embedding Process
 
-1. **Thymeleaf Processing**: `FontConfig` is injected as template variables
-2. **CSS Generation**: `@font-face` rules are dynamically generated
-3. **Flying Saucer Registration**: Fonts registered using `ITextRenderer.getFontResolver().addFont()`
-4. **PDF Embedding**: OpenPDF embeds font files in generated PDF
+1. **Flying Saucer Font Registration**: Uses `ITextRenderer.getFontResolver().addFont(fontPath, "Identity-H", true)` to register fonts
+   - `fontPath`: Font file path (supports classpath: and file system paths)
+   - `"Identity-H"`: Unicode encoding, crucial for CJK character support
+   - `true`: Embed the font in the PDF file
+
+2. **CSS Font Reference**: Templates reference fonts by their internal name using `font-family`
+   - No `@font-face` CSS declarations needed (Flying Saucer doesn't support classpath: URLs)
+   - Fonts registered via addFont() are automatically available
+
+3. **PDF Embedding**: OpenPDF embeds the complete font file in the generated PDF
+   - Ensures PDFs display correctly on any device
+   - File size increases (Chinese fonts typically 10-20MB)
+
+#### Importance of Identity-H Encoding
+
+**Identity-H** is a CMap (Character Map) encoding defined by Adobe:
+- Allows Unicode characters to map directly to font glyphs
+- Standard encoding for CJK fonts
+- **Without Identity-H encoding, Chinese characters are filtered out and won't display**
 
 #### Supported Font Formats
 

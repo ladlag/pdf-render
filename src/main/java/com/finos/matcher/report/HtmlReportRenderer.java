@@ -211,26 +211,28 @@ public class HtmlReportRenderer {
     }
     
     /**
-     * Registers custom fonts with the Flying Saucer renderer for PDF embedding
+     * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
+     * 
+     * Uses Identity-H encoding for proper Unicode/CJK character support.
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
-            // Register regular font
+            // Register regular font with Identity-H encoding for Unicode support
             if (fontConfig.getRegularFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getRegularFontPath());
-                renderer.getFontResolver().addFont(fontPath, true);
+                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
             }
             
-            // Register bold font
+            // Register bold font with Identity-H encoding
             if (fontConfig.getBoldFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getBoldFontPath());
-                renderer.getFontResolver().addFont(fontPath, true);
+                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
             }
             
-            // Register CJK font
+            // Register CJK font with Identity-H encoding (essential for CJK characters)
             if (fontConfig.getCjkFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getCjkFontPath());
-                renderer.getFontResolver().addFont(fontPath, true);
+                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
