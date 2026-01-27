@@ -1,5 +1,6 @@
 package com.finos.matcher.report;
 
+import com.finos.matcher.report.config.FontConfig;
 import com.finos.matcher.report.model.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ public class MatcherReportTest {
         service.setUseHtmlPipeline(true);
 
         // Configure HarmonyOS Sans SC font for Chinese text display
-        com.finos.matcher.report.config.FontConfig fontConfig = new com.finos.matcher.report.config.FontConfig();
+        FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
         service.getHtmlRenderer().setFontConfig(fontConfig);
