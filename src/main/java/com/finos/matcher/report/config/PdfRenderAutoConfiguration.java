@@ -2,6 +2,10 @@ package com.finos.matcher.report.config;
 
 import com.finos.matcher.report.HtmlReportRenderer;
 import com.finos.matcher.report.ReportService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Spring Boot auto-configuration for PDF rendering.
@@ -23,6 +27,9 @@ import com.finos.matcher.report.ReportService;
  *     cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
  * </pre>
  */
+@Configuration
+@ConditionalOnClass(ReportService.class)
+@EnableConfigurationProperties(PdfRenderProperties.class)
 public class PdfRenderAutoConfiguration {
     
     private final PdfRenderProperties properties;
@@ -34,6 +41,7 @@ public class PdfRenderAutoConfiguration {
     /**
      * Creates a configured ReportService bean
      */
+    @Bean
     public ReportService reportService() {
         ReportService service = new ReportService();
         
@@ -45,12 +53,5 @@ public class PdfRenderAutoConfiguration {
         }
         
         return service;
-    }
-    
-    /**
-     * Creates a PdfRenderProperties bean that can be injected into other components
-     */
-    public PdfRenderProperties pdfRenderProperties() {
-        return properties;
     }
 }

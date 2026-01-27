@@ -1,5 +1,7 @@
 package com.finos.matcher.report.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 /**
  * Configuration properties for PDF rendering.
  * When used in Spring Boot, these can be configured via application.yml.
@@ -19,6 +21,7 @@ package com.finos.matcher.report.config;
  *     cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
  * </pre>
  */
+@ConfigurationProperties(prefix = "pdf-render")
 public class PdfRenderProperties {
     
     private TemplateProperties template = new TemplateProperties();
