@@ -15,7 +15,18 @@ import java.util.List;
  * PDFBox-based table renderer with manual pagination.
  * This implementation has a known issue: rows can be lost at page boundaries
  * due to naive pagination logic.
+ * 
+ * @deprecated This implementation is deprecated in favor of the HTML/CSS pipeline
+ * which provides stable table pagination. This class is kept for reference and
+ * comparison purposes only. The bug described below is INTENTIONAL to demonstrate
+ * the problem this refactoring solves.
+ * 
+ * BUG DESCRIPTION: The pagination logic has a race condition where the current row
+ * (rows.get(i)) may not be rendered after page break logic executes. The loop
+ * continues but the row at index 'i' might be skipped if the page break occurs
+ * between checking the position and drawing the row.
  */
+@Deprecated
 public class TableRenderer {
     
     private static final float MARGIN = 50;

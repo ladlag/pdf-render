@@ -21,10 +21,24 @@ public class HtmlReportRenderer {
     
     private final TemplateEngine templateEngine;
     private final ChartRenderer chartRenderer;
+    private boolean cacheTemplates = true; // Enable caching by default for production
     
     public HtmlReportRenderer() {
-        this.templateEngine = createTemplateEngine();
         this.chartRenderer = new ChartRenderer();
+        this.templateEngine = createTemplateEngine();
+    }
+    
+    /**
+     * Sets whether to cache templates. Disable for development, enable for production.
+     */
+    public void setCacheTemplates(boolean cacheTemplates) {
+        this.cacheTemplates = cacheTemplates;
+        // Recreate template engine with new cache setting
+        this.templateEngine.getTemplateResolvers().forEach(resolver -> {
+            if (resolver instanceof ClassLoaderTemplateResolver) {
+                ((ClassLoaderTemplateResolver) resolver).setCacheable(cacheTemplates);
+            }
+        });
     }
     
     /**
@@ -111,7 +125,7 @@ public class HtmlReportRenderer {
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode("HTML");
         templateResolver.setCharacterEncoding("UTF-8");
-        templateResolver.setCacheable(false); // For development; enable for production
+        templateResolver.setCacheable(cacheTemplates); // Configurable caching
         
         TemplateEngine engine = new TemplateEngine();
         engine.setTemplateResolver(templateResolver);

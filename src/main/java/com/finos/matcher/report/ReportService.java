@@ -29,6 +29,7 @@ public class ReportService {
     private static final float HEADING_FONT_SIZE = 16;
     private static final float NORMAL_FONT_SIZE = 12;
     private static final float LINE_HEIGHT = 15;
+    private static final float TABLE_BLOCK_Y_POSITION = 180; // Y position offset for table blocks
     
     private boolean useHtmlPipeline = true; // Now defaults to true
     private TableRenderer tableRenderer = new TableRenderer();
@@ -166,7 +167,7 @@ public class ReportService {
             try (PDPageContentStream contentStream = new PDPageContentStream(document, currentPage, 
                 PDPageContentStream.AppendMode.APPEND, true)) {
                 
-                float y = MARGIN + 200; // Simplified - should track actual position
+                float y = MARGIN + TABLE_BLOCK_Y_POSITION;
                 
                 // Block title
                 contentStream.beginText();
@@ -176,8 +177,8 @@ public class ReportService {
                 contentStream.endText();
             }
             
-            // Render table (this is where rows can be lost!)
-            tableRenderer.renderTable(document, block.getTableData(), MARGIN + 180);
+            // Render table (this is where rows can be lost in the deprecated PDFBox implementation!)
+            tableRenderer.renderTable(document, block.getTableData(), MARGIN + TABLE_BLOCK_Y_POSITION);
         }
     }
     

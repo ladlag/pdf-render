@@ -38,8 +38,6 @@ public class ReportServiceTest {
         try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
             fos.write(pdfBytes);
         }
-        
-        System.out.println("PDFBox report generated: " + outputPath);
     }
 
     @Test
@@ -59,9 +57,6 @@ public class ReportServiceTest {
         try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
             fos.write(pdfBytes);
         }
-        
-        System.out.println("HTML pipeline report generated: " + outputPath);
-        System.out.println("PDF size: " + pdfBytes.length + " bytes");
     }
 
     @Test
@@ -75,8 +70,6 @@ public class ReportServiceTest {
         
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
-        
-        System.out.println("Default pipeline (HTML) report generated successfully");
     }
     
     /**
