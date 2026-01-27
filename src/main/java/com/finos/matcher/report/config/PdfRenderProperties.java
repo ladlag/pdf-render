@@ -19,6 +19,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *     regular-path: classpath:/fonts/custom-regular.ttf
  *     bold-path: classpath:/fonts/custom-bold.ttf
  *     cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
+ *   debug:
+ *     enabled: true
+ *     output-directory: debug-html
+ *     include-timestamp: false
  * </pre>
  */
 @ConfigurationProperties(prefix = "pdf-render")
@@ -27,6 +31,7 @@ public class PdfRenderProperties {
     private TemplateProperties template = new TemplateProperties();
     private OutputProperties output = new OutputProperties();
     private FontProperties fonts = new FontProperties();
+    private DebugProperties debug = new DebugProperties();
     
     public TemplateProperties getTemplate() {
         return template;
@@ -50,6 +55,14 @@ public class PdfRenderProperties {
     
     public void setFonts(FontProperties fonts) {
         this.fonts = fonts;
+    }
+    
+    public DebugProperties getDebug() {
+        return debug;
+    }
+    
+    public void setDebug(DebugProperties debug) {
+        this.debug = debug;
     }
     
     /**
@@ -194,6 +207,50 @@ public class PdfRenderProperties {
         
         public void setCjkFamily(String cjkFamily) {
             this.cjkFamily = cjkFamily;
+        }
+    }
+    
+    /**
+     * Debug configuration properties
+     */
+    public static class DebugProperties {
+        /**
+         * Whether to enable debug HTML output (default: false)
+         */
+        private boolean enabled = false;
+        
+        /**
+         * Directory where debug HTML files will be saved (default: debug-html)
+         */
+        private String outputDirectory = "debug-html";
+        
+        /**
+         * Whether to include timestamp in HTML filename (default: false)
+         */
+        private boolean includeTimestamp = false;
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
+        
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
+        public String getOutputDirectory() {
+            return outputDirectory;
+        }
+        
+        public void setOutputDirectory(String outputDirectory) {
+            this.outputDirectory = outputDirectory;
+        }
+        
+        public boolean isIncludeTimestamp() {
+            return includeTimestamp;
+        }
+        
+        public void setIncludeTimestamp(boolean includeTimestamp) {
+            this.includeTimestamp = includeTimestamp;
         }
     }
 }

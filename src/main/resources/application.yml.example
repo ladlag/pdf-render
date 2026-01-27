@@ -41,3 +41,49 @@ pdf-render:
     
     # Note: Without custom fonts, Chinese characters may appear as boxes (□)
     # Place your font files in src/main/resources/fonts/ directory
+  
+  # Debug configuration - 调试HTML输出配置
+  debug:
+    # Enable debug HTML output - 是否启用调试HTML输出
+    # When enabled, intermediate HTML will be saved before PDF conversion
+    # 启用后，在PDF转换前会保存中间态HTML文件，方便调试
+    enabled: false
+    
+    # Debug HTML output directory - 调试HTML输出目录
+    # Directory where debug HTML files will be saved
+    # 调试HTML文件保存目录
+    output-directory: debug-html
+    
+    # Include timestamp in filename - 是否在文件名中包含时间戳
+    # false: matcher-report-1.0.html
+    # true:  matcher-report-1.0-20240127-123045.html
+    # 方便保留多个版本的调试文件
+    include-timestamp: false
+
+---
+# Development Profile - 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+pdf-render:
+  template:
+    cache-enabled: false  # 开发时禁用缓存，便于实时查看模板修改效果
+  debug:
+    enabled: true         # 开发时启用调试HTML
+    output-directory: target/debug-html
+    include-timestamp: true
+
+---
+# Production Profile - 生产环境配置  
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+pdf-render:
+  template:
+    cache-enabled: true   # 生产环境启用缓存
+  debug:
+    enabled: false        # 生产环境禁用调试HTML
