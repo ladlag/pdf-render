@@ -113,6 +113,15 @@ pdf-render:
     default-family: DejaVu Sans, Arial, sans-serif
     # CJK font family CSS
     cjk-family: Noto Sans CJK, SimSun, sans-serif
+  
+  # Cache configuration (optional, requires spring-boot-starter-cache and caffeine dependencies)
+  cache:
+    # Maximum number of entries per cache (default: 100)
+    maximum-size: 100
+    # Time in minutes after write when cache entries expire (default: 60)
+    expire-after-write-minutes: 60
+    # Time in minutes after access when cache entries expire (default: 30)
+    expire-after-access-minutes: 30
 ```
 
 **Note**: An example configuration file is included at `src/main/resources/application.yml.example`.
@@ -415,11 +424,63 @@ Charts are automatically converted to base64 images and embedded in the HTML:
 
 ## Dependencies
 
+### Core Dependencies
 - **Flying Saucer (9.1.22)** - HTML/CSS rendering engine
 - **OpenPDF** - PDF generation (via Flying Saucer)
 - **Thymeleaf (3.1.1)** - Template engine
 - **JFreeChart (1.5.4)** - Chart generation
 - **PDFBox (2.0.29)** - Legacy implementation (deprecated)
+
+### Optional Spring Boot Dependencies
+- **Spring Boot (2.7.18)** - Auto-configuration support
+- **Spring Boot Starter Cache (2.7.18)** - Caching support (optional)
+- **Caffeine (3.1.8)** - High-performance caching library (optional)
+
+## Caching Support
+
+The library includes optional caching support using Spring Boot Cache with Caffeine as the cache provider. This can significantly improve performance when generating the same reports repeatedly.
+
+### Enabling Caching
+
+To enable caching in your Spring Boot application:
+
+1. Ensure the cache dependencies are included (they are marked as optional in this library)
+2. Use Spring Cache annotations on your service methods:
+
+```java
+@Service
+public class PdfReportService {
+    
+    private final ReportService reportService = new ReportService();
+    
+    @Cacheable(value = "pdfReports", key = "#reportData.hashCode()")
+    public byte[] generateReport(ReportData reportData) throws IOException {
+        return reportService.generatePdf(reportData);
+    }
+    
+    @CacheEvict(value = "pdfReports", allEntries = true)
+    public void clearCache() {
+        // Clear all cached reports
+    }
+}
+```
+
+### Cache Configuration
+
+The library provides a default cache configuration (`CacheConfiguration`) that can be customized via `application.yml`:
+
+```yaml
+pdf-render:
+  cache:
+    maximum-size: 500           # Larger cache (default: 100)
+    expire-after-write-minutes: 120  # 2 hours (default: 60)
+    expire-after-access-minutes: 60  # 1 hour (default: 30)
+```
+
+These settings control:
+- **maximum-size**: Maximum number of entries per cache
+- **expire-after-write-minutes**: Time in minutes after creation when entries expire
+- **expire-after-access-minutes**: Time in minutes after last access when entries expire
 
 ## Migration from PDFBox
 

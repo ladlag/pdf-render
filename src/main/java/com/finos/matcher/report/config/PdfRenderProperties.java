@@ -27,6 +27,7 @@ public class PdfRenderProperties {
     private TemplateProperties template = new TemplateProperties();
     private OutputProperties output = new OutputProperties();
     private FontProperties fonts = new FontProperties();
+    private CacheProperties cache = new CacheProperties();
     
     public TemplateProperties getTemplate() {
         return template;
@@ -50,6 +51,14 @@ public class PdfRenderProperties {
     
     public void setFonts(FontProperties fonts) {
         this.fonts = fonts;
+    }
+    
+    public CacheProperties getCache() {
+        return cache;
+    }
+    
+    public void setCache(CacheProperties cache) {
+        this.cache = cache;
     }
     
     /**
@@ -194,6 +203,50 @@ public class PdfRenderProperties {
         
         public void setCjkFamily(String cjkFamily) {
             this.cjkFamily = cjkFamily;
+        }
+    }
+    
+    /**
+     * Cache configuration properties
+     */
+    public static class CacheProperties {
+        /**
+         * Maximum number of entries per cache (default: 100)
+         */
+        private long maximumSize = 100;
+        
+        /**
+         * Time in minutes after write when cache entries expire (default: 60)
+         */
+        private long expireAfterWriteMinutes = 60;
+        
+        /**
+         * Time in minutes after access when cache entries expire (default: 30)
+         */
+        private long expireAfterAccessMinutes = 30;
+        
+        public long getMaximumSize() {
+            return maximumSize;
+        }
+        
+        public void setMaximumSize(long maximumSize) {
+            this.maximumSize = maximumSize;
+        }
+        
+        public long getExpireAfterWriteMinutes() {
+            return expireAfterWriteMinutes;
+        }
+        
+        public void setExpireAfterWriteMinutes(long expireAfterWriteMinutes) {
+            this.expireAfterWriteMinutes = expireAfterWriteMinutes;
+        }
+        
+        public long getExpireAfterAccessMinutes() {
+            return expireAfterAccessMinutes;
+        }
+        
+        public void setExpireAfterAccessMinutes(long expireAfterAccessMinutes) {
+            this.expireAfterAccessMinutes = expireAfterAccessMinutes;
         }
     }
 }

@@ -2,6 +2,7 @@ package com.finos.matcher.report.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -18,6 +19,15 @@ import java.util.concurrent.TimeUnit;
  * 1. Add this library with cache dependencies
  * 2. Use @Cacheable, @CachePut, @CacheEvict annotations on your service methods
  * 
+ * Cache settings can be customized via application.yml:
+ * <pre>
+ * pdf-render:
+ *   cache:
+ *     maximum-size: 100
+ *     expire-after-write-minutes: 60
+ *     expire-after-access-minutes: 30
+ * </pre>
+ * 
  * Example:
  * <pre>
  * {@literal @}Service
@@ -32,21 +42,25 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 @ConditionalOnClass({CacheManager.class, Caffeine.class})
+@EnableConfigurationProperties(PdfRenderProperties.class)
 public class CacheConfiguration {
     
+    private final PdfRenderProperties properties;
+    
+    public CacheConfiguration(PdfRenderProperties properties) {
+        this.properties = properties;
+    }
+    
     /**
-     * Configures Caffeine as the cache manager with sensible defaults:
-     * - Maximum 100 entries per cache
-     * - Expire after 1 hour of write
-     * - Expire after 30 minutes of access
+     * Configures Caffeine as the cache manager with settings from properties.
      */
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .maximumSize(100)
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .expireAfterAccess(30, TimeUnit.MINUTES));
+                .maximumSize(properties.getCache().getMaximumSize())
+                .expireAfterWrite(properties.getCache().getExpireAfterWriteMinutes(), TimeUnit.MINUTES)
+                .expireAfterAccess(properties.getCache().getExpireAfterAccessMinutes(), TimeUnit.MINUTES));
         return cacheManager;
     }
 }
