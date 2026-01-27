@@ -603,6 +603,150 @@ merger.setDestinationStream(output);
 merger.mergeDocuments(null);
 ```
 
+### Q7: 如何实现两栏布局（如签字栏和日期栏在同一行）？
+
+**A:** 使用`customContent`添加自定义HTML和CSS实现两栏布局。以下是完整示例：
+
+#### 方法1：使用表格布局（推荐，最稳定）
+
+```java
+Section signatureSection = new Section("签署信息")
+    .withCustomContent(
+        "<table style='width: 100%; border: none; margin-top: 30px;'>" +
+        "  <tr>" +
+        "    <td style='width: 50%; text-align: left; border: none; padding: 20px;'>" +
+        "      <div style='margin-bottom: 10px;'>签字：</div>" +
+        "      <div style='border-top: 1px solid #000; width: 200px; margin-top: 40px;'></div>" +
+        "    </td>" +
+        "    <td style='width: 50%; text-align: left; border: none; padding: 20px;'>" +
+        "      <div style='margin-bottom: 10px;'>日期：</div>" +
+        "      <div style='border-top: 1px solid #000; width: 200px; margin-top: 40px;'></div>" +
+        "    </td>" +
+        "  </tr>" +
+        "</table>"
+    );
+```
+
+#### 方法2：使用div和浮动布局
+
+```java
+Section signatureSection = new Section("签署信息")
+    .withCustomContent(
+        "<div style='width: 100%; overflow: hidden; margin-top: 30px;'>" +
+        "  <div style='float: left; width: 45%; padding: 20px;'>" +
+        "    <p style='margin-bottom: 10px;'>签字：</p>" +
+        "    <div style='border-top: 2px solid #333; width: 200px; margin-top: 40px;'></div>" +
+        "    <p style='margin-top: 5px; font-size: 9pt; color: #666;'>签字人</p>" +
+        "  </div>" +
+        "  <div style='float: right; width: 45%; padding: 20px;'>" +
+        "    <p style='margin-bottom: 10px;'>日期：</p>" +
+        "    <div style='border-top: 2px solid #333; width: 200px; margin-top: 40px;'></div>" +
+        "    <p style='margin-top: 5px; font-size: 9pt; color: #666;'>_____年___月___日</p>" +
+        "  </div>" +
+        "</div>"
+    );
+```
+
+#### 方法3：使用CSS Grid布局（更灵活）
+
+```java
+Section signatureSection = new Section("审批栏")
+    .withCustomContent(
+        "<div style='display: table; width: 100%; margin-top: 30px;'>" +
+        "  <div style='display: table-row;'>" +
+        "    <div style='display: table-cell; width: 33%; padding: 15px; border: 1px solid #ddd;'>" +
+        "      <div style='font-weight: bold; margin-bottom: 5px;'>制表人：</div>" +
+        "      <div style='height: 50px;'></div>" +
+        "      <div style='font-size: 9pt; color: #666;'>日期：_______</div>" +
+        "    </div>" +
+        "    <div style='display: table-cell; width: 33%; padding: 15px; border: 1px solid #ddd;'>" +
+        "      <div style='font-weight: bold; margin-bottom: 5px;'>审核人：</div>" +
+        "      <div style='height: 50px;'></div>" +
+        "      <div style='font-size: 9pt; color: #666;'>日期：_______</div>" +
+        "    </div>" +
+        "    <div style='display: table-cell; width: 33%; padding: 15px; border: 1px solid #ddd;'>" +
+        "      <div style='font-weight: bold; margin-bottom: 5px;'>批准人：</div>" +
+        "      <div style='height: 50px;'></div>" +
+        "      <div style='font-size: 9pt; color: #666;'>日期：_______</div>" +
+        "    </div>" +
+        "  </div>" +
+        "</div>"
+    );
+```
+
+#### 完整示例代码
+
+```java
+public class SignatureLayoutExample {
+    public static void main(String[] args) throws Exception {
+        ReportData report = ReportDataBuilder.create()
+            .title("项目验收报告")
+            .subtitle("2024年度重点项目")
+            .reportDate("2024-12-31")
+            
+            // 报告正文
+            .addSection(new Section("项目概况")
+                .addParagraph("本项目已按计划完成所有任务...")
+                .addTable(createProjectTable()))
+            
+            .addSection(new Section("验收结论")
+                .addParagraph("经验收小组审查，该项目符合验收标准。"))
+            
+            // 底部签字栏 - 两栏布局
+            .addSection(new Section("")  // 无标题
+                .withCustomContent(
+                    "<div style='margin-top: 50px; page-break-inside: avoid;'>" +
+                    "  <table style='width: 100%; border: none;'>" +
+                    "    <tr>" +
+                    "      <td style='width: 50%; text-align: center; border: none; padding: 20px;'>" +
+                    "        <div style='margin-bottom: 60px;'>项目负责人签字：</div>" +
+                    "        <div style='border-top: 2px solid #000; width: 200px; margin: 0 auto;'></div>" +
+                    "      </td>" +
+                    "      <td style='width: 50%; text-align: center; border: none; padding: 20px;'>" +
+                    "        <div style='margin-bottom: 60px;'>日期：</div>" +
+                    "        <div style='border-top: 2px solid #000; width: 200px; margin: 0 auto;'></div>" +
+                    "      </td>" +
+                    "    </tr>" +
+                    "  </table>" +
+                    "</div>"
+                ))
+            
+            .reportNotice("本报告一式三份")
+            .build();
+        
+        // 生成PDF
+        ReportService service = new ReportService();
+        byte[] pdf = service.generatePdf(report, "flexible");
+        Files.write(Paths.get("验收报告.pdf"), pdf);
+        
+        System.out.println("带签字栏的报告生成成功！");
+    }
+    
+    private static TableData createProjectTable() {
+        return new TableData(
+            Arrays.asList("项目名称", "完成情况", "验收结果"),
+            Arrays.asList(
+                Arrays.asList("系统开发", "100%", "通过"),
+                Arrays.asList("文档编写", "100%", "通过")
+            )
+        );
+    }
+}
+```
+
+#### 样式建议
+
+**推荐做法：**
+1. ✅ 使用`<table>`布局最稳定，PDF渲染兼容性最好
+2. ✅ 设置`page-break-inside: avoid`防止签字栏跨页分割
+3. ✅ 使用内联样式（inline style）确保样式生效
+4. ✅ 预留足够的签字空间（60-80px高度）
+
+**避免：**
+- ❌ 不要使用flexbox（Flying Saucer不完全支持）
+- ❌ 避免使用CSS Grid高级特性
+- ❌ 不要使用绝对定位（可能导致内容重叠）
+
 ## 性能优化
 
 - **模板缓存**：生产环境启用模板缓存（默认已启用）
