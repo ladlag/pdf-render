@@ -30,11 +30,11 @@ public class ReportServiceTest {
     @BeforeAll
     public static void setupTestOutputDirectory() throws IOException {
         // Create test-output directory for visible PDF files
-        File outputDir = new File(TEST_OUTPUT_DIR);
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
+        Path outputDir = Paths.get(TEST_OUTPUT_DIR);
+        if (!Files.exists(outputDir)) {
+            Files.createDirectories(outputDir);
         }
-        System.out.println("Test PDFs will be saved to: " + outputDir.getAbsolutePath());
+        System.out.println("Test PDFs will be saved to: " + outputDir.toAbsolutePath());
     }
 
     @Test
