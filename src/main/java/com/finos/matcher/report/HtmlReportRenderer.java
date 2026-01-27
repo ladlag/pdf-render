@@ -29,6 +29,11 @@ public class HtmlReportRenderer {
     private String defaultTemplateName = "report"; // Default template name
     private FontConfig fontConfig; // Optional font configuration
     
+    // Debug HTML configuration
+    private boolean debugHtmlEnabled = false; // Whether to save intermediate HTML
+    private String debugHtmlOutputDirectory = "debug-html"; // Directory for debug HTML files
+    private boolean debugHtmlIncludeTimestamp = false; // Whether to include timestamp in filename
+    
     public HtmlReportRenderer() {
         this.chartRenderer = new ChartRenderer();
         this.templateEngine = createTemplateEngine();
@@ -85,6 +90,99 @@ public class HtmlReportRenderer {
     }
     
     /**
+     * Enables or disables debug HTML output.
+     * When enabled, intermediate HTML will be saved before PDF conversion.
+     * 
+     * @param enabled true to enable debug HTML output, false to disable
+     */
+    public void setDebugHtmlEnabled(boolean enabled) {
+        this.debugHtmlEnabled = enabled;
+    }
+    
+    /**
+     * Checks if debug HTML output is enabled
+     * 
+     * @return true if enabled, false otherwise
+     */
+    public boolean isDebugHtmlEnabled() {
+        return debugHtmlEnabled;
+    }
+    
+    /**
+     * Sets the directory where debug HTML files will be saved.
+     * 
+     * @param directory Directory path (e.g., "debug-html", "target/debug")
+     */
+    public void setDebugHtmlOutputDirectory(String directory) {
+        this.debugHtmlOutputDirectory = directory;
+    }
+    
+    /**
+     * Gets the current debug HTML output directory
+     * 
+     * @return Directory path
+     */
+    public String getDebugHtmlOutputDirectory() {
+        return debugHtmlOutputDirectory;
+    }
+    
+    /**
+     * Sets whether to include timestamp in debug HTML filenames.
+     * When enabled, files will be named like "report-20240127-123045.html"
+     * 
+     * @param includeTimestamp true to include timestamp, false for simple names
+     */
+    public void setDebugHtmlIncludeTimestamp(boolean includeTimestamp) {
+        this.debugHtmlIncludeTimestamp = includeTimestamp;
+    }
+    
+    /**
+     * Checks if timestamp should be included in debug HTML filenames
+     * 
+     * @return true if timestamp is included, false otherwise
+     */
+    public boolean isDebugHtmlIncludeTimestamp() {
+        return debugHtmlIncludeTimestamp;
+    }
+    
+    /**
+     * Sets the path where intermediate HTML should be saved for debugging.
+     * If set, the rendered HTML will be saved to this path before PDF conversion.
+     * This method provides backward compatibility. Use setDebugHtmlEnabled() for new code.
+     * 
+     * @param path Path to save HTML file (e.g., "debug-output/report.html"), or null to disable
+     * @deprecated Use setDebugHtmlEnabled() and setDebugHtmlOutputDirectory() instead
+     */
+    @Deprecated
+    public void setDebugHtmlOutputPath(String path) {
+        if (path != null && !path.isEmpty()) {
+            this.debugHtmlEnabled = true;
+            // Extract directory from path if it contains a filename
+            java.nio.file.Path p = java.nio.file.Paths.get(path);
+            if (p.getParent() != null) {
+                this.debugHtmlOutputDirectory = p.getParent().toString();
+            }
+        } else {
+            this.debugHtmlEnabled = false;
+        }
+    }
+    
+    /**
+     * Gets the current debug HTML output path
+     * This method provides backward compatibility.
+     * 
+     * @return Path where HTML is saved, or null if disabled
+     * @deprecated Use isDebugHtmlEnabled() and getDebugHtmlOutputDirectory() instead
+     */
+    @Deprecated
+    public String getDebugHtmlOutputPath() {
+        if (debugHtmlEnabled) {
+            return debugHtmlOutputDirectory;
+        }
+        return null;
+    }
+    
+    /**
      * Generates a PDF from ReportData using the HTML/CSS pipeline with the default template
      */
     public byte[] generatePdf(ReportData reportData) throws IOException, DocumentException {
@@ -104,6 +202,11 @@ public class HtmlReportRenderer {
         
         // Step 2: Render HTML from template
         String html = renderHtml(templateData, templateName);
+        
+        // Step 2.5: Save intermediate HTML for debugging if enabled
+        if (debugHtmlEnabled) {
+            saveDebugHtml(html, templateName);
+        }
         
         // Step 3: Convert HTML to PDF using Flying Saucer
         return convertHtmlToPdf(html);
@@ -308,6 +411,42 @@ public class HtmlReportRenderer {
         } else {
             // Direct file path
             return path;
+        }
+    }
+    
+    /**
+     * Saves the intermediate HTML to a file for debugging purposes.
+     * Uses the configured output directory and generates filename based on template name.
+     * Creates parent directories if they don't exist.
+     * 
+     * @param html HTML content to save
+     * @param templateName Template name used to generate the HTML filename
+     */
+    private void saveDebugHtml(String html, String templateName) {
+        try {
+            // Generate filename
+            String filename;
+            if (debugHtmlIncludeTimestamp) {
+                String timestamp = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss").format(new java.util.Date());
+                filename = templateName + "-" + timestamp + ".html";
+            } else {
+                filename = templateName + ".html";
+            }
+            
+            // Build full path
+            java.nio.file.Path directory = java.nio.file.Paths.get(debugHtmlOutputDirectory);
+            java.nio.file.Path path = directory.resolve(filename);
+            
+            // Create directory if it doesn't exist
+            java.nio.file.Files.createDirectories(directory);
+            
+            // Write HTML to file
+            java.nio.file.Files.write(path, html.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            
+            System.out.println("✓ Debug HTML saved to: " + path.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Warning: Could not save debug HTML: " + e.getMessage());
+            // Don't fail PDF generation if debug save fails
         }
     }
     
