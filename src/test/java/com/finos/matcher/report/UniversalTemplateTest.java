@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class UniversalTemplateTest {
     
-    private static final String TEST_OUTPUT_DIR = "test-output";
+    private static final String TEST_OUTPUT_DIR = System.getProperty("test.output.dir", "test-output");
     
     @Test
     public void testSameDataMultipleTemplates() throws IOException {

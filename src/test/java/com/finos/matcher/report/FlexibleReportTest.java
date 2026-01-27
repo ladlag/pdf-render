@@ -25,7 +25,7 @@ public class FlexibleReportTest {
     @TempDir
     Path tempDir;
     
-    private static final String TEST_OUTPUT_DIR = "test-output";
+    private static final String TEST_OUTPUT_DIR = System.getProperty("test.output.dir", "test-output");
     
     @Test
     public void testReportDataBuilder() {

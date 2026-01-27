@@ -192,16 +192,16 @@ public class ReportDataBuilder {
         
         // Initialize empty lists for null collections to prevent NPE
         if (reportData.getTableBlocks() == null) {
-            reportData.setTableBlocks(new ArrayList<TableBlock>());
+            reportData.setTableBlocks(new ArrayList<>());
         }
         if (reportData.getAnalysisParagraphs() == null) {
-            reportData.setAnalysisParagraphs(new ArrayList<String>());
+            reportData.setAnalysisParagraphs(new ArrayList<>());
         }
         if (reportData.getCharts() == null) {
-            reportData.setCharts(new ArrayList<ChartData>());
+            reportData.setCharts(new ArrayList<>());
         }
         if (reportData.getSections() == null) {
-            reportData.setSections(new ArrayList<Section>());
+            reportData.setSections(new ArrayList<>());
         }
         
         return reportData;
