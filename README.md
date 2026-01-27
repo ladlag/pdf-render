@@ -72,6 +72,23 @@ byte[] pdfBytes = service.generatePdf(reportData);
 Files.write(Paths.get("report.pdf"), pdfBytes);
 ```
 
+### Using Custom Templates
+
+You can use different templates for different report types:
+
+```java
+// Use default template
+byte[] pdf = service.generatePdf(reportData);
+
+// Use invoice template
+byte[] invoicePdf = service.generatePdf(reportData, "invoice");
+
+// Use your custom template
+byte[] customPdf = service.generatePdf(reportData, "my-template");
+```
+
+**📖 For detailed template customization guide, see [TEMPLATE_GUIDE.md](TEMPLATE_GUIDE.md)**
+
 ### Switching Between Implementations
 
 The library now defaults to the HTML/CSS pipeline. If you need to use the legacy PDFBox implementation (not recommended due to pagination issues):

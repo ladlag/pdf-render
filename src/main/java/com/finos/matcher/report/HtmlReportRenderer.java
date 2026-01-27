@@ -22,10 +22,28 @@ public class HtmlReportRenderer {
     private final TemplateEngine templateEngine;
     private final ChartRenderer chartRenderer;
     private boolean cacheTemplates = true; // Enable caching by default for production
+    private String defaultTemplateName = "report"; // Default template name
     
     public HtmlReportRenderer() {
         this.chartRenderer = new ChartRenderer();
         this.templateEngine = createTemplateEngine();
+    }
+    
+    /**
+     * Sets the default template name to use when no template is specified.
+     * Template files should be placed in src/main/resources/templates/ with .html extension.
+     * 
+     * @param templateName Template name without the .html extension (e.g., "report", "invoice")
+     */
+    public void setDefaultTemplateName(String templateName) {
+        this.defaultTemplateName = templateName;
+    }
+    
+    /**
+     * Gets the current default template name
+     */
+    public String getDefaultTemplateName() {
+        return defaultTemplateName;
     }
     
     /**
@@ -42,14 +60,25 @@ public class HtmlReportRenderer {
     }
     
     /**
-     * Generates a PDF from ReportData using the HTML/CSS pipeline
+     * Generates a PDF from ReportData using the HTML/CSS pipeline with the default template
      */
     public byte[] generatePdf(ReportData reportData) throws IOException, DocumentException {
+        return generatePdf(reportData, defaultTemplateName);
+    }
+    
+    /**
+     * Generates a PDF from ReportData using the HTML/CSS pipeline with a specified template
+     * 
+     * @param reportData Report data to render
+     * @param templateName Template name without .html extension (e.g., "report", "invoice")
+     * @return PDF content as byte array
+     */
+    public byte[] generatePdf(ReportData reportData, String templateName) throws IOException, DocumentException {
         // Step 1: Prepare data for template (including chart images)
         Map<String, Object> templateData = prepareTemplateData(reportData);
         
         // Step 2: Render HTML from template
-        String html = renderHtml(templateData);
+        String html = renderHtml(templateData, templateName);
         
         // Step 3: Convert HTML to PDF using Flying Saucer
         return convertHtmlToPdf(html);
@@ -95,11 +124,11 @@ public class HtmlReportRenderer {
     /**
      * Renders HTML from the Thymeleaf template
      */
-    private String renderHtml(Map<String, Object> data) {
+    private String renderHtml(Map<String, Object> data, String templateName) {
         Context context = new Context();
         context.setVariables(data);
         
-        return templateEngine.process("report", context);
+        return templateEngine.process(templateName, context);
     }
     
     /**

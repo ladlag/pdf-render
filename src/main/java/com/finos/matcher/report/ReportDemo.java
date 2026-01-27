@@ -43,6 +43,22 @@ public class ReportDemo {
         System.out.println("  ✓ Embedded charts as base64 images");
         System.out.println("  ✓ 4 sections: Cover, Tables, Analysis, Summary");
         
+        // Generate with invoice template
+        System.out.println("\nGenerating PDF with invoice template...");
+        startTime = System.currentTimeMillis();
+        byte[] invoicePdfBytes = service.generatePdf(reportData, "invoice");
+        duration = System.currentTimeMillis() - startTime;
+        
+        String invoiceFile = "sample-invoice.pdf";
+        try (FileOutputStream fos = new FileOutputStream(invoiceFile)) {
+            fos.write(invoicePdfBytes);
+        }
+        
+        System.out.println("✓ Invoice-style PDF generated!");
+        System.out.println("  File: " + invoiceFile);
+        System.out.println("  Size: " + formatBytes(invoicePdfBytes.length));
+        System.out.println("  Time: " + duration + "ms");
+        
         // Also generate with legacy PDFBox for comparison
         System.out.println("\nGenerating comparison PDF with legacy PDFBox...");
         service.setUseHtmlPipeline(false);

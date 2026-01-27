@@ -72,6 +72,26 @@ public class ReportServiceTest {
         assertTrue(pdfBytes.length > 0);
     }
     
+    @Test
+    public void testGeneratePdfWithSpecificTemplate() throws IOException {
+        ReportService service = new ReportService();
+        
+        ReportData reportData = createTestReportData();
+        
+        // Generate with default template
+        byte[] defaultPdf = service.generatePdf(reportData, "report");
+        assertNotNull(defaultPdf);
+        assertTrue(defaultPdf.length > 0);
+        
+        // Generate with invoice template
+        byte[] invoicePdf = service.generatePdf(reportData, "invoice");
+        assertNotNull(invoicePdf);
+        assertTrue(invoicePdf.length > 0);
+        
+        // PDFs should be different due to different templates
+        assertNotEquals(defaultPdf.length, invoicePdf.length);
+    }
+    
     /**
      * Creates test data with many table rows to demonstrate pagination issues
      */

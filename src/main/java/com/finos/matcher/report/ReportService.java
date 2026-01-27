@@ -41,8 +41,20 @@ public class ReportService {
      * This is the main public API that must remain consistent.
      */
     public byte[] generatePdf(ReportData reportData) throws IOException {
+        return generatePdf(reportData, null);
+    }
+    
+    /**
+     * Generates a PDF report using a specific template and returns it as a byte array.
+     * 
+     * @param reportData Report data to render
+     * @param templateName Template name without .html extension (e.g., "report", "invoice"). 
+     *                     If null, uses the default template.
+     * @return PDF content as byte array
+     */
+    public byte[] generatePdf(ReportData reportData, String templateName) throws IOException {
         if (useHtmlPipeline) {
-            return generatePdfWithHtmlPipeline(reportData);
+            return generatePdfWithHtmlPipeline(reportData, templateName);
         } else {
             return generatePdfWithPdfBox(reportData);
         }
@@ -88,9 +100,13 @@ public class ReportService {
     /**
      * Phase 2: HTML/CSS-based implementation (now the default)
      */
-    private byte[] generatePdfWithHtmlPipeline(ReportData reportData) throws IOException {
+    private byte[] generatePdfWithHtmlPipeline(ReportData reportData, String templateName) throws IOException {
         try {
-            return htmlRenderer.generatePdf(reportData);
+            if (templateName != null && !templateName.isEmpty()) {
+                return htmlRenderer.generatePdf(reportData, templateName);
+            } else {
+                return htmlRenderer.generatePdf(reportData);
+            }
         } catch (DocumentException e) {
             throw new IOException("Failed to generate PDF from HTML", e);
         }

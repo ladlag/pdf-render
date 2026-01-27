@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${title}">Invoice</title>
+    <style>
+        /* Example alternative template - Invoice style */
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 28pt;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10pt;
+            margin-bottom: 20pt;
+        }
+
+        h2 {
+            font-size: 16pt;
+            color: #2c3e50;
+            margin-top: 20pt;
+            margin-bottom: 10pt;
+            border-left: 4px solid #3498db;
+            padding-left: 10pt;
+        }
+
+        /* Invoice header */
+        .invoice-header {
+            display: table;
+            width: 100%;
+            margin-bottom: 30pt;
+        }
+
+        .invoice-info {
+            text-align: right;
+            color: #7f8c8d;
+        }
+
+        /* Table styling - different from report template */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15pt 0;
+            background: #fff;
+        }
+
+        thead {
+            display: table-header-group;
+            background: #3498db;
+            color: white;
+        }
+
+        th {
+            font-weight: bold;
+            padding: 10pt 8pt;
+            text-align: left;
+            border: none;
+        }
+
+        td {
+            padding: 8pt;
+            border-bottom: 1pt solid #ecf0f1;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #ecf0f1 !important;
+            font-size: 12pt;
+        }
+
+        /* Chart styling */
+        .chart-container {
+            text-align: center;
+            margin: 20pt 0;
+            page-break-inside: avoid;
+        }
+
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1pt solid #ddd;
+            padding: 5pt;
+        }
+
+        /* Footer notice */
+        .notice {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12pt;
+            margin: 20pt 0;
+            font-size: 10pt;
+        }
+
+        .metadata {
+            font-size: 9pt;
+            color: #95a5a6;
+            text-align: center;
+            margin-top: 30pt;
+            border-top: 1pt solid #ecf0f1;
+            padding-top: 10pt;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Invoice Header -->
+<div class="invoice-header">
+    <h1 th:text="${title}">Invoice</h1>
+    <div class="invoice-info">
+        <p><strong>Invoice Number:</strong> <span th:text="${reportNumber}">N/A</span></p>
+        <p><strong>Date:</strong> <span th:text="${reportDate}">N/A</span></p>
+    </div>
+</div>
+
+<!-- Main Content Tables -->
+<div th:if="${tableBlocks != null and !tableBlocks.isEmpty()}">
+    <h2>Invoice Details</h2>
+    
+    <div th:each="block : ${tableBlocks}">
+        <h3 th:text="${block.blockId} + ' ' + ${block.blockTitle}">Section</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th th:each="header : ${block.tableData.headers}" th:text="${header}">Header</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row : ${block.tableData.rows}">
+                    <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Summary Section -->
+<div th:if="${summaryTable != null}">
+    <h2>Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th th:each="header : ${summaryTable.headers}" th:text="${header}">Header</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="row, iterStat : ${summaryTable.rows}" 
+                th:class="${iterStat.last} ? 'total-row' : ''">
+                <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Charts -->
+<div th:if="${charts != null and !charts.isEmpty()}">
+    <h2>Charts</h2>
+    <div th:each="chart : ${charts}" class="chart-container">
+        <p><strong th:text="${chart.title}">Chart Title</strong></p>
+        <img th:src="'data:image/png;base64,' + ${chart.base64Image}" alt="Chart"/>
+    </div>
+</div>
+
+<!-- Notice -->
+<div th:if="${reportNotice != null}" class="notice">
+    <p th:text="${reportNotice}">Notice</p>
+</div>
+
+<!-- Metadata Footer -->
+<div th:if="${metadata != null}" class="metadata">
+    <p th:text="${metadata}">Metadata</p>
+</div>
+
+</body>
+</html>
