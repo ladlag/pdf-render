@@ -68,6 +68,16 @@ public class ReportService {
     }
     
     /**
+     * Gets the HTML report renderer for configuration purposes.
+     * Useful when integrating with Spring Boot to configure templates, caching, etc.
+     * 
+     * @return The HTML report renderer instance
+     */
+    public HtmlReportRenderer getHtmlRenderer() {
+        return htmlRenderer;
+    }
+    
+    /**
      * Phase 1: PDFBox-based implementation (deprecated, kept for reference)
      * @deprecated Use HTML pipeline instead (default). This method has known issues
      * with table pagination where rows can be lost at page boundaries.

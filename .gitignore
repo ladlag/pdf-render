@@ -36,3 +36,6 @@ build/
 # Generated PDFs (demo output)
 *.pdf
 
+# Test output directory
+test-output/
+
