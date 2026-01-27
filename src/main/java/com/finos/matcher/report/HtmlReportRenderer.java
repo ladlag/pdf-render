@@ -4,6 +4,7 @@ import com.finos.matcher.report.config.FontConfig;
 import com.finos.matcher.report.model.ChartData;
 import com.finos.matcher.report.model.ReportData;
 import com.finos.matcher.report.model.Section;
+import com.finos.matcher.report.util.FontNameExtractor;
 import com.lowagie.text.DocumentException;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -214,12 +215,17 @@ public class HtmlReportRenderer {
      * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
      * 
      * Uses Identity-H encoding for proper Unicode/CJK character support.
+     * Also validates that CSS font-family matches the registered font's internal name.
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
             // Register regular font with Identity-H encoding for Unicode support
             if (fontConfig.getRegularFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getRegularFontPath());
+                
+                // Validate font configuration
+                validateFontConfiguration(fontConfig.getRegularFontPath(), fontConfig.getDefaultFontFamily(), "regular");
+                
                 renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
             }
             
@@ -232,12 +238,57 @@ public class HtmlReportRenderer {
             // Register CJK font with Identity-H encoding (essential for CJK characters)
             if (fontConfig.getCjkFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getCjkFontPath());
+                
+                // Validate CJK font configuration
+                validateFontConfiguration(fontConfig.getCjkFontPath(), fontConfig.getCjkFontFamily(), "CJK");
+                
                 renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
             System.err.println("Warning: Failed to register custom fonts: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Validates that the CSS font-family contains the font file's internal name.
+     * Prints warnings if mismatch is detected, which would cause CJK characters to display as boxes.
+     * 
+     * @param fontPath Path to the font file
+     * @param cssFontFamily CSS font-family string
+     * @param fontType Type of font (e.g., "regular", "CJK") for logging
+     */
+    private void validateFontConfiguration(String fontPath, String cssFontFamily, String fontType) {
+        try {
+            if (cssFontFamily == null || cssFontFamily.isEmpty()) {
+                return; // No CSS font family configured, skip validation
+            }
+            
+            String internalName = FontNameExtractor.extractFontFamilyName(fontPath);
+            
+            if (!cssFontFamily.contains(internalName)) {
+                System.err.println("╔════════════════════════════════════════════════════════════════╗");
+                System.err.println("║  ⚠️  WARNING: Font Configuration Mismatch Detected!          ║");
+                System.err.println("╚════════════════════════════════════════════════════════════════╝");
+                System.err.println();
+                System.err.println("Font type: " + fontType);
+                System.err.println("Font file: " + fontPath);
+                System.err.println();
+                System.err.println("  CSS font-family:        " + cssFontFamily);
+                System.err.println("  Font's internal name:   " + internalName);
+                System.err.println();
+                System.err.println("⚠️  CSS references a font name that doesn't match the file!");
+                System.err.println("⚠️  This will cause Chinese/CJK characters to show as boxes (□)");
+                System.err.println();
+                System.err.println("To fix, update your FontConfig:");
+                System.err.println("  fontConfig.setDefaultFontFamily(\"" + internalName + ", DejaVu Sans, sans-serif\");");
+                System.err.println();
+                System.err.println("════════════════════════════════════════════════════════════════");
+            }
+        } catch (Exception e) {
+            // If validation fails, just log it - don't block PDF generation
+            System.err.println("Info: Could not validate " + fontType + " font configuration: " + e.getMessage());
         }
     }
     
