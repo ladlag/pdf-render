@@ -18,55 +18,43 @@ public class FontConfig {
     }
     
     /**
-     * Gets the CSS @font-face declaration for custom fonts
+     * Gets the CSS @font-face declaration for custom fonts.
+     * 
+     * When using Flying Saucer with ITextRenderer and Identity-H encoding,
+     * we don't need @font-face declarations. The fonts registered via addFont()
+     * are available directly by their family name override.
+     * 
+     * Returns empty string as no CSS font declarations are needed.
      */
     public String getCssFontFaceDeclaration() {
-        StringBuilder css = new StringBuilder();
-        
-        if (regularFontPath != null) {
-            css.append("@font-face {\n");
-            css.append("  font-family: 'CustomFont';\n");
-            css.append("  src: url('").append(regularFontPath).append("');\n");
-            css.append("  font-weight: normal;\n");
-            css.append("}\n");
-        }
-        
-        if (boldFontPath != null) {
-            css.append("@font-face {\n");
-            css.append("  font-family: 'CustomFont';\n");
-            css.append("  src: url('").append(boldFontPath).append("');\n");
-            css.append("  font-weight: bold;\n");
-            css.append("}\n");
-        }
-        
-        if (cjkFontPath != null) {
-            css.append("@font-face {\n");
-            css.append("  font-family: 'CustomCJKFont';\n");
-            css.append("  src: url('").append(cjkFontPath).append("');\n");
-            css.append("}\n");
-        }
-        
-        return css.toString();
+        // No @font-face needed - fonts registered via addFont() with family name override
+        // are automatically available in CSS by their specified names
+        return "";
     }
     
     /**
-     * Gets the font-family CSS value to use in the template
+     * Gets the font-family CSS value to use in the template.
+     * 
+     * When fonts are registered with addFont() using Identity-H encoding,
+     * they become available by their internal font family name (from the font file).
+     * We use the defaultFontFamily which should be set to match the registered font names.
      */
     public String getFontFamilyCss() {
         StringBuilder fontFamily = new StringBuilder();
         
-        // Add custom font if configured
-        if (regularFontPath != null) {
-            fontFamily.append("'CustomFont', ");
-        }
-        
-        // Add CJK font if configured
-        if (cjkFontPath != null) {
-            fontFamily.append("'CustomCJKFont', ");
-        }
-        
-        // Add default fallback fonts
+        // Use the configured default font family (which should include the registered font names)
         fontFamily.append(defaultFontFamily);
+        
+        // Always add standard fallback fonts
+        if (!defaultFontFamily.contains("DejaVu Sans")) {
+            fontFamily.append(", DejaVu Sans");
+        }
+        if (!defaultFontFamily.contains("Arial")) {
+            fontFamily.append(", Arial");
+        }
+        if (!defaultFontFamily.contains("sans-serif")) {
+            fontFamily.append(", sans-serif");
+        }
         
         return fontFamily.toString();
     }

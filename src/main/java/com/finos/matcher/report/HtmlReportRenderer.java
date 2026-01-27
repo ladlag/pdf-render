@@ -211,26 +211,36 @@ public class HtmlReportRenderer {
     }
     
     /**
-     * Registers custom fonts with the Flying Saucer renderer for PDF embedding
+     * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
+     * 
+     * Uses Identity-H encoding for proper Unicode/CJK character support.
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
             // Register regular font
             if (fontConfig.getRegularFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getRegularFontPath());
-                renderer.getFontResolver().addFont(fontPath, true);
+                System.out.println("Registering regular font: " + fontPath);
+                // Use Identity-H encoding for Unicode support (3-param version)
+                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                System.out.println("✓ Regular font registered");
             }
             
             // Register bold font
             if (fontConfig.getBoldFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getBoldFontPath());
-                renderer.getFontResolver().addFont(fontPath, true);
+                System.out.println("Registering bold font: " + fontPath);
+                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                System.out.println("✓ Bold font registered");
             }
             
             // Register CJK font
             if (fontConfig.getCjkFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getCjkFontPath());
-                renderer.getFontResolver().addFont(fontPath, true);
+                System.out.println("Registering CJK font: " + fontPath);
+                // Identity-H encoding is essential for CJK character rendering
+                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                System.out.println("✓ CJK font registered");
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
