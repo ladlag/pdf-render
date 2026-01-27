@@ -217,30 +217,22 @@ public class HtmlReportRenderer {
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
-            // Register regular font
+            // Register regular font with Identity-H encoding for Unicode support
             if (fontConfig.getRegularFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getRegularFontPath());
-                System.out.println("Registering regular font: " + fontPath);
-                // Use Identity-H encoding for Unicode support (3-param version)
                 renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
-                System.out.println("✓ Regular font registered");
             }
             
-            // Register bold font
+            // Register bold font with Identity-H encoding
             if (fontConfig.getBoldFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getBoldFontPath());
-                System.out.println("Registering bold font: " + fontPath);
                 renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
-                System.out.println("✓ Bold font registered");
             }
             
-            // Register CJK font
+            // Register CJK font with Identity-H encoding (essential for CJK characters)
             if (fontConfig.getCjkFontPath() != null) {
                 String fontPath = resolveFontPath(fontConfig.getCjkFontPath());
-                System.out.println("Registering CJK font: " + fontPath);
-                // Identity-H encoding is essential for CJK character rendering
                 renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
-                System.out.println("✓ CJK font registered");
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
