@@ -1,0 +1,659 @@
+# PDF-Render - PDF报告生成库
+
+一个基于Java的PDF报告生成库，使用HTML/CSS模板方式，结合Flying Saucer和OpenPDF实现可靠、稳定的表格分页。
+
+## 目录
+
+- [概述](#概述)
+- [核心特性](#核心特性)
+- [快速开始](#快速开始)
+- [详细使用示例](#详细使用示例)
+- [数据填充顺序说明](#数据填充顺序说明)
+- [自定义模板](#自定义模板)
+- [Spring Boot集成](#spring-boot集成)
+- [常见问题](#常见问题)
+
+## 概述
+
+该项目生成多章节PDF报告，支持：
+- 封面页（标题和元数据）
+- 动态章节（可包含标题、副标题、段落、表格、图表）
+- 灵活的内容组合
+- 多种模板样式
+
+## 核心特性
+
+### 🎯 通用模板系统
+
+**关键优势：一个数据模型适用所有模板，添加模板无需编写代码！**
+
+```java
+// 创建数据一次
+ReportData data = ReportDataBuilder.create()
+    .title("季度报告")
+    .addSection(section)
+    .build();
+
+// 生成不同格式 - 无需代码更改！
+ReportService service = new ReportService();
+byte[] reportPdf = service.generatePdf(data, "report");      // 标准报告
+byte[] invoicePdf = service.generatePdf(data, "invoice");    // 发票
+byte[] certPdf = service.generatePdf(data, "certificate");   // 证书
+```
+
+### ✨ 主要功能
+
+- ✅ **稳定的表格分页** - 页面断点处不会丢失行
+- ✅ **重复的表头** - 使用`<thead>`在新页面自动重复表头
+- ✅ **页面断点控制** - CSS `page-break-inside: avoid`防止行跨页分割
+- ✅ **易于自定义** - 修改模板和样式无需修改Java代码
+- ✅ **专业样式** - 基于CSS的样式，支持@page规则和自定义字体
+- ✅ **灵活的章节** - Section模型支持任意内容组合
+
+## 快速开始
+
+### 环境要求
+
+- Java 8 或更高版本 (JDK 1.8+)
+- Maven 3.6+
+
+### 构建项目
+
+```bash
+mvn clean install
+```
+
+这将生成：
+- `pdf-render-1.0.0-SNAPSHOT.jar` - 主库JAR
+- `pdf-render-1.0.0-SNAPSHOT-sources.jar` - 源码JAR
+- `pdf-render-1.0.0-SNAPSHOT-javadoc.jar` - 文档JAR
+
+### 运行测试
+
+```bash
+mvn test
+```
+
+测试生成的PDF将保存在`test-output/`目录中供检查。
+
+## 详细使用示例
+
+### 示例1：创建简单报告
+
+```java
+import com.finos.matcher.report.ReportService;
+import com.finos.matcher.report.model.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
+public class SimpleReportExample {
+    public static void main(String[] args) throws Exception {
+        // 使用构建器创建报告数据
+        ReportData reportData = ReportDataBuilder.create()
+            .title("2024年度财务报告")
+            .subtitle("第四季度业绩总结")
+            .reportDate("2024-12-31")
+            .reportNumber("RPT-2024-Q4-001")
+            
+            // 添加执行摘要章节
+            .addSection(new Section("执行摘要")
+                .addParagraph("本季度公司业绩表现优异，营收同比增长25%。")
+                .addParagraph("运营效率持续提升，成本控制在合理范围内。"))
+            
+            .reportNotice("本报告为内部文件，仅供参考。")
+            .metadata("生成时间：2024-12-31 | 生成系统：PDF-Render v1.0")
+            .build();
+        
+        // 生成PDF
+        ReportService service = new ReportService();
+        byte[] pdfBytes = service.generatePdf(reportData);
+        
+        // 保存到文件
+        Files.write(Paths.get("财务报告.pdf"), pdfBytes);
+        
+        System.out.println("PDF生成成功！");
+    }
+}
+```
+
+### 示例2：包含表格和图表的完整报告
+
+```java
+import java.util.*;
+
+public class CompleteReportExample {
+    public static void main(String[] args) throws Exception {
+        // 创建财务数据表
+        TableData financialTable = new TableData(
+            Arrays.asList("季度", "营收", "成本", "利润", "增长率"),
+            Arrays.asList(
+                Arrays.asList("Q1", "￥120万", "￥80万", "￥40万", "12%"),
+                Arrays.asList("Q2", "￥135万", "￥85万", "￥50万", "15%"),
+                Arrays.asList("Q3", "￥145万", "￥90万", "￥55万", "18%"),
+                Arrays.asList("Q4", "￥160万", "￥95万", "￥65万", "22%")
+            )
+        );
+        
+        // 创建图表数据
+        Map<String, Double> chartData = new LinkedHashMap<>();
+        chartData.put("Q1", 400000.0);
+        chartData.put("Q2", 500000.0);
+        chartData.put("Q3", 550000.0);
+        chartData.put("Q4", 650000.0);
+        ChartData profitChart = new ChartData("季度利润趋势", "bar", chartData);
+        
+        // 构建完整报告
+        ReportData reportData = ReportDataBuilder.create()
+            .title("年度财务分析报告")
+            .subtitle("2024财年总结")
+            .reportDate("2024-12-31")
+            .reportNumber("FIN-2024-ANNUAL")
+            
+            // 第1章：财务概览
+            .addSection(new Section("财务概览")
+                .withSubtitle("全年业绩回顾")
+                .addParagraph("2024年公司实现营业收入￥560万元，同比增长18%。")
+                .addParagraph("净利润达到￥210万元，利润率稳定在37.5%。")
+                .addTable(financialTable)
+                .addChart(profitChart))
+            
+            // 第2章：运营分析
+            .addSection(new Section("运营分析")
+                .addParagraph("各项运营指标持续向好，客户满意度达92%。")
+                .addTable(createOperationalMetrics()))
+            
+            // 第3章：战略规划
+            .addSection(new Section("2025年战略规划")
+                .addParagraph("继续深耕现有市场，拓展新业务领域。")
+                .addParagraph("预计2025年营收增长目标：30%。"))
+            
+            .reportNotice("机密文件 - 仅限内部使用")
+            .metadata("财务部 | 审批人：张经理")
+            .build();
+        
+        // 生成PDF
+        ReportService service = new ReportService();
+        byte[] pdfBytes = service.generatePdf(reportData, "flexible");
+        Files.write(Paths.get("完整财务报告.pdf"), pdfBytes);
+        
+        System.out.println("完整报告生成成功！");
+    }
+    
+    private static TableData createOperationalMetrics() {
+        return new TableData(
+            Arrays.asList("指标", "目标", "实际", "状态"),
+            Arrays.asList(
+                Arrays.asList("客户满意度", "85%", "92%", "超额完成"),
+                Arrays.asList("员工留任率", "90%", "94%", "超额完成"),
+                Arrays.asList("市场份额", "25%", "27%", "超额完成")
+            )
+        );
+    }
+}
+```
+
+### 示例3：使用不同模板生成不同格式
+
+```java
+public class MultiTemplateExample {
+    public static void main(String[] args) throws Exception {
+        // 创建一次数据
+        ReportData data = createUniversalData();
+        
+        ReportService service = new ReportService();
+        
+        // 1. 生成标准报告
+        byte[] standardReport = service.generatePdf(data, "report");
+        Files.write(Paths.get("标准报告.pdf"), standardReport);
+        
+        // 2. 生成灵活报告
+        byte[] flexibleReport = service.generatePdf(data, "flexible");
+        Files.write(Paths.get("灵活报告.pdf"), flexibleReport);
+        
+        // 3. 生成发票样式
+        byte[] invoice = service.generatePdf(data, "invoice");
+        Files.write(Paths.get("发票.pdf"), invoice);
+        
+        // 4. 生成证书样式
+        byte[] certificate = service.generatePdf(data, "certificate");
+        Files.write(Paths.get("证书.pdf"), certificate);
+        
+        // 5. 生成执行摘要
+        byte[] summary = service.generatePdf(data, "executive-summary");
+        Files.write(Paths.get("执行摘要.pdf"), summary);
+        
+        System.out.println("同一数据生成了5种不同格式的PDF！");
+    }
+    
+    private static ReportData createUniversalData() {
+        return ReportDataBuilder.create()
+            .title("2024年度表彰")
+            .subtitle("优秀员工奖")
+            .reportDate("2024-12-31")
+            .reportNumber("张小明")  // 在证书模板中会作为获奖人姓名
+            .addSection(new Section("张小明")
+                .addParagraph("因在2024年度工作中表现突出，特此表彰。")
+                .addParagraph("获得年度最佳员工称号。"))
+            .metadata("人力资源部")
+            .build();
+    }
+}
+```
+
+## 数据填充顺序说明
+
+### ❓ 问题：标题、段落、表格、图表多个顺序混杂，如何指定哪块数据填充到模版哪块？
+
+### ✅ 答案：数据按添加顺序自动填充
+
+#### 核心原则
+
+**在Section中，内容按以下固定顺序渲染：**
+
+1. **标题** (Section Title)
+2. **副标题** (Section Subtitle)  
+3. **段落** (Paragraphs) - 按添加顺序
+4. **表格** (Tables) - 按添加顺序
+5. **表格块** (TableBlocks) - 按添加顺序
+6. **图表** (Charts) - 按添加顺序
+7. **自定义内容** (Custom Content)
+
+#### 详细说明
+
+```java
+Section section = new Section("第一章：市场分析")
+    // 1. 标题会显示在最上面
+    .withSubtitle("2024年第四季度")
+    // 2. 副标题显示在标题下方
+    
+    // 3. 段落按添加顺序显示
+    .addParagraph("第一段：市场概况...")      // ← 第1段
+    .addParagraph("第二段：竞争分析...")      // ← 第2段
+    .addParagraph("第三段：趋势预测...")      // ← 第3段
+    
+    // 4. 表格按添加顺序显示
+    .addTable(marketShareTable)              // ← 第1个表格
+    .addTable(competitorTable)               // ← 第2个表格
+    
+    // 5. 图表按添加顺序显示
+    .addChart(growthChart)                   // ← 第1个图表
+    .addChart(distributionChart)             // ← 第2个图表
+    
+    // 6. 自定义HTML内容最后显示
+    .withCustomContent("<div>补充说明...</div>");
+```
+
+#### 实际渲染效果
+
+在PDF中，上述代码会按如下顺序显示：
+
+```
+┌─────────────────────────────────────┐
+│ 第一章：市场分析                      │  ← 标题
+│ 2024年第四季度                       │  ← 副标题
+├─────────────────────────────────────┤
+│ 第一段：市场概况...                   │  ← 段落1
+│                                     │
+│ 第二段：竞争分析...                   │  ← 段落2
+│                                     │
+│ 第三段：趋势预测...                   │  ← 段落3
+├─────────────────────────────────────┤
+│ [市场份额表格]                        │  ← 表格1
+├─────────────────────────────────────┤
+│ [竞争对手表格]                        │  ← 表格2
+├─────────────────────────────────────┤
+│ [增长趋势图表]                        │  ← 图表1
+├─────────────────────────────────────┤
+│ [分布情况图表]                        │  ← 图表2
+├─────────────────────────────────────┤
+│ [补充说明HTML内容]                    │  ← 自定义内容
+└─────────────────────────────────────┘
+```
+
+### 💡 实践技巧
+
+#### 技巧1：使用多个Section控制布局
+
+```java
+ReportData report = ReportDataBuilder.create()
+    .title("综合分析报告")
+    
+    // 章节1：只有文字
+    .addSection(new Section("引言")
+        .addParagraph("本报告分析..."))
+    
+    // 章节2：先文字后表格
+    .addSection(new Section("数据分析")
+        .addParagraph("根据以下数据...")
+        .addTable(dataTable))
+    
+    // 章节3：先图表后说明
+    .addSection(new Section("趋势预测")
+        .addChart(trendChart)
+        .addParagraph("如图所示..."))
+    
+    // 章节4：复杂组合
+    .addSection(new Section("综合评估")
+        .addParagraph("综合来看...")
+        .addTable(summaryTable)
+        .addChart(comparisonChart)
+        .addParagraph("结论：..."))
+    
+    .build();
+```
+
+#### 技巧2：控制内容顺序
+
+```java
+// 如果需要特定顺序：段落 → 图表 → 表格 → 段落
+Section section = new Section("灵活布局")
+    .addParagraph("开篇说明")         // 1
+    .addChart(chart)                 // 2
+    .addTable(table)                 // 3  
+    .addParagraph("总结说明");        // 4
+
+// 注意：实际渲染会是：段落(1,4) → 表格(3) → 图表(2)
+// 因为模板按类型分组渲染
+
+// 如果需要精确控制顺序，使用多个Section：
+reportData
+    .addSection(new Section("第1部分").addParagraph("开篇"))
+    .addSection(new Section("第2部分").addChart(chart))
+    .addSection(new Section("第3部分").addTable(table))
+    .addSection(new Section("第4部分").addParagraph("总结"));
+```
+
+#### 技巧3：使用自定义HTML精确控制
+
+```java
+Section section = new Section("精确控制顺序")
+    .withCustomContent(
+        "<p>第一段文字</p>" +
+        "<img src='data:image/png;base64,...' />" +  // 图表
+        "<table><tr><td>表格内容</td></tr></table>" +
+        "<p>第二段文字</p>"
+    );
+// 自定义HTML可以完全控制渲染顺序
+```
+
+### 📊 完整示例：复杂报告
+
+```java
+public class ComplexOrderExample {
+    public static void main(String[] args) throws Exception {
+        ReportData report = ReportDataBuilder.create()
+            .title("2024年度销售分析报告")
+            .subtitle("全年业绩回顾与展望")
+            .reportDate("2024-12-31")
+            
+            // 第1章：概述（只有文字）
+            .addSection(new Section("一、概述")
+                .addParagraph("2024年公司销售业绩稳步增长...")
+                .addParagraph("主要增长来源于..."))
+            
+            // 第2章：数据分析（文字+表格+图表）
+            .addSection(new Section("二、销售数据分析")
+                .withSubtitle("按季度统计")
+                .addParagraph("全年销售数据如下表所示：")
+                .addTable(quarterlyData)           // 季度数据表
+                .addParagraph("从图表可以看出增长趋势：")
+                .addChart(salesTrendChart)         // 趋势图
+                .addParagraph("分析结论：持续增长态势明显。"))
+            
+            // 第3章：区域分析（多个表格和图表）
+            .addSection(new Section("三、区域市场分析")
+                .addParagraph("各区域表现如下：")
+                .addTable(northRegionTable)        // 北方市场
+                .addTable(southRegionTable)        // 南方市场
+                .addChart(regionComparisonChart)   // 对比图
+                .addChart(marketShareChart))       // 份额图
+            
+            // 第4章：总结（纯文字）
+            .addSection(new Section("四、总结与展望")
+                .addParagraph("总结：2024年目标全部达成。")
+                .addParagraph("展望：2025年继续保持增长。"))
+            
+            .reportNotice("本报告为商业机密")
+            .metadata("销售部 | 日期：2024-12-31")
+            .build();
+        
+        // 生成PDF
+        ReportService service = new ReportService();
+        byte[] pdf = service.generatePdf(report, "flexible");
+        Files.write(Paths.get("销售分析报告.pdf"), pdf);
+        
+        System.out.println("复杂报告生成成功！");
+        System.out.println("内容按章节顺序，章节内按固定规则（标题→段落→表格→图表）排列");
+    }
+}
+```
+
+## 自定义模板
+
+### 添加新模板（无需编写代码！）
+
+1. **创建HTML模板文件**
+   ```bash
+   # 复制现有模板
+   cp src/main/resources/templates/flexible.html \
+      src/main/resources/templates/my-template.html
+   ```
+
+2. **编辑模板**
+   - 修改HTML结构和CSS样式
+   - 所有模板都可以访问相同的数据变量
+   - 无需修改任何Java代码
+
+3. **使用新模板**
+   ```java
+   byte[] pdf = service.generatePdf(reportData, "my-template");
+   ```
+
+### 可用的数据变量
+
+所有模板都可以访问以下变量：
+
+| 变量 | 类型 | 说明 |
+|-----|------|------|
+| `${title}` | String | 报告标题 |
+| `${subtitle}` | String | 副标题 |
+| `${reportDate}` | String | 报告日期 |
+| `${reportNumber}` | String | 报告编号 |
+| `${sections}` | List&lt;Section&gt; | 章节列表 |
+| `${sections[0].title}` | String | 第一个章节的标题 |
+| `${sections[0].paragraphs}` | List&lt;String&gt; | 第一个章节的段落 |
+| `${sections[0].tables}` | List&lt;TableData&gt; | 第一个章节的表格 |
+| `${sections[0].charts}` | List&lt;ChartData&gt; | 第一个章节的图表 |
+
+详细的模板自定义指南请参考：[ADDING_TEMPLATES.md](ADDING_TEMPLATES.md)
+
+## Spring Boot集成
+
+### Maven依赖
+
+在Spring Boot项目的`pom.xml`中添加：
+
+```xml
+<dependency>
+    <groupId>com.finos.matcher</groupId>
+    <artifactId>pdf-render</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+</dependency>
+```
+
+### 配置文件
+
+在`application.yml`中配置：
+
+```yaml
+pdf-render:
+  template:
+    location: classpath:/templates/
+    default-name: flexible
+    cache-enabled: true
+  output:
+    directory: /var/pdfs
+    save-to-directory: false
+  fonts:
+    cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
+```
+
+### Spring Service示例
+
+```java
+@Service
+public class PdfReportService {
+    
+    private final ReportService reportService = new ReportService();
+    
+    public byte[] generateQuarterlyReport(QuarterlyData data) throws IOException {
+        ReportData reportData = ReportDataBuilder.create()
+            .title(data.getTitle())
+            .reportDate(data.getDate())
+            .addSection(new Section("业绩概览")
+                .addParagraph(data.getSummary())
+                .addTable(data.getMetricsTable()))
+            .build();
+        
+        return reportService.generatePdf(reportData, "flexible");
+    }
+}
+```
+
+### REST Controller示例
+
+```java
+@RestController
+@RequestMapping("/api/reports")
+public class ReportController {
+    
+    @Autowired
+    private PdfReportService pdfService;
+    
+    @PostMapping("/generate")
+    public ResponseEntity<byte[]> generateReport(@RequestBody ReportRequest request) 
+            throws IOException {
+        byte[] pdf = pdfService.generateQuarterlyReport(request.getData());
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "report.pdf");
+        
+        return ResponseEntity.ok().headers(headers).body(pdf);
+    }
+}
+```
+
+## 常见问题
+
+### Q1: 如何控制段落、表格、图表的显示顺序？
+
+**A:** 在模板中，内容按固定顺序渲染：标题 → 副标题 → 段落 → 表格 → 图表 → 自定义内容。如需更灵活的顺序控制，可以：
+1. 使用多个Section分别控制
+2. 使用`customContent`添加自定义HTML
+
+### Q2: 如何让表格和图表在PDF中紧邻显示？
+
+**A:** 将它们放在同一个Section中：
+```java
+.addSection(new Section("数据展示")
+    .addTable(table)
+    .addChart(chart))
+```
+
+### Q3: 如何在段落之间插入图表？
+
+**A:** 创建多个Section：
+```java
+.addSection(new Section("部分1").addParagraph("第一段"))
+.addSection(new Section("图表").addChart(chart))
+.addSection(new Section("部分2").addParagraph("第二段"))
+```
+
+### Q4: 支持哪些图表类型？
+
+**A:** 目前支持：
+- `bar` - 柱状图
+- `pie` - 饼图
+
+### Q5: 如何添加自定义字体？
+
+**A:** 
+1. 将字体文件放在`src/main/resources/fonts/`
+2. 在模板的CSS中添加：
+```css
+@font-face {
+    font-family: 'MyFont';
+    src: url('classpath:/fonts/myfont.ttf');
+}
+body {
+    font-family: 'MyFont', sans-serif;
+}
+```
+
+### Q6: 生成的PDF可以合并吗？
+
+**A:** 可以使用PDFBox或iText等库合并多个PDF：
+```java
+PDFMergerUtility merger = new PDFMergerUtility();
+merger.addSource(new ByteArrayInputStream(pdf1));
+merger.addSource(new ByteArrayInputStream(pdf2));
+merger.setDestinationStream(output);
+merger.mergeDocuments(null);
+```
+
+## 性能优化
+
+- **模板缓存**：生产环境启用模板缓存（默认已启用）
+- **图表优化**：图表会转换为PNG格式嵌入，控制图表数量和尺寸
+- **批量生成**：使用线程池并行生成多个PDF
+
+## 项目结构
+
+```
+pdf-render/
+├── src/main/java/com/finos/matcher/report/
+│   ├── model/                 # 数据模型
+│   │   ├── ReportData.java    # 报告数据
+│   │   ├── Section.java       # 章节
+│   │   ├── TableData.java     # 表格
+│   │   ├── ChartData.java     # 图表
+│   │   └── ReportDataBuilder.java  # 构建器
+│   ├── ReportService.java     # 主服务
+│   ├── HtmlReportRenderer.java # 渲染引擎
+│   └── util/
+│       └── ReportDataValidator.java  # 验证器
+├── src/main/resources/
+│   └── templates/             # HTML模板
+│       ├── report.html        # 标准报告
+│       ├── flexible.html      # 灵活报告
+│       ├── invoice.html       # 发票
+│       ├── certificate.html   # 证书
+│       └── executive-summary.html  # 摘要
+└── src/test/java/            # 测试用例
+```
+
+## 相关文档
+
+- [ADDING_TEMPLATES.md](ADDING_TEMPLATES.md) - 模板添加指南
+- [TEMPLATE_GUIDE.md](TEMPLATE_GUIDE.md) - 模板自定义详细指南  
+- [IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md) - 实现总结
+
+## 许可证
+
+本项目采用开源许可证。
+
+## 贡献
+
+欢迎贡献！请确保：
+1. 所有测试通过 (`mvn test`)
+2. 代码符合现有风格
+3. 新功能包含测试
+4. 更新相关文档
+
+---
+
+**更多示例和详细说明，请查看项目中的Demo文件：**
+- `FlexibleReportDemo.java` - 灵活章节示例
+- `UniversalTemplateDemo.java` - 通用模板示例
