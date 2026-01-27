@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${title}">Flexible Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            
+            @bottom-center {
+                content: "Page " counter(page);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #333;
+        }
+        
+        /* Cover page styles */
+        .cover-page {
+            text-align: center;
+            padding-top: 100px;
+        }
+        
+        .cover-page h1 {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .cover-page h2 {
+            font-size: 18pt;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-weight: normal;
+        }
+        
+        .cover-metadata {
+            margin-top: 60px;
+            font-size: 11pt;
+            color: #555;
+        }
+        
+        .cover-metadata p {
+            margin: 8px 0;
+        }
+        
+        /* Section styles */
+        .section {
+            page-break-before: avoid;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            page-break-after: avoid;
+        }
+        
+        .section-subtitle {
+            font-size: 13pt;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-style: italic;
+            page-break-after: avoid;
+        }
+        
+        .section-paragraph {
+            text-align: justify;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            page-break-inside: auto;
+        }
+        
+        thead {
+            display: table-header-group;
+            background-color: #3498db;
+            color: white;
+        }
+        
+        th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #2980b9;
+        }
+        
+        tbody tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .table-block-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            page-break-after: avoid;
+        }
+        
+        /* Chart styles */
+        .chart-container {
+            text-align: center;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .chart-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .chart-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        
+        /* Custom content */
+        .custom-content {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        
+        /* Notice styles */
+        .notice {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 9pt;
+        }
+        
+        .metadata {
+            margin-top: 30px;
+            padding: 10px;
+            font-size: 9pt;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        /* Utility classes */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .keep-together {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cover Page -->
+    <div class="cover-page">
+        <h1 th:text="${title}">Report Title</h1>
+        <h2 th:if="${subtitle != null}" th:text="${subtitle}">Subtitle</h2>
+        
+        <div class="cover-metadata">
+            <p th:if="${reportNumber != null}">
+                <strong>Report Number:</strong> <span th:text="${reportNumber}">N/A</span>
+            </p>
+            <p th:if="${reportDate != null}">
+                <strong>Report Date:</strong> <span th:text="${reportDate}">N/A</span>
+            </p>
+        </div>
+    </div>
+    
+    <!-- New Flexible Sections -->
+    <div th:if="${sections != null and !sections.isEmpty()}" class="page-break">
+        <div th:each="section, iterStat : ${sections}" 
+             th:class="${section.cssClass != null ? 'section ' + section.cssClass : 'section'}">
+            
+            <!-- Section Title -->
+            <h2 th:if="${section.title != null}" class="section-title" th:text="${section.title}">Section Title</h2>
+            
+            <!-- Section Subtitle -->
+            <div th:if="${section.subtitle != null}" class="section-subtitle" th:text="${section.subtitle}">Subtitle</div>
+            
+            <!-- Paragraphs -->
+            <div th:if="${section.paragraphs != null and !section.paragraphs.isEmpty()}">
+                <p th:each="paragraph : ${section.paragraphs}" 
+                   class="section-paragraph" 
+                   th:text="${paragraph}">Paragraph content</p>
+            </div>
+            
+            <!-- Tables -->
+            <div th:if="${section.tables != null and !section.tables.isEmpty()}">
+                <div th:each="table : ${section.tables}" class="keep-together">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th th:each="header : ${table.headers}" th:text="${header}">Header</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row : ${table.rows}">
+                                <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Table Blocks -->
+            <div th:if="${section.tableBlocks != null and !section.tableBlocks.isEmpty()}">
+                <div th:each="block : ${section.tableBlocks}">
+                    <div class="table-block-title" 
+                         th:text="${block.blockId + ' - ' + block.blockTitle}">Block Title</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th th:each="header : ${block.tableData.headers}" th:text="${header}">Header</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row : ${block.tableData.rows}">
+                                <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div th:if="${section.charts != null and !section.charts.isEmpty()}">
+                <div th:each="chart : ${section.charts}" class="chart-container">
+                    <div class="chart-title" th:text="${chart.title}">Chart Title</div>
+                    <img th:if="${chart.base64Image != null}" 
+                         th:src="'data:image/png;base64,' + ${chart.base64Image}" 
+                         class="chart-image" 
+                         alt="Chart"/>
+                </div>
+            </div>
+            
+            <!-- Custom Content -->
+            <div th:if="${section.customContent != null}" 
+                 class="custom-content" 
+                 th:utext="${section.customContent}">Custom HTML content</div>
+        </div>
+    </div>
+    
+    <!-- Legacy Structure (Backward Compatibility) -->
+    <div th:if="${sections == null or sections.isEmpty()}">
+        <!-- Section 1: Table Blocks -->
+        <div th:if="${tableBlocks != null and !tableBlocks.isEmpty()}" class="page-break">
+            <h2 class="section-title">Section 1: Detailed Analysis</h2>
+            <div th:each="block : ${tableBlocks}">
+                <div class="table-block-title" 
+                     th:text="${block.blockId + ' - ' + block.blockTitle}">Block Title</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th th:each="header : ${block.tableData.headers}" th:text="${header}">Header</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row : ${block.tableData.rows}">
+                            <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Section 2: Analysis Paragraphs -->
+        <div th:if="${analysisParagraphs != null and !analysisParagraphs.isEmpty()}" class="page-break">
+            <h2 class="section-title">Section 2: Analysis</h2>
+            <p th:each="paragraph : ${analysisParagraphs}" 
+               class="section-paragraph" 
+               th:text="${paragraph}">Analysis paragraph</p>
+        </div>
+        
+        <!-- Section 3: Summary and Charts -->
+        <div th:if="${summaryTable != null or (charts != null and !charts.isEmpty())}" class="page-break">
+            <h2 class="section-title">Section 3: Summary</h2>
+            
+            <!-- Summary Table -->
+            <div th:if="${summaryTable != null}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th th:each="header : ${summaryTable.headers}" th:text="${header}">Header</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row : ${summaryTable.rows}">
+                            <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Charts -->
+            <div th:if="${charts != null and !charts.isEmpty()}">
+                <div th:each="chart : ${charts}" class="chart-container">
+                    <div class="chart-title" th:text="${chart.title}">Chart Title</div>
+                    <img th:if="${chart.base64Image != null}" 
+                         th:src="'data:image/png;base64,' + ${chart.base64Image}" 
+                         class="chart-image" 
+                         alt="Chart"/>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 4: Notice and Metadata -->
+        <div th:if="${reportNotice != null or metadata != null}" class="page-break">
+            <h2 class="section-title">Section 4: Notice and Metadata</h2>
+            
+            <div th:if="${reportNotice != null}" class="notice" th:text="${reportNotice}">Report Notice</div>
+            
+            <div th:if="${metadata != null}" class="metadata" th:text="${metadata}">Metadata</div>
+        </div>
+    </div>
+</body>
+</html>
