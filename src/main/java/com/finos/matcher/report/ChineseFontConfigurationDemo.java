@@ -81,10 +81,10 @@ public class ChineseFontConfigurationDemo {
         Files.write(Paths.get(filename), pdf);
         
         System.out.println("\n结果 Result:");
-        System.out.println("  ✗ 文件生成 File generated: " + filename);
-        System.out.println("  ✗ 文件大小 Size: " + (pdf.length / 1024) + " KB (很小 too small)");
-        System.out.println("  ✗ 中文字符将显示为方框 Chinese will show as boxes (□)");
-        System.out.println("  ✗ 原因 Reason: 没有嵌入中文字体 No Chinese font embedded");
+        System.out.println("  ⚠️  文件生成 File generated: " + filename);
+        System.out.println("  ⚠️  文件大小 Size: " + (pdf.length / 1024) + " KB (很小 too small)");
+        System.out.println("  ⚠️  中文字符将显示为方框 Chinese will show as boxes (□)");
+        System.out.println("  ⚠️  原因 Reason: 没有嵌入中文字体 No Chinese font embedded");
     }
     
     /**

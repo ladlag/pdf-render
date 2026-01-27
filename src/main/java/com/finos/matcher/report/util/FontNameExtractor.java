@@ -37,6 +37,7 @@ public class FontNameExtractor {
             }
             
             // Load font and extract family name
+            // Font.TRUETYPE_FONT works for both TrueType (.ttf) and OpenType (.otf) fonts
             Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
             String familyName = font.getFamily();
             
@@ -68,9 +69,10 @@ public class FontNameExtractor {
             return cssFontFamily != null && cssFontFamily.contains(internalName);
             
         } catch (Exception e) {
-            // If we can't extract the name, assume it's OK
-            System.err.println("Warning: Could not validate font family: " + e.getMessage());
-            return true;
+            // If we can't extract the name, log warning but don't block
+            System.err.println("Warning: Could not validate font family for " + fontPath + ": " + e.getMessage());
+            // Return false to indicate validation could not be performed
+            return false;
         }
     }
     

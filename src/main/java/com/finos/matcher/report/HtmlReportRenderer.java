@@ -288,7 +288,7 @@ public class HtmlReportRenderer {
             }
         } catch (Exception e) {
             // If validation fails, just log it - don't block PDF generation
-            System.err.println("Info: Could not validate " + fontType + " font configuration: " + e.getMessage());
+            System.err.println("Warning: Could not validate " + fontType + " font configuration: " + e.getMessage());
         }
     }
     
