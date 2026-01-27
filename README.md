@@ -35,7 +35,7 @@ ReportData → HtmlReportRenderer → Thymeleaf Template → HTML → Flying Sau
 ## Getting Started
 
 ### Prerequisites
-- Java 11 or higher
+- Java 8 or higher (JDK 1.8+)
 - Maven 3.6+
 
 ### Build
@@ -43,10 +43,111 @@ ReportData → HtmlReportRenderer → Thymeleaf Template → HTML → Flying Sau
 mvn clean install
 ```
 
+This will generate:
+- `pdf-render-1.0.0-SNAPSHOT.jar` - Main library JAR
+- `pdf-render-1.0.0-SNAPSHOT-sources.jar` - Sources JAR
+- `pdf-render-1.0.0-SNAPSHOT-javadoc.jar` - Javadoc JAR
+
 ### Run Tests
 ```bash
 mvn test
 ```
+
+Test PDFs will be generated in the `test-output/` directory for inspection.
+
+## Integration with Spring Boot
+
+### Maven Dependency
+
+To use this library in your Spring Boot project, add the dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>com.finos.matcher</groupId>
+    <artifactId>pdf-render</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+</dependency>
+```
+
+For local development, first build and install the library to your local Maven repository:
+
+```bash
+cd pdf-render
+mvn clean install
+```
+
+### Spring Boot Service Example
+
+Create a service in your Spring Boot application:
+
+```java
+package com.example.myapp.service;
+
+import com.finos.matcher.report.ReportService;
+import com.finos.matcher.report.model.ReportData;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+
+@Service
+public class PdfReportService {
+    
+    private final ReportService reportService = new ReportService();
+    
+    public byte[] generateReport(ReportData reportData) throws IOException {
+        return reportService.generatePdf(reportData);
+    }
+    
+    public byte[] generateInvoice(ReportData reportData) throws IOException {
+        return reportService.generatePdf(reportData, "invoice");
+    }
+}
+```
+
+### Spring Boot Controller Example
+
+Create a REST controller to expose PDF generation:
+
+```java
+package com.example.myapp.controller;
+
+import com.example.myapp.service.PdfReportService;
+import com.finos.matcher.report.model.ReportData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+
+@RestController
+@RequestMapping("/api/reports")
+public class ReportController {
+    
+    @Autowired
+    private PdfReportService pdfReportService;
+    
+    @PostMapping("/generate")
+    public ResponseEntity<byte[]> generateReport(@RequestBody ReportData reportData) throws IOException {
+        byte[] pdfBytes = pdfReportService.generateReport(reportData);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "report.pdf");
+        
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
+}
+```
+
+### Compatibility
+
+- **Java**: Compatible with JDK 8 and higher
+- **Spring Boot**: Compatible with Spring Boot 2.x and 3.x (when using JDK 17+)
+- **Dependencies**: All transitive dependencies are compatible with JDK 8
 
 ## Usage
 
