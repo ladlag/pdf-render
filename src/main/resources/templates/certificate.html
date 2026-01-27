@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${title}">Certificate</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'DejaVu Serif', Georgia, serif;
+            text-align: center;
+            color: #2c3e50;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        }
+        
+        .certificate-border {
+            border: 8px double #d4af37;
+            padding: 40px;
+            margin: 60px auto;
+            max-width: 800px;
+            background: white;
+        }
+        
+        .certificate-title {
+            font-size: 48pt;
+            font-weight: bold;
+            color: #d4af37;
+            margin: 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+        
+        .certificate-subtitle {
+            font-size: 20pt;
+            font-style: italic;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+        }
+        
+        .awarded-to {
+            font-size: 14pt;
+            margin: 30px 0 15px 0;
+            color: #555;
+        }
+        
+        .recipient-name {
+            font-size: 32pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .description {
+            font-size: 12pt;
+            line-height: 1.8;
+            margin: 30px auto;
+            max-width: 600px;
+            text-align: justify;
+        }
+        
+        .date-section {
+            margin-top: 50px;
+            font-size: 11pt;
+            color: #666;
+        }
+        
+        .signature-line {
+            margin-top: 60px;
+            border-top: 2px solid #333;
+            width: 250px;
+            display: inline-block;
+        }
+        
+        /* Use sections data for certificate details */
+        .section-content {
+            margin: 20px 0;
+            font-size: 11pt;
+            text-align: left;
+        }
+        
+        .section-content table {
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        
+        .section-content td {
+            padding: 5px 15px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-border">
+        <h1 class="certificate-title" th:text="${title}">Certificate of Achievement</h1>
+        <div class="certificate-subtitle" th:if="${subtitle}" th:text="${subtitle}">This certifies that</div>
+        
+        <div class="awarded-to">This Certificate is Proudly Presented to</div>
+        
+        <!-- Use first section title as recipient name, or reportNumber as fallback -->
+        <div class="recipient-name" 
+             th:text="${sections != null and !sections.isEmpty() ? sections[0].title : reportNumber}">
+            Recipient Name
+        </div>
+        
+        <!-- Use section paragraphs as description -->
+        <div class="description">
+            <div th:if="${sections != null and !sections.isEmpty()}">
+                <p th:each="paragraph : ${sections[0].paragraphs}" th:text="${paragraph}">
+                    Description paragraph
+                </p>
+            </div>
+            <div th:if="${analysisParagraphs != null and !analysisParagraphs.isEmpty()}">
+                <p th:each="paragraph : ${analysisParagraphs}" th:text="${paragraph}">
+                    Description paragraph
+                </p>
+            </div>
+        </div>
+        
+        <!-- Display any tables from sections as achievement details -->
+        <div class="section-content" th:if="${sections != null and !sections.isEmpty()}">
+            <div th:each="section : ${sections}">
+                <div th:if="${section.tables != null and !section.tables.isEmpty()}">
+                    <table th:each="table : ${section.tables}">
+                        <tr th:each="row : ${table.rows}">
+                            <td th:each="cell : ${row}" th:text="${cell}">Cell</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="date-section">
+            <p th:if="${reportDate}">Date: <strong th:text="${reportDate}">Date</strong></p>
+        </div>
+        
+        <div class="signature-line"></div>
+        <div style="margin-top: 10px; font-size: 10pt; color: #999;">
+            <span th:text="${metadata ?: 'Authorized Signature'}">Authorized Signature</span>
+        </div>
+    </div>
+</body>
+</html>

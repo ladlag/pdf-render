@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${title}">Executive Summary</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 24pt;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .subtitle {
+            font-size: 14pt;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+        
+        .metadata {
+            font-size: 9pt;
+            color: #999;
+            margin-top: 15px;
+        }
+        
+        .executive-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 30px 0;
+            border-left: 4px solid #3498db;
+            font-size: 12pt;
+            line-height: 1.8;
+        }
+        
+        .key-metrics {
+            display: table;
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        
+        .metric-item {
+            display: table-row;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric-label {
+            display: table-cell;
+            padding: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+            width: 40%;
+        }
+        
+        .metric-value {
+            display: table-cell;
+            padding: 10px;
+            color: #27ae60;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .highlights {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .highlights li {
+            padding: 8px 0 8px 30px;
+            position: relative;
+        }
+        
+        .highlights li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 14pt;
+        }
+        
+        .chart-inline {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .chart-inline img {
+            max-width: 400px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 th:text="${title}">Executive Summary</h1>
+        <div class="subtitle" th:if="${subtitle}" th:text="${subtitle}">Subtitle</div>
+        <div class="metadata">
+            <span th:if="${reportNumber}" th:text="'Report #' + ${reportNumber}">Report Number</span>
+            <span th:if="${reportDate}"> | <span th:text="${reportDate}">Date</span></span>
+        </div>
+    </div>
+    
+    <!-- Executive Summary from first section paragraphs or analysis paragraphs -->
+    <div class="executive-summary">
+        <strong style="font-size: 13pt;">Executive Summary</strong>
+        <div th:if="${sections != null and !sections.isEmpty()}">
+            <p th:each="paragraph : ${sections[0].paragraphs}" th:text="${paragraph}">Summary</p>
+        </div>
+        <div th:if="${analysisParagraphs != null and !analysisParagraphs.isEmpty()}">
+            <p th:each="paragraph : ${analysisParagraphs}" th:text="${paragraph}">Summary</p>
+        </div>
+    </div>
+    
+    <!-- Key Metrics from first table found -->
+    <div th:if="${(sections != null and !sections.isEmpty() and sections[0].tables != null and !sections[0].tables.isEmpty()) 
+                   or summaryTable != null}">
+        <h2 class="section-title">Key Metrics</h2>
+        <div class="key-metrics">
+            <!-- From flexible sections -->
+            <div th:if="${sections != null and !sections.isEmpty() and sections[0].tables != null and !sections[0].tables.isEmpty()}">
+                <div th:with="table=${sections[0].tables[0]}">
+                    <div class="metric-item" th:each="row : ${table.rows}">
+                        <div class="metric-label" th:text="${row[0]}">Metric</div>
+                        <div class="metric-value" th:text="${row.size() > 1 ? row[1] : ''}">Value</div>
+                    </div>
+                </div>
+            </div>
+            <!-- From legacy structure -->
+            <div th:if="${summaryTable != null}">
+                <div class="metric-item" th:each="row : ${summaryTable.rows}">
+                    <div class="metric-label" th:text="${row[0]}">Metric</div>
+                    <div class="metric-value" th:text="${row.size() > 1 ? row[1] : ''}">Value</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts inline -->
+    <div th:if="${(sections != null and !sections.isEmpty()) or (charts != null and !charts.isEmpty())}">
+        <h2 class="section-title">Performance Overview</h2>
+        
+        <!-- From sections -->
+        <div th:if="${sections != null}">
+            <div th:each="section : ${sections}">
+                <div th:if="${section.charts != null and !section.charts.isEmpty()}">
+                    <div class="chart-inline" th:each="chart : ${section.charts}">
+                        <img th:if="${chart.base64Image != null}"
+                             th:src="'data:image/png;base64,' + ${chart.base64Image}"
+                             th:alt="${chart.title}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- From legacy structure -->
+        <div th:if="${charts != null and !charts.isEmpty()}">
+            <div class="chart-inline" th:each="chart : ${charts}">
+                <img th:if="${chart.base64Image != null}"
+                     th:src="'data:image/png;base64,' + ${chart.base64Image}"
+                     th:alt="${chart.title}"/>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Sections as highlights -->
+    <div th:if="${sections != null and sections.size() > 1}">
+        <h2 class="section-title">Key Highlights</h2>
+        <ul class="highlights">
+            <li th:each="section : ${sections}" th:if="${section.title != null and !section.title.isEmpty()}"
+                th:text="${section.title}">Highlight</li>
+        </ul>
+    </div>
+    
+    <!-- Footer notice -->
+    <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 9pt; color: #666;">
+        <p th:if="${reportNotice}" th:text="${reportNotice}">Notice</p>
+        <p th:if="${metadata}" th:text="${metadata}">Metadata</p>
+    </div>
+</body>
+</html>
