@@ -76,7 +76,110 @@ cd pdf-render
 mvn clean install
 ```
 
-### Spring Boot Service Example
+### Configuration with application.yml
+
+The library supports configuration via Spring Boot's `application.yml` file. This allows you to customize templates, output directories, fonts, and other settings without changing code.
+
+Create or update `src/main/resources/application.yml` in your Spring Boot project:
+
+```yaml
+pdf-render:
+  # Template configuration
+  template:
+    # Location of template files (default: classpath:/templates/)
+    location: classpath:/templates/
+    # Default template name without .html extension (default: report)
+    default-name: report
+    # Whether to cache templates for better performance (default: true)
+    # Set to false in development for hot reload
+    cache-enabled: true
+  
+  # Output configuration (optional)
+  output:
+    # Directory for generated PDF files
+    directory: /var/pdfs
+    # Whether to automatically save PDFs to the directory (default: false)
+    save-to-directory: false
+  
+  # Font configuration (optional)
+  fonts:
+    # Path to custom regular font file
+    regular-path: classpath:/fonts/custom-regular.ttf
+    # Path to custom bold font file
+    bold-path: classpath:/fonts/custom-bold.ttf
+    # Path to CJK (Chinese/Japanese/Korean) font file for Chinese support
+    cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
+    # Default font family CSS
+    default-family: DejaVu Sans, Arial, sans-serif
+    # CJK font family CSS
+    cjk-family: Noto Sans CJK, SimSun, sans-serif
+```
+
+**Note**: An example configuration file is included at `src/main/resources/application.yml.example`.
+
+### Using Configuration in Your Service
+
+If you want to use the configuration properties in your service, you can inject them:
+
+```java
+package com.example.myapp.service;
+
+import com.finos.matcher.report.ReportService;
+import com.finos.matcher.report.config.PdfRenderProperties;
+import com.finos.matcher.report.model.ReportData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.io.FileOutputStream;
+import java.nio.file.Paths;
+
+@Service
+public class PdfReportService {
+    
+    private final ReportService reportService;
+    private final PdfRenderProperties properties;
+    
+    @Autowired
+    public PdfReportService(PdfRenderProperties properties) {
+        this.properties = properties;
+        this.reportService = new ReportService();
+        
+        // Configure the service with properties from application.yml
+        reportService.getHtmlRenderer().setDefaultTemplateName(
+            properties.getTemplate().getDefaultName()
+        );
+        reportService.getHtmlRenderer().setCacheTemplates(
+            properties.getTemplate().isCacheEnabled()
+        );
+    }
+    
+    public byte[] generateReport(ReportData reportData) throws IOException {
+        byte[] pdfBytes = reportService.generatePdf(reportData);
+        
+        // Optionally save to configured directory
+        if (properties.getOutput().isSaveToDirectory() 
+                && properties.getOutput().getDirectory() != null) {
+            String outputPath = Paths.get(
+                properties.getOutput().getDirectory(), 
+                "report-" + System.currentTimeMillis() + ".pdf"
+            ).toString();
+            
+            try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+                fos.write(pdfBytes);
+            }
+        }
+        
+        return pdfBytes;
+    }
+    
+    public byte[] generateInvoice(ReportData reportData) throws IOException {
+        return reportService.generatePdf(reportData, "invoice");
+    }
+}
+```
+
+### Spring Boot Service Example (Simple)
 
 Create a service in your Spring Boot application:
 

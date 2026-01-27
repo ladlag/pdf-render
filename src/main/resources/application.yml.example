@@ -1,0 +1,34 @@
+# Example Spring Boot configuration for pdf-render library
+# Place this in your Spring Boot project's src/main/resources/application.yml
+
+pdf-render:
+  # Template configuration
+  template:
+    # Location of template files (default: classpath:/templates/)
+    location: classpath:/templates/
+    # Default template name without .html extension (default: report)
+    default-name: report
+    # Whether to cache templates for better performance (default: true)
+    # Set to false in development for hot reload
+    cache-enabled: true
+  
+  # Output configuration
+  output:
+    # Directory for generated PDF files (optional)
+    # If not set, PDFs are only returned as byte arrays
+    directory: /var/pdfs
+    # Whether to automatically save PDFs to the directory (default: false)
+    save-to-directory: false
+  
+  # Font configuration (optional)
+  fonts:
+    # Path to custom regular font file
+    regular-path: classpath:/fonts/custom-regular.ttf
+    # Path to custom bold font file
+    bold-path: classpath:/fonts/custom-bold.ttf
+    # Path to CJK (Chinese/Japanese/Korean) font file
+    cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
+    # Default font family CSS
+    default-family: DejaVu Sans, Arial, sans-serif
+    # CJK font family CSS
+    cjk-family: Noto Sans CJK, SimSun, sans-serif
