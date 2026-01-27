@@ -39,6 +39,12 @@ public class MatcherReportTest {
         ReportService service = new ReportService();
         service.setUseHtmlPipeline(true);
 
+        // Configure HarmonyOS Sans SC font for Chinese text display
+        com.finos.matcher.report.config.FontConfig fontConfig = new com.finos.matcher.report.config.FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        service.getHtmlRenderer().setFontConfig(fontConfig);
+
         ReportData reportData = createMatcherReportData();
 
         byte[] pdfBytes = service.generatePdf(reportData, "matcher-report-1.0");
@@ -50,6 +56,7 @@ public class MatcherReportTest {
         Path outputPath = Paths.get(TEST_OUTPUT_DIR, "matcher_report_complete.pdf");
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Matcher Report PDF generated: " + outputPath.toAbsolutePath());
+        System.out.println("  Chinese characters rendered with HarmonyOS Sans SC font");
     }
 
     /**
