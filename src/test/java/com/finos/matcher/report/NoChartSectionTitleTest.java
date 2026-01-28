@@ -14,9 +14,9 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test to demonstrate customization of chart section title
+ * Test to verify that when no chart section title is provided, no title is rendered
  */
-public class ChartSectionTitleTest {
+public class NoChartSectionTitleTest {
 
     private static final String TEST_OUTPUT_DIR = "test-output";
 
@@ -29,7 +29,7 @@ public class ChartSectionTitleTest {
     }
 
     @Test
-    public void testCustomChartSectionTitle() throws IOException {
+    public void testNoChartSectionTitle() throws IOException {
         ReportService service = new ReportService();
         service.setUseHtmlPipeline(true);
         
@@ -44,26 +44,25 @@ public class ChartSectionTitleTest {
         fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
-        // Create report with custom chart section title
+        // Create report WITHOUT chart section title
         ReportDataBuilder builder = ReportDataBuilder.create()
-            .title("测试报告 - 自定义图表标题")
+            .title("测试报告 - 无图表标题")
             .reportDate("2024-12-31")
-            .reportNumber("TEST-001");
+            .reportNumber("TEST-002");
 
         // Add a section
         Section section1 = new Section("1.1 数据分析");
-        section1.addParagraph("这是一个测试段落，演示自定义图表区域标题。");
+        section1.addParagraph("这是一个测试段落，演示不设置图表区域标题。");
         builder.addSection(section1);
 
-        // Add a chart
+        // Add a chart but NO section title
         ChartData chart = new ChartData();
         chart.setTitle("销售数据分布图");
         chart.setChartType("bar");
         chart.setData(new HashMap<>());
         builder.addChart(chart);
         
-        // Set custom chart section title
-        builder.chartsSectionTitle("数据可视化展示");
+        // DO NOT set chartsSectionTitle - it should remain null
 
         ReportData reportData = builder.build();
 
@@ -73,11 +72,11 @@ public class ChartSectionTitleTest {
         assertTrue(pdfBytes.length > 0);
 
         // Save to test-output directory
-        Path outputPath = Paths.get(TEST_OUTPUT_DIR, "chart_section_title_test.pdf");
+        Path outputPath = Paths.get(TEST_OUTPUT_DIR, "no_chart_section_title_test.pdf");
         Files.write(outputPath, pdfBytes);
-        System.out.println("✓ PDF with custom chart section title generated: " + outputPath.toAbsolutePath());
+        System.out.println("✓ PDF without chart section title generated: " + outputPath.toAbsolutePath());
         
-        // Verify the HTML contains the custom title (find most recent HTML file)
+        // Verify the HTML does NOT contain an h3 before the chart
         Path htmlFile = Files.list(Paths.get(TEST_OUTPUT_DIR))
             .filter(p -> p.getFileName().toString().startsWith("matcher-report-final-") && p.toString().endsWith(".html"))
             .sorted((p1, p2) -> {
@@ -91,7 +90,14 @@ public class ChartSectionTitleTest {
             .orElseThrow(() -> new RuntimeException("HTML debug file not found"));
         
         String htmlContent = Files.readString(htmlFile);
-        assertTrue(htmlContent.contains("数据可视化展示"), "HTML should contain custom chart section title");
-        System.out.println("✓ Verified custom chart section title in HTML output");
+        
+        // Should still have the chart
+        assertTrue(htmlContent.contains("销售数据分布图"), "HTML should contain the chart");
+        
+        // Should NOT have "图表" as a section title (since we didn't set chartsSectionTitle)
+        // The word might appear elsewhere, so we check for the specific h3 pattern
+        assertFalse(htmlContent.contains("<h3>图表</h3>"), "HTML should NOT contain default '图表' h3 title when chartsSectionTitle is null");
+        
+        System.out.println("✓ Verified no chart section title is rendered when not provided");
     }
 }

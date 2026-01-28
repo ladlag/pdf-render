@@ -126,6 +126,9 @@ public class MatcherReportTest {
         for (ChartData chart : charts) {
             builder.addChart(chart);
         }
+        
+        // Set chart section title
+        builder.chartsSectionTitle("图表");
 
         // ===== Section 4: Attachments =====
         
