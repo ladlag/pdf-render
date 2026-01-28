@@ -616,9 +616,76 @@ public class ReportController {
 
 ### Q4: 支持哪些图表类型？
 
-**A:** 目前支持：
+**A:** 支持以下图表类型：
 - `bar` - 柱状图
-- `pie` - 饼图
+- `pie` - 饼图（支持3D效果）
+- `line` - 折线图
+- `area` - 面积图
+- `stackedbar` - 堆叠柱状图
+
+**图表自定义配置示例：**
+
+```java
+import com.finos.matcher.report.model.ChartConfig;
+import java.awt.Color;
+
+// 创建图表配置
+ChartConfig config = new ChartConfig();
+config.setWidth(800);                     // 宽度
+config.setHeight(400);                    // 高度
+config.setColors(Arrays.asList(
+    new Color(52, 152, 219),              // 蓝色
+    new Color(46, 204, 113)               // 绿色
+));
+config.setXAxisLabel("季度");              // X轴标签
+config.setYAxisLabel("销售额（万元）");    // Y轴标签
+config.setShowGridLines(true);            // 显示网格线
+config.setShow3D(false);                  // 3D效果（饼图）
+
+// 应用配置到图表
+ChartData chart = new ChartData("季度销售", "bar", data);
+chart.setConfig(config);
+```
+
+**配置选项说明：**
+
+| 选项 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `width` | Integer | 500 | 图表宽度（像素） |
+| `height` | Integer | 300 | 图表高度（像素） |
+| `colors` | List<Color> | null | 自定义颜色列表 |
+| `showLegend` | Boolean | true | 显示/隐藏图例 |
+| `show3D` | Boolean | false | 3D效果（饼图） |
+| `backgroundColorHex` | String | null | 背景色（十六进制） |
+| `showGridLines` | Boolean | true | 显示/隐藏网格线 |
+| `xAxisLabel` | String | "Category" | X轴标签 |
+| `yAxisLabel` | String | "Value" | Y轴标签 |
+
+**更多示例：**
+
+```java
+// 3D饼图
+ChartConfig pieConfig = new ChartConfig();
+pieConfig.setShow3D(true);
+pieConfig.setWidth(500);
+pieConfig.setHeight(400);
+ChartData pieChart = new ChartData("费用分布", "pie", expenseData);
+pieChart.setConfig(pieConfig);
+
+// 折线图（自定义颜色）
+ChartConfig lineConfig = new ChartConfig();
+lineConfig.setColors(Arrays.asList(new Color(231, 76, 60)));
+lineConfig.setShowGridLines(true);
+ChartData lineChart = new ChartData("增长趋势", "line", growthData);
+lineChart.setConfig(lineConfig);
+
+// 面积图（带背景色）
+ChartConfig areaConfig = new ChartConfig();
+areaConfig.setBackgroundColorHex("#f8f9fa");
+areaConfig.setColors(Arrays.asList(new Color(46, 204, 113)));
+ChartData areaChart = new ChartData("月度销售", "area", salesData);
+areaChart.setConfig(areaConfig);
+```
 
 ### Q5: 如何添加自定义字体？中文显示为方框怎么办？
 

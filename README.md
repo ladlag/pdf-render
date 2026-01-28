@@ -466,16 +466,133 @@ tr {
 
 ## Chart Generation
 
-Charts are generated using JFreeChart and embedded as base64-encoded PNG images:
+Charts are generated using JFreeChart and embedded as base64-encoded PNG images. The library now supports multiple chart types with extensive customization options.
+
+### Basic Chart Usage
 
 ```java
+Map<String, Double> data = new LinkedHashMap<>();
+data.put("Q1", 200000.0);
+data.put("Q2", 230000.0);
+data.put("Q3", 260000.0);
+data.put("Q4", 290000.0);
+
 ChartData chart = new ChartData("Sales by Quarter", "bar", data);
 reportData.setCharts(Arrays.asList(chart));
 ```
 
-Supported chart types:
+### Supported Chart Types
+
 - `bar` - Bar chart
-- `pie` - Pie chart
+- `pie` - Pie chart (supports 3D with configuration)
+- `line` - Line chart
+- `area` - Area chart
+- `stackedbar` - Stacked bar chart
+
+### Chart Customization
+
+Use `ChartConfig` to customize chart appearance:
+
+```java
+import com.finos.matcher.report.model.ChartConfig;
+import java.awt.Color;
+
+// Create chart configuration
+ChartConfig config = new ChartConfig();
+
+// Set custom dimensions
+config.setWidth(800);
+config.setHeight(400);
+
+// Set custom colors
+config.setColors(Arrays.asList(
+    new Color(52, 152, 219),   // Blue
+    new Color(46, 204, 113),   // Green
+    new Color(155, 89, 182),   // Purple
+    new Color(241, 196, 15)    // Yellow
+));
+
+// Configure axis labels
+config.setXAxisLabel("Quarter");
+config.setYAxisLabel("Revenue ($)");
+
+// Configure display options
+config.setShowLegend(true);
+config.setShowGridLines(true);
+config.setShow3D(false);  // 3D effect (for pie charts)
+config.setBackgroundColorHex("#f8f9fa");
+
+// Apply configuration to chart
+ChartData chart = new ChartData("Quarterly Revenue", "bar", data);
+chart.setConfig(config);
+```
+
+### Chart Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `width` | Integer | 500 | Chart width in pixels |
+| `height` | Integer | 300 | Chart height in pixels |
+| `colors` | List<Color> | null | Custom color palette for data series |
+| `showLegend` | Boolean | true | Show/hide chart legend |
+| `legendPosition` | String | "right" | Legend position (right, bottom, top, left) |
+| `show3D` | Boolean | false | Enable 3D effect (for pie charts) |
+| `backgroundColorHex` | String | null | Chart background color (hex format) |
+| `showGridLines` | Boolean | true | Show/hide grid lines (category charts) |
+| `xAxisLabel` | String | "Category" | X-axis label |
+| `yAxisLabel` | String | "Value" | Y-axis label |
+
+### Examples
+
+#### Line Chart with Custom Styling
+
+```java
+Map<String, Double> growthData = new LinkedHashMap<>();
+growthData.put("Q1", 15.0);
+growthData.put("Q2", 18.5);
+growthData.put("Q3", 22.3);
+growthData.put("Q4", 28.7);
+
+ChartConfig lineConfig = new ChartConfig();
+lineConfig.setColors(Arrays.asList(new Color(231, 76, 60)));
+lineConfig.setXAxisLabel("Quarter");
+lineConfig.setYAxisLabel("Growth Rate (%)");
+lineConfig.setShowGridLines(true);
+
+ChartData lineChart = new ChartData("Growth Trend", "line", growthData);
+lineChart.setConfig(lineConfig);
+```
+
+#### 3D Pie Chart
+
+```java
+Map<String, Double> expenseData = new LinkedHashMap<>();
+expenseData.put("Salaries", 40.0);
+expenseData.put("Operations", 30.0);
+expenseData.put("Marketing", 20.0);
+expenseData.put("Other", 10.0);
+
+ChartConfig pieConfig = new ChartConfig();
+pieConfig.setShow3D(true);
+pieConfig.setWidth(500);
+pieConfig.setHeight(400);
+
+ChartData pieChart = new ChartData("Expense Distribution", "pie", expenseData);
+pieChart.setConfig(pieConfig);
+```
+
+#### Area Chart with Background Color
+
+```java
+ChartConfig areaConfig = new ChartConfig();
+areaConfig.setColors(Arrays.asList(new Color(46, 204, 113)));
+areaConfig.setBackgroundColorHex("#f8f9fa");
+areaConfig.setXAxisLabel("Month");
+areaConfig.setYAxisLabel("Sales");
+
+ChartData areaChart = new ChartData("Monthly Sales", "area", salesData);
+areaChart.setConfig(areaConfig);
+```
 
 Charts are automatically converted to base64 images and embedded in the HTML:
 ```html
