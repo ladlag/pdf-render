@@ -4,7 +4,6 @@ import com.finos.matcher.report.config.FontConfig;
 import com.finos.matcher.report.model.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,9 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * ensuring all content, tables, and charts are properly rendered.
  */
 public class MatcherReportTest {
-
-    @TempDir
-    Path tempDir;
 
     private static final String TEST_OUTPUT_DIR = "test-output";
 
