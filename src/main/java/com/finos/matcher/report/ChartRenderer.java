@@ -61,7 +61,7 @@ public class ChartRenderer {
         }
         
         return ChartFactory.createBarChart(
-            chartData.getTitle(),
+            null,  // No title in chart image - title is rendered in HTML
             "Category",
             "Value",
             dataset
@@ -76,7 +76,7 @@ public class ChartRenderer {
         }
         
         return ChartFactory.createPieChart(
-            chartData.getTitle(),
+            null,  // No title in chart image - title is rendered in HTML
             dataset,
             true,
             true,
