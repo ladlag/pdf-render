@@ -39,6 +39,7 @@ public class MatcherReportFinalTest {
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
         service.getHtmlRenderer().setDebugHtmlOutputDirectory(TEST_OUTPUT_DIR);
+        service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(true);
 
         // Configure HarmonyOS Sans SC font for Chinese text display
         FontConfig fontConfig = new FontConfig();
