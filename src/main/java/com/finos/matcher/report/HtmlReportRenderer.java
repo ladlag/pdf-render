@@ -250,23 +250,23 @@ public class HtmlReportRenderer {
             // Section 2: Analysis paragraphs
             data.put("analysisParagraphs", reportData.getAnalysisParagraphs());
             
-            // Section 3: Summary table
-            data.put("summaryTable", reportData.getSummaryTable());
-            
-            // Section 3: Charts (convert to base64 images)
-            if (reportData.getCharts() != null && !reportData.getCharts().isEmpty()) {
-                for (ChartData chart : reportData.getCharts()) {
-                    if (chart.getBase64Image() == null) {
-                        String base64Image = chartRenderer.generateChartAsBase64(chart);
-                        chart.setBase64Image(base64Image);
-                    }
-                }
-                data.put("charts", reportData.getCharts());
-            }
-            
             // Section 4: Notice and metadata
             data.put("reportNotice", reportData.getReportNotice());
             data.put("metadata", reportData.getMetadata());
+        }
+        
+        // Section 3: Summary table (always add, works for both structures)
+        data.put("summaryTable", reportData.getSummaryTable());
+        
+        // Section 3: Charts (convert to base64 images, works for both structures)
+        if (reportData.getCharts() != null && !reportData.getCharts().isEmpty()) {
+            for (ChartData chart : reportData.getCharts()) {
+                if (chart.getBase64Image() == null) {
+                    String base64Image = chartRenderer.generateChartAsBase64(chart);
+                    chart.setBase64Image(base64Image);
+                }
+            }
+            data.put("charts", reportData.getCharts());
         }
         
         // Add font configuration if available
