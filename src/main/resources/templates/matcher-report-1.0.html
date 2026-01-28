@@ -96,6 +96,7 @@
       font-weight: bold;
       text-align: center;
       color: #000;
+      border: 2px solid #a8adc4;
     }
     tr { page-break-inside: avoid; }
     .row-alt td { background: #fbfbfb; }
@@ -127,6 +128,8 @@
       border: none;
       padding: 0;
       background: transparent;
+      display: block;
+      margin: 0 auto;
     }
     .chart-placeholder {
       font-size: 9.5pt;
@@ -395,7 +398,7 @@
 
   <!-- Charts: legacy charts（ReportData.charts） -->
   <div th:if="${charts != null and !#lists.isEmpty(charts)}" style="margin-top: 12px;">
-    <h3>图表</h3>
+    <h3 th:if="${chartsSectionTitle != null}" th:text="${chartsSectionTitle}">图表标题</h3>
     <div th:each="c : ${charts}" class="chart">
       <div class="chart-title" th:text="${c.title}">图表标题</div>
       <img class="chart-img" th:if="${c.base64Image != null and c.base64Image != ''}" th:src="${c.base64Image}" alt="chart"/>

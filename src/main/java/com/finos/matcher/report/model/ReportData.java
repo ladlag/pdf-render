@@ -44,6 +44,7 @@ public class ReportData {
     private List<String> analysisParagraphs;
     private TableData summaryTable;
     private List<ChartData> charts;
+    private String chartsSectionTitle; // Optional title for charts section (null = no title rendered)
     private String reportNotice;
     private String metadata;
     
@@ -116,6 +117,14 @@ public class ReportData {
 
     public void setCharts(List<ChartData> charts) {
         this.charts = charts;
+    }
+
+    public String getChartsSectionTitle() {
+        return chartsSectionTitle;
+    }
+
+    public void setChartsSectionTitle(String chartsSectionTitle) {
+        this.chartsSectionTitle = chartsSectionTitle;
     }
 
     public String getReportNotice() {

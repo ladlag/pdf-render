@@ -150,6 +150,15 @@ public class ReportDataBuilder {
     }
     
     /**
+     * Sets the title for the charts section
+     * If not set (null), no section title will be rendered
+     */
+    public ReportDataBuilder chartsSectionTitle(String title) {
+        reportData.setChartsSectionTitle(title);
+        return this;
+    }
+    
+    /**
      * Sets the report notice
      */
     public ReportDataBuilder reportNotice(String notice) {

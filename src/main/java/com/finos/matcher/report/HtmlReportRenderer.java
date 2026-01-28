@@ -269,6 +269,9 @@ public class HtmlReportRenderer {
             data.put("charts", reportData.getCharts());
         }
         
+        // Charts section title (optional, null = no title rendered)
+        data.put("chartsSectionTitle", reportData.getChartsSectionTitle());
+        
         // Add font configuration if available
         if (fontConfig != null) {
             data.put("fontFaceDeclaration", fontConfig.getCssFontFaceDeclaration());
