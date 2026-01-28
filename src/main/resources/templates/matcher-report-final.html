@@ -120,6 +120,7 @@
       text-align: center;
       font-size: 10pt;
       letter-spacing: 0.3pt;
+      border: 2px solid #a8adc4;
     }
     tr { 
       page-break-inside: avoid; 
@@ -445,7 +446,7 @@
 
   <!-- Charts: legacy charts（ReportData.charts） -->
   <div th:if="${charts != null and !#lists.isEmpty(charts)}" style="margin-top: 12px;">
-    <h3>图表</h3>
+    <h3 th:text="${chartsSectionTitle != null ? chartsSectionTitle : '图表'}">图表</h3>
     <div th:each="c : ${charts}" class="chart">
       <div class="chart-title" th:text="${c.title}">图表标题</div>
       <img class="chart-img" th:if="${c.base64Image != null and c.base64Image != ''}" th:src="${c.base64Image}" alt="chart"/>
