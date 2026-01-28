@@ -307,41 +307,11 @@ public class HtmlReportRenderer {
             registerFontsWithRenderer(renderer);
         }
         
-        // Set base URL to templates directory to allow Flying Saucer to resolve resources
-        // This fixes the issue where CSS styles (including borders) fail to apply properly
-        // when external resources cannot be resolved
-        String baseUrl = getTemplatesBaseUrl();
-        renderer.setDocumentFromString(html, baseUrl);
+        renderer.setDocumentFromString(html);
         renderer.layout();
         renderer.createPDF(baos);
         
         return baos.toByteArray();
-    }
-    
-    /**
-     * Gets the base URL for the templates directory.
-     * This allows Flying Saucer to resolve relative resource paths (fonts, images, etc.)
-     * 
-     * @return Base URL string pointing to the templates directory
-     */
-    private String getTemplatesBaseUrl() {
-        try {
-            // Try to get the templates directory from classpath
-            java.net.URL resource = getClass().getResource("/templates/");
-            if (resource != null) {
-                return resource.toString();
-            } else {
-                // Log warning if templates directory cannot be found
-                System.err.println("Warning: Templates directory not found on classpath");
-            }
-        } catch (Exception e) {
-            // If we can't get the resource URL, log the error
-            System.err.println("Warning: Could not resolve templates base URL: " + e.getMessage());
-        }
-        
-        // Fallback: use empty string to let Flying Saucer process HTML without base URL
-        // CSS is inline in templates, so rendering will still work, just without external resource resolution
-        return "";
     }
     
     /**
