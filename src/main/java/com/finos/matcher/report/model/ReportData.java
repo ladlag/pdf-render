@@ -44,7 +44,7 @@ public class ReportData {
     private List<String> analysisParagraphs;
     private TableData summaryTable;
     private List<ChartData> charts;
-    private String chartsSectionTitle; // Customizable title for charts section (defaults to "图表" if null)
+    private String chartsSectionTitle; // Optional title for charts section (null = no title rendered)
     private String reportNotice;
     private String metadata;
     

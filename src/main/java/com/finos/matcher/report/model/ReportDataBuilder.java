@@ -150,7 +150,8 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Sets the title for the charts section (defaults to "图表" if not set)
+     * Sets the title for the charts section
+     * If not set (null), no section title will be rendered
      */
     public ReportDataBuilder chartsSectionTitle(String title) {
         reportData.setChartsSectionTitle(title);

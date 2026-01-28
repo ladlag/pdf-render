@@ -269,7 +269,7 @@ public class HtmlReportRenderer {
             data.put("charts", reportData.getCharts());
         }
         
-        // Charts section title (customizable, defaults to "图表" in template)
+        // Charts section title (optional, null = no title rendered)
         data.put("chartsSectionTitle", reportData.getChartsSectionTitle());
         
         // Add font configuration if available
