@@ -507,6 +507,12 @@ public class ComplexOrderExample {
 
 ## Spring Boot集成
 
+**📘 完整集成指南和示例:** 
+- **[Spring Boot 集成指南（中文）](SPRING_BOOT_INTEGRATION_GUIDE.md)** - 详细的配置说明、完整代码示例、资源路径配置、最佳实践
+- **[Spring Boot Examples](SPRING_BOOT_EXAMPLES.md)** - 快速开始示例、项目结构、Docker支持
+
+本节提供快速概览，完整内容请参考上述指南文档。
+
 ### Maven依赖
 
 在Spring Boot项目的`pom.xml`中添加：
