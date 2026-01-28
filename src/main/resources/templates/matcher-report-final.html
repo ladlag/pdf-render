@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${title}">需求预审报告</title>
+
+  <style th:inline="text">
+    /* Custom font declarations (if configured) */
+    [(${fontFaceDeclaration})]
+    
+    @page {
+      size: A4;
+      margin: 22mm 18mm 18mm 18mm;
+      @bottom-center {
+        content: "第 " counter(page) " 页";
+        font-size: 9pt;
+        color: #7a7a7a;
+      }
+    }
+
+    body {
+      font-family: [(${fontFamily})];
+      font-size: 10.5pt;
+      line-height: 1.65;
+      color: #1f1f1f;
+    }
+
+    .muted { color: #666; }
+    .tiny  { font-size: 9pt; }
+    .small { font-size: 9.5pt; }
+
+    .page-header { margin-bottom: 18px; }
+    .title {
+      text-align: center;
+      font-size: 19pt;
+      letter-spacing: 0.5pt;
+      margin: 0;
+    }
+    .divider {
+      height: 1px;
+      border-top: 1px solid #d8d8d8;
+      margin: 14px 0 18px 0;
+    }
+
+    h2 {
+      font-size: 13.5pt;
+      margin: 20px 0 10px 0;
+      padding: 6px 0;
+      background: transparent;
+      border: none;
+    }
+
+    h3 {
+      font-size: 12pt;
+      margin: 14px 0 8px 0;
+      padding-left: 8px;
+      border-left: 3px solid #2f6fdf;
+    }
+
+    p { margin: 6px 0; }
+
+    .section-card {
+      border: none;
+      padding: 10px 0;
+      margin: 10px 0 16px 0;
+      background: transparent;
+    }
+
+    .callout {
+      border: none;
+      background: transparent;
+      padding: 10px 0;
+      margin: 10px 0 16px 0;
+    }
+
+    /* ===== table (stable pagination) ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin: 8px 0 16px 0;
+      font-size: 10pt;
+    }
+    thead { display: table-header-group; }
+    th, td {
+      border: 1px solid #bdbdbd;
+      padding: 6px 6px;
+      vertical-align: top;
+      word-wrap: break-word;
+    }
+    th {
+      background: #f1f1f1;
+      font-weight: bold;
+      text-align: center;
+      color: #222;
+    }
+    tr { page-break-inside: avoid; }
+    .row-alt td { background: #fbfbfb; }
+
+    .summary-table th {
+      background: #e9eef7;
+      border-color: #c6d4f0;
+    }
+
+    .list-item {
+      margin: 4px 0;
+      padding-left: 10px;
+      border-left: 2px solid #e0e0e0;
+    }
+
+    /* ===== charts ===== */
+    .chart {
+      margin: 10px 0 16px 0;
+      page-break-inside: avoid;
+    }
+    .chart-title {
+      font-weight: bold;
+      margin: 0 0 6px 0;
+    }
+    .chart-img {
+      max-width: 100%;
+      height: auto;
+      border: none;
+      padding: 0;
+      background: transparent;
+    }
+    .chart-placeholder {
+      font-size: 9.5pt;
+      color: #666;
+      border: none;
+      background: transparent;
+      padding: 10px 0;
+    }
+
+    /* ===== report meta (secondary) ===== */
+    .report-meta-line {
+      margin-top: 18px;
+      margin-bottom: 10px;
+      padding-top: 6px;
+      border-top: 1px solid #d0d0d0;
+      font-size: 9pt;
+      color: #666;
+      text-align: right;
+    }
+
+    /* ===== signature ===== */
+    .signature {
+      page-break-inside: avoid;
+      border: none;
+      padding: 12px 0;
+      background: transparent;
+    }
+    .signature-title {
+      font-weight: bold;
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    .sig-table {
+      width: 100%;
+      border: none;
+      table-layout: fixed;
+      margin: 0;
+    }
+    .sig-table td {
+      border: none;
+      padding: 8px 6px;
+      vertical-align: bottom;
+    }
+    .sig-line {
+      border-top: 1px solid #000;
+      width: 200px;
+      margin-top: 26px;
+    }
+    .footnote {
+      margin-top: 10px;
+      padding: 8px 0;
+      border: none;
+      background: transparent;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ================= Header ================= -->
+<div class="page-header">
+  <div class="title" th:text="${title}">需求预审报告</div>
+  <div class="divider"></div>
+</div>
+
+<!-- ================= 一、匹配结果 ================= -->
+<h2>一、匹配结果详细列表（按匹配度降序排列）</h2>
+
+<div class="callout small">
+  <p class="muted" style="margin:0;">
+    说明：匹配度基于语义模型计算，精确到小数点后两位；“匹配说明”标注核心匹配依据或问题原因。
+  </p>
+</div>
+
+<!-- ===== New Structure: sections ===== -->
+<div th:if="${sections != null and !#lists.isEmpty(sections)}">
+
+  <!-- 1.x sections -->
+  <div th:each="sec : ${sections}"
+       th:if="${sec.title != null and #strings.startsWith(sec.title,'1.')}"
+       class="section-card"
+       th:classappend="${sec.cssClass != null ? ' ' + sec.cssClass : ''}">
+
+    <h3 th:text="${sec.title}">1.1 ...</h3>
+    <p class="tiny muted" th:if="${sec.subtitle != null and sec.subtitle != ''}" th:text="${sec.subtitle}"></p>
+
+    <!-- paragraphs -->
+    <p th:each="p : ${sec.paragraphs}" th:text="${p}">段落</p>
+
+    <!-- tables (render ALL) -->
+    <div th:each="tbl, tStat : ${sec.tables}">
+      <table th:if="${tbl != null}">
+        <thead>
+        <tr>
+          <!-- 去掉“优先级”列（按表头名过滤） -->
+          <th th:each="col : ${tbl.headers}"
+              th:if="${col != '优先级'}"
+              th:text="${col}">列名</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row, rStat : ${tbl.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+          <!-- 同步跳过“优先级”列（按 headers[索引] 过滤） -->
+          <td th:each="cell, cStat : ${row}"
+              th:if="${tbl.headers != null and tbl.headers[cStat.index] != '优先级'}"
+              th:text="${cell}">数据</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- tableBlocks (render ALL) -->
+    <div th:each="blk : ${sec.tableBlocks}">
+      <h3 th:if="${blk.blockId != null or blk.blockTitle != null}">
+        <span th:text="${blk.blockId != null ? blk.blockId : ''}">1.1</span>
+        <span th:text="${blk.blockTitle != null ? ' ' + blk.blockTitle : ''}">标题</span>
+      </h3>
+
+      <table th:if="${blk.tableData != null}">
+        <thead>
+        <tr>
+          <th th:each="col : ${blk.tableData.headers}"
+              th:if="${col != '优先级'}"
+              th:text="${col}">列名</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row, rStat : ${blk.tableData.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+          <td th:each="cell, cStat : ${row}"
+              th:if="${blk.tableData.headers != null and blk.tableData.headers[cStat.index] != '优先级'}"
+              th:text="${cell}">数据</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- charts (render ALL) -->
+    <div th:each="c : ${sec.charts}" class="chart">
+      <div class="chart-title" th:text="${c.title}">图表标题</div>
+
+      <!-- ChartData.base64Image：建议你传入 data:image/png;base64,... -->
+      <img class="chart-img"
+           th:if="${c.base64Image != null and c.base64Image != ''}"
+           th:src="${c.base64Image}"
+           alt="chart"/>
+
+      <div class="chart-placeholder"
+           th:if="${c.base64Image == null or c.base64Image == ''}">
+        图表未生成图片（ChartData.base64Image 为空）。建议在 Java 侧生成 PNG 并写入 base64Image（data URI）。
+      </div>
+    </div>
+
+    <!-- customContent (raw html) -->
+    <div th:if="${sec.customContent != null and sec.customContent != ''}"
+         th:utext="${sec.customContent}"></div>
+  </div>
+</div>
+
+<!-- ===== Legacy Structure: tableBlocks ===== -->
+<div th:if="${(sections == null or #lists.isEmpty(sections)) and (tableBlocks != null and !#lists.isEmpty(tableBlocks))}">
+  <div th:each="blk : ${tableBlocks}" class="section-card">
+    <h3>
+      <span th:text="${blk.blockId}">1.1</span>
+      <span th:text="${' ' + blk.blockTitle}">标题</span>
+    </h3>
+
+    <table th:if="${blk.tableData != null}">
+      <thead>
+      <tr>
+        <th th:each="col : ${blk.tableData.headers}"
+            th:if="${col != '优先级'}"
+            th:text="${col}">列名</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="row, rStat : ${blk.tableData.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+        <td th:each="cell, cStat : ${row}"
+            th:if="${blk.tableData.headers != null and blk.tableData.headers[cStat.index] != '优先级'}"
+            th:text="${cell}">数据</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================= 二、详细分析 ================= -->
+<h2>二、详细分析内容</h2>
+
+<!-- New: 2.x sections -->
+<div th:if="${sections != null and !#lists.isEmpty(sections)}">
+  <div th:each="sec : ${sections}"
+       th:if="${sec.title != null and #strings.startsWith(sec.title,'2.')}"
+       class="section-card"
+       th:classappend="${sec.cssClass != null ? ' ' + sec.cssClass : ''}">
+    <h3 th:text="${sec.title}">2.1 ...</h3>
+    <p class="tiny muted" th:if="${sec.subtitle != null and sec.subtitle != ''}" th:text="${sec.subtitle}"></p>
+    <p th:each="p : ${sec.paragraphs}" th:text="${p}">分析段落</p>
+
+    <!-- 如第二部分也有表/图，照样渲染 -->
+    <div th:each="tbl : ${sec.tables}">
+      <table th:if="${tbl != null}">
+        <thead><tr>
+          <th th:each="col : ${tbl.headers}" th:if="${col != '优先级'}" th:text="${col}">列名</th>
+        </tr></thead>
+        <tbody>
+        <tr th:each="row, rStat : ${tbl.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+          <td th:each="cell, cStat : ${row}"
+              th:if="${tbl.headers != null and tbl.headers[cStat.index] != '优先级'}"
+              th:text="${cell}">数据</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:each="c : ${sec.charts}" class="chart">
+      <div class="chart-title" th:text="${c.title}">图表标题</div>
+      <img class="chart-img" th:if="${c.base64Image != null and c.base64Image != ''}" th:src="${c.base64Image}" alt="chart"/>
+      <div class="chart-placeholder" th:if="${c.base64Image == null or c.base64Image == ''}">
+        图表未生成图片（ChartData.base64Image 为空）。
+      </div>
+    </div>
+
+    <div th:if="${sec.customContent != null and sec.customContent != ''}" th:utext="${sec.customContent}"></div>
+  </div>
+</div>
+
+<!-- Legacy: analysisParagraphs -->
+<div th:if="${(sections == null or #lists.isEmpty(sections)) and (analysisParagraphs != null and !#lists.isEmpty(analysisParagraphs))}"
+     class="section-card">
+  <p th:each="p : ${analysisParagraphs}" th:text="${p}">分析段落</p>
+</div>
+
+<!-- ================= 三、预审结果总结 ================= -->
+<h2>三、预审结果总结</h2>
+
+<div class="section-card">
+
+  <table class="summary-table" th:if="${summaryTable != null}">
+    <thead>
+    <tr>
+      <!-- 汇总表同样过滤“优先级”列（如果存在） -->
+      <th th:each="col : ${summaryTable.headers}"
+          th:if="${col != '优先级'}"
+          th:text="${col}">列名</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="row, rStat : ${summaryTable.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+      <td th:each="cell, cStat : ${row}"
+          th:if="${summaryTable.headers != null and summaryTable.headers[cStat.index] != '优先级'}"
+          th:text="${cell}">数据</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- New: 3.x sections（用于核心结论/补充说明） -->
+  <div th:if="${sections != null and !#lists.isEmpty(sections)}">
+    <div th:each="sec : ${sections}"
+         th:if="${sec.title != null and #strings.startsWith(sec.title,'3.')}"
+         style="margin-top: 10px;">
+      <h3 th:text="${sec.title}">3.x ...</h3>
+      <p th:each="p : ${sec.paragraphs}" th:text="${p}">总结段落</p>
+    </div>
+  </div>
+
+  <!-- Charts: legacy charts（ReportData.charts） -->
+  <div th:if="${charts != null and !#lists.isEmpty(charts)}" style="margin-top: 12px;">
+    <h3>图表</h3>
+    <div th:each="c : ${charts}" class="chart">
+      <div class="chart-title" th:text="${c.title}">图表标题</div>
+      <img class="chart-img" th:if="${c.base64Image != null and c.base64Image != ''}" th:src="${c.base64Image}" alt="chart"/>
+      <div class="chart-placeholder" th:if="${c.base64Image == null or c.base64Image == ''}">
+        图表未生成图片（ChartData.base64Image 为空）。建议 Java 侧生成 PNG 并写入 base64Image（data URI）。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= 四、附件说明 ================= -->
+<h2>四、附件说明</h2>
+
+<!-- New: 4.x sections -->
+<div th:if="${sections != null and !#lists.isEmpty(sections)}">
+  <div th:each="sec : ${sections}"
+       th:if="${sec.title != null and #strings.startsWith(sec.title,'4.')}"
+       class="section-card">
+    <p th:each="p : ${sec.paragraphs}" th:text="${p}" class="list-item">附件项</p>
+  </div>
+</div>
+
+<!-- Legacy: reportNotice -->
+<div th:if="${(sections == null or #lists.isEmpty(sections)) and (reportNotice != null and reportNotice != '')}"
+     class="section-card">
+  <div th:utext="${reportNotice}">附件说明</div>
+</div>
+
+<!-- ================= 报告元信息（次要，仅此处展示） ================= -->
+<div class="report-meta-line" th:if="${reportNumber != null or reportDate != null}">
+  <span th:if="${reportNumber != null and reportNumber != ''}">
+    报告编号：<span th:text="${reportNumber}">AI-PRE-2024-001</span>
+  </span>
+  <span th:if="${(reportNumber != null and reportNumber != '') and (reportDate != null and reportDate != '')}"> ｜ </span>
+  <span th:if="${reportDate != null and reportDate != ''}">
+    报告日期：<span th:text="${reportDate}">2024-12-31</span>
+  </span>
+</div>
+
+<!-- ================= 签字栏 ================= -->
+<div class="signature">
+  <p class="signature-title">报告审批</p>
+  <table class="sig-table">
+    <tr>
+      <td style="width:50%;">
+        <div>产品负责人签字：</div>
+        <div class="sig-line"></div>
+      </td>
+      <td style="width:50%;">
+        <div>日期：</div>
+        <div class="sig-line"></div>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footnote tiny">
+    注：文档部分内容可能由 AI 生成
+  </div>
+</div>
+
+</body>
+</html>
