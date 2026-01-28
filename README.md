@@ -94,6 +94,10 @@ Test PDFs will be generated in the `test-output/` directory for inspection.
 
 ## Integration with Spring Boot
 
+**📘 完整集成指南:** 
+- [Spring Boot 集成指南（中文）](SPRING_BOOT_INTEGRATION_GUIDE.md) - 详细的配置说明和完整代码示例
+- [Spring Boot Examples](SPRING_BOOT_EXAMPLES.md) - 快速开始示例和项目结构
+
 ### Maven Dependency
 
 To use this library in your Spring Boot project, add the dependency to your `pom.xml`:
