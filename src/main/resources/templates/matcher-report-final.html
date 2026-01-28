@@ -186,7 +186,6 @@
 <!-- ================= Header ================= -->
 <div class="page-header">
   <div class="title" th:text="${title}">需求预审报告</div>
-  <div class="divider"></div>
 </div>
 
 <!-- ================= 一、匹配结果 ================= -->
@@ -404,7 +403,7 @@
 </div>
 
 <!-- ================= 四、附件说明 ================= -->
-<h2>四、附件说明</h2>
+<h2>四、报告说明</h2>
 
 <!-- New: 4.x sections -->
 <div th:if="${sections != null and !#lists.isEmpty(sections)}">
@@ -418,19 +417,19 @@
 <!-- Legacy: reportNotice -->
 <div th:if="${(sections == null or #lists.isEmpty(sections)) and (reportNotice != null and reportNotice != '')}"
      class="section-card">
-  <div th:utext="${reportNotice}">附件说明</div>
+  <div th:utext="${reportNotice}">报告说明</div>
 </div>
 
 <!-- ================= 报告元信息（次要，仅此处展示） ================= -->
-<div class="report-meta-line" th:if="${reportNumber != null or reportDate != null}">
-  <span th:if="${reportNumber != null and reportNumber != ''}">
-    报告编号：<span th:text="${reportNumber}">AI-PRE-2024-001</span>
-  </span>
-  <span th:if="${(reportNumber != null and reportNumber != '') and (reportDate != null and reportDate != '')}"> ｜ </span>
-  <span th:if="${reportDate != null and reportDate != ''}">
-    报告日期：<span th:text="${reportDate}">2024-12-31</span>
-  </span>
-</div>
+<!--<div class="report-meta-line" th:if="${reportNumber != null or reportDate != null}">-->
+<!--  <span th:if="${reportNumber != null and reportNumber != ''}">-->
+<!--    报告编号：<span th:text="${reportNumber}">AI-PRE-2024-001</span>-->
+<!--  </span>-->
+<!--  <span th:if="${(reportNumber != null and reportNumber != '') and (reportDate != null and reportDate != '')}"> ｜ </span>-->
+<!--  <span th:if="${reportDate != null and reportDate != ''}">-->
+<!--    报告日期：<span th:text="${reportDate}">2024-12-31</span>-->
+<!--  </span>-->
+<!--</div>-->
 
 <!-- ================= 签字栏 ================= -->
 <div class="signature">
@@ -447,10 +446,6 @@
       </td>
     </tr>
   </table>
-
-  <div class="footnote tiny">
-    注：文档部分内容可能由 AI 生成
-  </div>
 </div>
 
 </body>

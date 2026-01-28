@@ -125,11 +125,10 @@ public class MatcherReportFinalTest {
 
         // ===== Section 4: Attachments =====
         
-        Section section4 = new Section("4.1 附件清单");
-        section4.addParagraph("• 附件1：Excel需求清单（去重后版本）.xlsx");
-        section4.addParagraph("• 附件2：Word业务功能说明书（待更新版）.docx");
-        section4.addParagraph("• 附件3：语义匹配详细得分表（含所有条目相似度数据）.xlsx");
-        section4.addParagraph("• 附件4：疑似匹配复核表（空白版）.docx");
+        Section section4 = new Section("4.1 报告说明");
+        section4.addParagraph("报告说明：文档部分内容由 业技融合共创平台- BA助手 生成");
+        section4.addParagraph("报告编号：AI-PRE-2024-001");
+        section4.addParagraph("报告日期：2024年12月31日");
         builder.addSection(section4);
 
         return builder.build();
