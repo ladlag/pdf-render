@@ -330,15 +330,18 @@ public class HtmlReportRenderer {
             java.net.URL resource = getClass().getResource("/templates/");
             if (resource != null) {
                 return resource.toString();
+            } else {
+                // Log warning if templates directory cannot be found
+                System.err.println("Warning: Templates directory not found on classpath");
             }
         } catch (Exception e) {
-            // If we can't get the resource URL, fall back to a sensible default
+            // If we can't get the resource URL, log the error
             System.err.println("Warning: Could not resolve templates base URL: " + e.getMessage());
         }
         
-        // Fallback: use a generic classpath URL
-        // This still allows Flying Saucer to process the HTML even if resources aren't found
-        return "classpath:/templates/";
+        // Fallback: use empty string to let Flying Saucer process HTML without base URL
+        // CSS is inline in templates, so rendering will still work, just without external resource resolution
+        return "";
     }
     
     /**
