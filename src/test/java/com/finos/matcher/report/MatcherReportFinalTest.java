@@ -35,6 +35,10 @@ public class MatcherReportFinalTest {
     public void testMatcherReportFinalWithCompleteData() throws IOException {
         ReportService service = new ReportService();
         service.setUseHtmlPipeline(true);
+        
+        // Enable HTML debug output
+        service.getHtmlRenderer().setDebugHtmlEnabled(true);
+        service.getHtmlRenderer().setDebugHtmlOutputDirectory(TEST_OUTPUT_DIR);
 
         // Configure HarmonyOS Sans SC font for Chinese text display
         FontConfig fontConfig = new FontConfig();
