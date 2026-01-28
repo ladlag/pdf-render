@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,7 +91,7 @@ public class ChartSectionTitleTest {
             .findFirst()
             .orElseThrow(() -> new RuntimeException("HTML debug file not found"));
         
-        String htmlContent = Files.readString(htmlFile);
+        String htmlContent = new String(Files.readAllBytes(htmlFile), StandardCharsets.UTF_8);
         assertTrue(htmlContent.contains("数据可视化展示"), "HTML should contain custom chart section title");
         System.out.println("✓ Verified custom chart section title in HTML output");
     }

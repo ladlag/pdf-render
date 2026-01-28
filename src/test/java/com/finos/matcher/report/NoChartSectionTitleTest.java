@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -89,7 +90,7 @@ public class NoChartSectionTitleTest {
             .findFirst()
             .orElseThrow(() -> new RuntimeException("HTML debug file not found"));
         
-        String htmlContent = Files.readString(htmlFile);
+        String htmlContent = new String(Files.readAllBytes(htmlFile), StandardCharsets.UTF_8);
         
         // Should still have the chart
         assertTrue(htmlContent.contains("销售数据分布图"), "HTML should contain the chart");
