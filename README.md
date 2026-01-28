@@ -535,7 +535,6 @@ chart.setConfig(config);
 | `height` | Integer | 300 | Chart height in pixels |
 | `colors` | List<Color> | null | Custom color palette for data series |
 | `showLegend` | Boolean | true | Show/hide chart legend |
-| `legendPosition` | String | "right" | Legend position (right, bottom, top, left) |
 | `show3D` | Boolean | false | Enable 3D effect (for pie charts) |
 | `backgroundColorHex` | String | null | Chart background color (hex format) |
 | `showGridLines` | Boolean | true | Show/hide grid lines (category charts) |

@@ -195,7 +195,7 @@ public class ChartRenderer {
             chart.setBackgroundPaint(Color.decode(config.getBackgroundColorHex()));
         }
         
-        // Apply legend settings
+        // Apply legend settings (default is to show legend)
         if (config.getShowLegend() != null && !config.getShowLegend()) {
             chart.removeLegend();
         }
@@ -214,41 +214,66 @@ public class ChartRenderer {
             applyPieColors(piePlot, config.getColors());
         }
         
-        // Apply grid lines settings
+        // Apply grid lines settings (default is to show grid lines)
         if (plot instanceof CategoryPlot) {
             CategoryPlot categoryPlot = (CategoryPlot) plot;
-            if (config.getShowGridLines() != null) {
-                categoryPlot.setDomainGridlinesVisible(config.getShowGridLines());
-                categoryPlot.setRangeGridlinesVisible(config.getShowGridLines());
+            if (config.getShowGridLines() != null && !config.getShowGridLines()) {
+                categoryPlot.setDomainGridlinesVisible(false);
+                categoryPlot.setRangeGridlinesVisible(false);
             }
         }
     }
     
+    @SuppressWarnings("unchecked")
     private void applyCategoryColors(CategoryPlot plot, List<Color> colors) {
-        if (plot.getRenderer() instanceof org.jfree.chart.renderer.category.BarRenderer) {
-            org.jfree.chart.renderer.category.BarRenderer renderer = 
-                (org.jfree.chart.renderer.category.BarRenderer) plot.getRenderer();
-            for (int i = 0; i < colors.size(); i++) {
-                renderer.setSeriesPaint(i, colors.get(i));
+        // For single-series charts, apply colors to each category
+        if (plot.getDataset() != null && plot.getDataset().getRowCount() == 1) {
+            // Color each category (column) in the dataset
+            int categoryCount = plot.getDataset().getColumnCount();
+            if (plot.getRenderer() instanceof org.jfree.chart.renderer.category.BarRenderer) {
+                org.jfree.chart.renderer.category.BarRenderer renderer = 
+                    (org.jfree.chart.renderer.category.BarRenderer) plot.getRenderer();
+                for (int i = 0; i < categoryCount && i < colors.size(); i++) {
+                    renderer.setSeriesPaint(0, colors.get(i % colors.size()));
+                }
+            } else if (plot.getRenderer() instanceof LineAndShapeRenderer) {
+                LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+                renderer.setSeriesPaint(0, colors.get(0));
+            } else if (plot.getRenderer() instanceof AreaRenderer) {
+                AreaRenderer renderer = (AreaRenderer) plot.getRenderer();
+                renderer.setSeriesPaint(0, colors.get(0));
+            } else if (plot.getRenderer() instanceof StackedBarRenderer) {
+                StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
+                renderer.setSeriesPaint(0, colors.get(0));
             }
-        } else if (plot.getRenderer() instanceof LineAndShapeRenderer) {
-            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-            for (int i = 0; i < colors.size(); i++) {
-                renderer.setSeriesPaint(i, colors.get(i));
-            }
-        } else if (plot.getRenderer() instanceof AreaRenderer) {
-            AreaRenderer renderer = (AreaRenderer) plot.getRenderer();
-            for (int i = 0; i < colors.size(); i++) {
-                renderer.setSeriesPaint(i, colors.get(i));
-            }
-        } else if (plot.getRenderer() instanceof StackedBarRenderer) {
-            StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
-            for (int i = 0; i < colors.size(); i++) {
-                renderer.setSeriesPaint(i, colors.get(i));
+        } else {
+            // For multi-series charts, apply colors to each series
+            if (plot.getRenderer() instanceof org.jfree.chart.renderer.category.BarRenderer) {
+                org.jfree.chart.renderer.category.BarRenderer renderer = 
+                    (org.jfree.chart.renderer.category.BarRenderer) plot.getRenderer();
+                for (int i = 0; i < colors.size(); i++) {
+                    renderer.setSeriesPaint(i, colors.get(i));
+                }
+            } else if (plot.getRenderer() instanceof LineAndShapeRenderer) {
+                LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+                for (int i = 0; i < colors.size(); i++) {
+                    renderer.setSeriesPaint(i, colors.get(i));
+                }
+            } else if (plot.getRenderer() instanceof AreaRenderer) {
+                AreaRenderer renderer = (AreaRenderer) plot.getRenderer();
+                for (int i = 0; i < colors.size(); i++) {
+                    renderer.setSeriesPaint(i, colors.get(i));
+                }
+            } else if (plot.getRenderer() instanceof StackedBarRenderer) {
+                StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
+                for (int i = 0; i < colors.size(); i++) {
+                    renderer.setSeriesPaint(i, colors.get(i));
+                }
             }
         }
     }
     
+    @SuppressWarnings("unchecked")
     private void applyPieColors(PiePlot plot, List<Color> colors) {
         int colorIndex = 0;
         for (Object key : plot.getDataset().getKeys()) {

@@ -11,7 +11,6 @@ public class ChartConfig {
     private Integer height;
     private List<Color> colors;
     private Boolean showLegend;
-    private String legendPosition; // "right", "bottom", "top", "left"
     private Boolean show3D;
     private String backgroundColorHex;
     private Boolean showGridLines;
@@ -19,13 +18,7 @@ public class ChartConfig {
     private String yAxisLabel;
 
     public ChartConfig() {
-        // Default values
-        this.width = 500;
-        this.height = 300;
-        this.showLegend = true;
-        this.legendPosition = "right";
-        this.show3D = false;
-        this.showGridLines = true;
+        // Fields initialized as null - defaults applied during rendering
     }
 
     public Integer getWidth() {
@@ -58,14 +51,6 @@ public class ChartConfig {
 
     public void setShowLegend(Boolean showLegend) {
         this.showLegend = showLegend;
-    }
-
-    public String getLegendPosition() {
-        return legendPosition;
-    }
-
-    public void setLegendPosition(String legendPosition) {
-        this.legendPosition = legendPosition;
     }
 
     public Boolean getShow3D() {
