@@ -2,6 +2,8 @@ package com.mercury.pdf.render.config;
 
 import com.mercury.pdf.render.HtmlReportRenderer;
 import com.mercury.pdf.render.ReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +39,8 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(ReportService.class)
 @EnableConfigurationProperties(PdfRenderProperties.class)
 public class PdfRenderAutoConfiguration {
+    
+    private static final Logger logger = LoggerFactory.getLogger(PdfRenderAutoConfiguration.class);
     
     private final PdfRenderProperties properties;
     
@@ -105,12 +109,12 @@ public class PdfRenderAutoConfiguration {
             // Apply font configuration to renderer
             htmlRenderer.setFontConfig(fontConfig);
             
-            System.out.println("✓ PDF Render: Font configuration applied from properties");
+            logger.info("PDF Render: Font configuration applied from properties");
             if (fontProps.getCjkPath() != null) {
-                System.out.println("  - CJK font: " + fontProps.getCjkPath());
+                logger.info("  - CJK font: {}", fontProps.getCjkPath());
             }
             if (fontProps.getRegularPath() != null) {
-                System.out.println("  - Regular font: " + fontProps.getRegularPath());
+                logger.info("  - Regular font: {}", fontProps.getRegularPath());
             }
         }
     }
@@ -127,9 +131,9 @@ public class PdfRenderAutoConfiguration {
             htmlRenderer.setDebugHtmlOutputDirectory(debugProps.getOutputDirectory());
             htmlRenderer.setDebugHtmlIncludeTimestamp(debugProps.isIncludeTimestamp());
             
-            System.out.println("✓ PDF Render: Debug HTML output enabled");
-            System.out.println("  - Output directory: " + debugProps.getOutputDirectory());
-            System.out.println("  - Include timestamp: " + debugProps.isIncludeTimestamp());
+            logger.info("PDF Render: Debug HTML output enabled");
+            logger.info("  - Output directory: {}", debugProps.getOutputDirectory());
+            logger.info("  - Include timestamp: {}", debugProps.isIncludeTimestamp());
         }
     }
 }
