@@ -3,6 +3,12 @@
 # Chinese Font Validation Script
 # 中文字体验证脚本
 
+# Cleanup trap
+cleanup() {
+    [ -f "$TEST_OUTPUT" ] && rm -f "$TEST_OUTPUT"
+}
+trap cleanup EXIT
+
 echo "╔═══════════════════════════════════════════════════════════════╗"
 echo "║  中文字体配置验证 Chinese Font Configuration Validator      ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
@@ -63,11 +69,11 @@ echo ""
 # Check 3: Java code compilation
 echo "检查 3: 代码编译 Check 3: Code Compilation"
 echo "─────────────────────────────────────────────────────────────"
-if mvn compile -q 2>/dev/null; then
+if mvn compile 2>&1 | grep -q "BUILD SUCCESS"; then
     echo -e "${GREEN}✓${NC} 代码编译成功 Code compiles successfully"
 else
     echo -e "${RED}✗${NC} 代码编译失败 Code compilation failed"
-    echo "  运行 Run: mvn compile"
+    echo "  运行查看详情 Run for details: mvn compile"
     ERRORS=$((ERRORS + 1))
 fi
 echo ""
@@ -82,7 +88,14 @@ if [ $FONT_COUNT -gt 0 ]; then
         
         # Check PDF file size
         if [ -f "test-output/chinese_text_custom_fonts.pdf" ]; then
-            SIZE=$(stat -f%z "test-output/chinese_text_custom_fonts.pdf" 2>/dev/null || stat -c%s "test-output/chinese_text_custom_fonts.pdf" 2>/dev/null)
+            # Cross-platform file size detection
+            if SIZE=$(stat -c%s "test-output/chinese_text_custom_fonts.pdf" 2>/dev/null); then
+                : # Linux/GNU stat
+            elif SIZE=$(stat -f%z "test-output/chinese_text_custom_fonts.pdf" 2>/dev/null); then
+                : # BSD/macOS stat
+            else
+                SIZE=0
+            fi
             SIZE_KB=$((SIZE / 1024))
             
             if [ $SIZE_KB -gt 200 ]; then
@@ -97,7 +110,6 @@ if [ $FONT_COUNT -gt 0 ]; then
         echo "  运行查看详情 Run for details: mvn test -Dtest=ChineseFontTest"
         ERRORS=$((ERRORS + 1))
     fi
-    rm -f $TEST_OUTPUT
 else
     echo -e "${YELLOW}⚠${NC} 跳过测试（没有字体文件）Skipped (no font files)"
     WARNINGS=$((WARNINGS + 1))

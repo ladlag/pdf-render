@@ -12,7 +12,8 @@
 ### 1️⃣ 运行验证脚本 Run Validation Script
 
 ```bash
-./validate-chinese-fonts.sh
+bash validate-chinese-fonts.sh
+# 或 or: ./validate-chinese-fonts.sh (需要先 chmod +x)
 ```
 
 这个脚本会检查 This script checks:
@@ -198,7 +199,7 @@ fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 
 1. **运行验证脚本 Run validation script:**
    ```bash
-   ./validate-chinese-fonts.sh
+   bash validate-chinese-fonts.sh
    ```
 
 2. **查看详细故障排除 See detailed troubleshooting:**

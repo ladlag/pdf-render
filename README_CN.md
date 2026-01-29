@@ -13,7 +13,8 @@
 
 或运行验证脚本 Or run validation script:
 ```bash
-./validate-chinese-fonts.sh
+bash validate-chinese-fonts.sh
+# 或 or: ./validate-chinese-fonts.sh
 ```
 
 ---

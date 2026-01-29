@@ -12,7 +12,8 @@ A Java-based PDF report generation library using clean HTML/CSS architecture wit
 
 Or run the validation script:
 ```bash
-./validate-chinese-fonts.sh
+bash validate-chinese-fonts.sh
+# or if executable: ./validate-chinese-fonts.sh
 ```
 
 ---
