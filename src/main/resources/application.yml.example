@@ -26,18 +26,27 @@ pdf-render:
     # Path to custom regular font file for Chinese text
     # Download: https://github.com/googlefonts/noto-cjk (Noto Sans CJK)
     # Or use: HarmonyOS Sans SC from https://developer.harmonyos.com
-    regular-path: classpath:/fonts/HarmonyOS_SansSC_Regular.ttf
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
     
     # Path to custom bold font file for Chinese text
-    bold-path: classpath:/fonts/HarmonyOS_SansSC_Bold.ttf
+    bold-path: classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf
     
-    # Alternative: Noto Sans CJK (Google's open source font)
+    # Path to CJK (Chinese/Japanese/Korean) font file
+    # This is the primary font for Chinese character rendering
+    # IMPORTANT: Configure this for proper Chinese character display!
+    cjk-path: classpath:/fonts/NotoSansCJKsc-Regular.otf
+    
+    # Alternative: Use same font for both regular and CJK
     # regular-path: classpath:/fonts/NotoSansCJKsc-Regular.otf
     # bold-path: classpath:/fonts/NotoSansCJKsc-Bold.otf
+    # cjk-path: classpath:/fonts/NotoSansCJKsc-Regular.otf
     
     # Default font family CSS (used when fonts are configured)
     # This will be used in the CSS font-family property
     default-family: HarmonyOS Sans SC, Noto Sans CJK SC, DejaVu Sans, Arial, sans-serif
+    
+    # CJK font family CSS (used specifically for Chinese/Japanese/Korean text)
+    cjk-family: Noto Sans CJK SC, SimSun, sans-serif
     
     # Note: Without custom fonts, Chinese characters may appear as boxes (□)
     # Place your font files in src/main/resources/fonts/ directory
