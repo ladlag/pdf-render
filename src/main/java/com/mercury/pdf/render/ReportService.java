@@ -89,22 +89,33 @@ public class ReportService {
             // Cover page
             addCoverPage(document, reportData);
             
-            // Section 1: Detailed tables with grouped blocks (1.1-1.4)
-            addSection1(document, reportData);
-            
-            // Section 2: Analysis paragraphs
-            addSection2(document, reportData);
-            
-            // Section 3: Summary table and charts
-            addSection3(document, reportData);
-            
-            // Section 4: Report notice and metadata
-            addSection4(document, reportData);
+            // Add sections using legacy structure
+            // Note: The legacy structure has 4 predefined sections, but this is for backward compatibility
+            // The HTML pipeline supports unlimited sections through the flexible Section model
+            addLegacySections(document, reportData);
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             document.save(baos);
             return baos.toByteArray();
         }
+    }
+    
+    /**
+     * Adds all legacy sections to the document
+     * This replaces the hardcoded addSection1-4 methods with a more maintainable approach
+     */
+    private void addLegacySections(PDDocument document, ReportData reportData) throws IOException {
+        // Section 1: Detailed tables with grouped blocks (1.1-1.4)
+        addDetailedTablesSection(document, reportData);
+        
+        // Section 2: Analysis paragraphs
+        addAnalysisSection(document, reportData);
+        
+        // Section 3: Summary table and charts
+        addSummarySection(document, reportData);
+        
+        // Section 4: Report notice and metadata
+        addNoticeSection(document, reportData);
     }
     
     /**
@@ -165,7 +176,10 @@ public class ReportService {
         }
     }
     
-    private void addSection1(PDDocument document, ReportData reportData) throws IOException {
+    /**
+     * Adds detailed tables section (formerly Section 1)
+     */
+    private void addDetailedTablesSection(PDDocument document, ReportData reportData) throws IOException {
         if (reportData.getTableBlocks() == null || reportData.getTableBlocks().isEmpty()) {
             return;
         }
@@ -208,7 +222,10 @@ public class ReportService {
         }
     }
     
-    private void addSection2(PDDocument document, ReportData reportData) throws IOException {
+    /**
+     * Adds analysis paragraphs section (formerly Section 2)
+     */
+    private void addAnalysisSection(PDDocument document, ReportData reportData) throws IOException {
         if (reportData.getAnalysisParagraphs() == null || reportData.getAnalysisParagraphs().isEmpty()) {
             return;
         }
@@ -265,7 +282,10 @@ public class ReportService {
         }
     }
     
-    private void addSection3(PDDocument document, ReportData reportData) throws IOException {
+    /**
+     * Adds summary table and charts section (formerly Section 3)
+     */
+    private void addSummarySection(PDDocument document, ReportData reportData) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         
@@ -314,7 +334,10 @@ public class ReportService {
         }
     }
     
-    private void addSection4(PDDocument document, ReportData reportData) throws IOException {
+    /**
+     * Adds notice and metadata section (formerly Section 4)
+     */
+    private void addNoticeSection(PDDocument document, ReportData reportData) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         
