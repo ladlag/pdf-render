@@ -25,10 +25,10 @@
 // 现在 PdfRenderAutoConfiguration 会：
 // Now PdfRenderAutoConfiguration will:
 if (fontProps.getCjkPath() != null) {
-    fontConfig.setCjkPath(fontProps.getCjkPath());
+    fontConfig.setCjkFontPath(fontProps.getCjkPath());
 }
 if (fontProps.getCjkFamily() != null) {
-    fontConfig.setCjkFamily(fontProps.getCjkFamily());
+    fontConfig.setCjkFontFamily(fontProps.getCjkFamily());
 }
 htmlRenderer.setFontConfig(fontConfig);
 ```
