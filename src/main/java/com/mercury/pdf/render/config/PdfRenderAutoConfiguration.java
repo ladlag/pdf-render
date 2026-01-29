@@ -48,8 +48,43 @@ public class PdfRenderAutoConfiguration {
         // Configure HTML renderer with properties
         HtmlReportRenderer htmlRenderer = service.getHtmlRenderer();
         if (htmlRenderer != null) {
+            // Configure template settings
             htmlRenderer.setDefaultTemplateName(properties.getTemplate().getDefaultName());
             htmlRenderer.setCacheTemplates(properties.getTemplate().isCacheEnabled());
+            
+            // Configure font settings for Chinese/CJK character support
+            PdfRenderProperties.FontProperties fontProps = properties.getFonts();
+            if (fontProps != null && (fontProps.getRegularPath() != null || fontProps.getCjkPath() != null)) {
+                FontConfig fontConfig = new FontConfig();
+                
+                if (fontProps.getRegularPath() != null) {
+                    fontConfig.setRegularFontPath(fontProps.getRegularPath());
+                }
+                if (fontProps.getBoldPath() != null) {
+                    fontConfig.setBoldFontPath(fontProps.getBoldPath());
+                }
+                if (fontProps.getCjkPath() != null) {
+                    fontConfig.setCjkFontPath(fontProps.getCjkPath());
+                }
+                if (fontProps.getDefaultFamily() != null) {
+                    fontConfig.setDefaultFontFamily(fontProps.getDefaultFamily());
+                }
+                if (fontProps.getCjkFamily() != null) {
+                    fontConfig.setCjkFontFamily(fontProps.getCjkFamily());
+                }
+                
+                htmlRenderer.setFontConfig(fontConfig);
+            }
+            
+            // Configure debug HTML output settings
+            PdfRenderProperties.DebugProperties debugProps = properties.getDebug();
+            if (debugProps != null) {
+                htmlRenderer.setDebugHtmlEnabled(debugProps.isEnabled());
+                if (debugProps.getOutputDirectory() != null) {
+                    htmlRenderer.setDebugHtmlOutputDirectory(debugProps.getOutputDirectory());
+                }
+                htmlRenderer.setDebugHtmlIncludeTimestamp(debugProps.isIncludeTimestamp());
+            }
         }
         
         return service;
