@@ -10,6 +10,7 @@
 - [详细使用示例](#详细使用示例)
 - [数据填充顺序说明](#数据填充顺序说明)
 - [自定义模板](#自定义模板)
+- [模板映射说明](#模板映射说明)
 - [Spring Boot集成](#spring-boot集成)
 - [常见问题](#常见问题)
 
@@ -515,7 +516,170 @@ public class ComplexOrderExample {
 | `${sections[0].tables}` | List&lt;TableData&gt; | 第一个章节的表格 |
 | `${sections[0].charts}` | List&lt;ChartData&gt; | 第一个章节的图表 |
 
-详细的模板自定义指南请参考：[ADDING_TEMPLATES.md](ADDING_TEMPLATES.md)
+详细的模板自定义指南请参考：
+- [ADDING_TEMPLATES.md](ADDING_TEMPLATES.md) - 通用模板添加指南
+- [MATCHER_REPORT_FINAL_MAPPING_CN.md](MATCHER_REPORT_FINAL_MAPPING_CN.md) - matcher-report-final 模板与 ReportData 映射详解
+- [SECTION_TYPE_DECOUPLING_CN.md](SECTION_TYPE_DECOUPLING_CN.md) - **⭐ 新功能：通用 sectionType 解耦数据与模板**
+
+## 模板映射说明
+
+### matcher-report-final 模板
+
+`matcher-report-final` 是一个需求预审报告模板，专门用于生成匹配度分析报告。
+
+#### ⭐ 推荐方式：使用 sectionType（数据与模板解耦）
+
+**新增功能：** 现在支持使用 `sectionType` 来标识 section，不再依赖标题前缀！
+
+```java
+// ✅ 推荐：使用 sectionType，标题可以是任意文本
+// sectionType 的值完全由您和您的模板决定
+Section section = new Section("精确匹配通过", "chapter1");
+section.addTable(table);
+builder.addSection(section);
+
+// 优势：
+// - 标题完全自定义，无需数字前缀
+// - 数据与模板完全解耦
+// - Section 可以按任意顺序添加
+// - sectionType 值可以是任意字符串
+```
+
+**对于 matcher-report-final 模板的 sectionType 映射：**
+
+| sectionType 值 | 渲染位置 | 示例标题（可自定义） |
+|---------------|---------|------------------|
+| `"chapter1"` | 第一章：匹配结果详细列表 | "精确匹配通过", "语义匹配通过" |
+| `"chapter2"` | 第二章：详细分析内容 | "模块匹配表现", "问题根源分析" |
+| `"chapter3"` | 第三章：预审结果总结 | "匹配结果汇总", "核心结论" |
+| `"chapter4"` | 第四章：报告说明 | "报告说明", "免责声明" |
+| `"appendix"` 或 `"other"` | 第三章末尾 | "附录信息", "补充说明" |
+
+**⚠️ 注意：** 上述 sectionType 值（"chapter1", "chapter2" 等）仅适用于 matcher-report-final 模板。
+其他模板可以定义自己的 sectionType 值。
+
+📖 **详细文档：** [通用 SectionType 解耦指南](SECTION_TYPE_DECOUPLING_CN.md)
+
+#### 传统方式：标题前缀匹配（向后兼容）
+
+该模板仍然支持传统的 **Section 标题前缀匹配机制**（向后兼容）。
+
+| Section 标题前缀 | 渲染位置 | 示例 |
+|---------------|---------|------|
+| `1.` 开头 | 第一章：匹配结果详细列表 | "1.1 精确匹配通过", "1.2 语义匹配通过" |
+| `2.` 开头 | 第二章：详细分析内容 | "2.1 分模块匹配表现", "2.2 匹配失败问题根源" |
+| `3.` 开头 | 第三章：预审结果总结 | "3.1 核心结论", "3.2 详细统计" |
+| `4.` 开头 | 第四章：报告说明 | "4.1 报告说明" |
+| 其他 | 第三章末尾 | 任意其他标题 |
+
+#### 快速示例
+
+**使用新的 sectionType 特性（推荐）：**
+
+```java
+ReportDataBuilder builder = ReportDataBuilder.create()
+    .title("需求预审报告")
+    .reportDate("2024-12-31");
+
+// 第一章：使用 sectionType="chapter1"（标题可自定义）
+builder.addSection(new Section("精确匹配通过", "chapter1")
+    .addTable(matchTable));
+
+builder.addSection(new Section("语义匹配通过", "chapter1")
+    .addTable(semanticMatchTable));
+
+// 第二章：使用 sectionType="chapter2"
+builder.addSection(new Section("分模块匹配表现", "chapter2")
+    .addParagraph("按业务模块拆分匹配结果..."));
+
+builder.addSection(new Section("匹配失败问题根源", "chapter2")
+    .addParagraph("• 需求与文档不同步")
+    .addParagraph("• 功能定义不细致"));
+
+// 第三章：使用 sectionType="chapter3"
+builder.addSection(new Section("匹配汇总", "chapter3")
+    .addTable(createSummaryTable()));
+
+builder.addSection(new Section("核心结论", "chapter3")
+    .addParagraph("本次预审整体匹配率80.0%..."));
+
+// 第四章：使用 sectionType="chapter4"
+builder.addSection(new Section("报告说明", "chapter4")
+    .addParagraph("报告说明：使用 sectionType 特性"));
+
+// 生成 PDF
+byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
+```
+
+**传统方式（仍然支持）：**
+
+```java
+ReportDataBuilder builder = ReportDataBuilder.create()
+    .title("需求预审报告")
+    .reportDate("2024-12-31");
+
+// 第一章：标题以 "1." 开头
+builder.addSection(new Section("1.1 精确匹配通过（匹配度≥0.90）")
+    .addTable(matchTable));
+
+builder.addSection(new Section("1.2 语义匹配通过（0.70≤匹配度＜0.90）")
+    .addTable(semanticMatchTable));
+
+// 第二章：标题以 "2." 开头
+builder.addSection(new Section("2.1 分模块匹配表现")
+    .addParagraph("按业务模块拆分匹配结果..."));
+
+builder.addSection(new Section("2.2 匹配失败问题根源")
+    .addParagraph("• 需求与文档不同步：...")
+    .addParagraph("• 功能定义不细致：..."));
+
+// 第三章：使用 3.x Sections
+Section section3Summary = new Section("3. 汇总");
+section3Summary.addTable(createSummaryTable());
+builder.addSection(section3Summary);
+
+builder.addSection(new Section("3.1 核心结论")
+    .addParagraph("本次预审整体匹配率80.0%..."));
+
+// 第四章：标题以 "4." 开头
+builder.addSection(new Section("4.1 报告说明")
+    .addParagraph("报告说明：文档部分内容由 BA助手 生成"));
+
+// 生成 PDF
+byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
+```
+
+#### 重要说明
+
+1. **⭐ 推荐使用 sectionType** - 新代码建议使用 `sectionType` 来标识 section，标题可以是任意文本
+2. **Section 标题前缀仍然支持** - 传统的标题前缀（1., 2., 3., 4.）方式仍然有效（向后兼容）
+3. **添加顺序不影响渲染位置** - 可以按任意顺序添加 Section，模板会根据 sectionType 或标题前缀自动分组
+4. **每个 Section 可包含多种内容** - 标题、副标题、段落、表格、图表、TableBlock、自定义 HTML
+5. **完全向后兼容** - 现有代码无需修改即可继续工作
+
+#### 常见问题：如何选择使用方式？
+
+**问题：** 我应该使用 sectionType 还是标题前缀？
+
+**答案：**
+- **新项目或新代码（推荐）：** 使用 `sectionType`，标题可以完全自定义
+  ```java
+  new Section("精确匹配通过", "chapter1")  // ✅ 推荐
+  ```
+- **现有项目：** 继续使用标题前缀，完全向后兼容
+  ```java
+  new Section("1.1 精确匹配通过")  // ✅ 仍然有效
+  ```
+- **混合使用：** 可以在同一报告中混合使用两种方式
+  ```java
+  builder.addSection(new Section("精确匹配", "chapter1"))  // sectionType
+         .addSection(new Section("1.2 语义匹配"));         // 标题前缀
+  ```
+
+#### 详细文档
+
+完整的映射规则、代码示例和最佳实践，请参考：
+**[matcher-report-final 模板与 ReportData 映射详解](MATCHER_REPORT_FINAL_MAPPING_CN.md)**
 
 ## Spring Boot集成
 
