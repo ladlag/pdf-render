@@ -215,9 +215,10 @@
 <!-- ===== New Structure: sections ===== -->
 <div th:if="${sections != null and !#lists.isEmpty(sections)}">
 
-  <!-- 1.x sections -->
+  <!-- Chapter 1 sections: Use sectionType if available, fallback to title prefix -->
   <div th:each="sec : ${sections}"
-       th:if="${sec.title != null and #strings.startsWith(sec.title,'1.')}"
+       th:if="${(sec.sectionType != null and sec.sectionType == 'chapter1') or 
+               (sec.sectionType == null and sec.title != null and #strings.startsWith(sec.title,'1.'))}"
        class="section-card"
        th:classappend="${sec.cssClass != null ? ' ' + sec.cssClass : ''}">
 
@@ -326,10 +327,11 @@
 <!-- ================= 二、详细分析 ================= -->
 <h2>二、详细分析内容</h2>
 
-<!-- New: 2.x sections -->
+<!-- Chapter 2 sections: Use sectionType if available, fallback to title prefix -->
 <div th:if="${sections != null and !#lists.isEmpty(sections)}">
   <div th:each="sec : ${sections}"
-       th:if="${sec.title != null and #strings.startsWith(sec.title,'2.')}"
+       th:if="${(sec.sectionType != null and sec.sectionType == 'chapter2') or 
+               (sec.sectionType == null and sec.title != null and #strings.startsWith(sec.title,'2.'))}"
        class="section-card"
        th:classappend="${sec.cssClass != null ? ' ' + sec.cssClass : ''}">
     <h3 th:text="${sec.title}">2.1 ...</h3>
@@ -393,10 +395,11 @@
     </tbody>
   </table>
 
-  <!-- New: 3.x sections（用于核心结论/补充说明） -->
+  <!-- Chapter 3 sections: Use sectionType if available, fallback to title prefix -->
   <div th:if="${sections != null and !#lists.isEmpty(sections)}">
     <div th:each="sec : ${sections}"
-         th:if="${sec.title != null and #strings.startsWith(sec.title,'3.')}"
+         th:if="${(sec.sectionType != null and sec.sectionType == 'chapter3') or 
+                 (sec.sectionType == null and sec.title != null and #strings.startsWith(sec.title,'3.'))}"
          style="margin-top: 10px;">
       <h3 th:text="${sec.title}">3.x ...</h3>
       <p th:each="p : ${sec.paragraphs}" th:text="${p}">总结段落</p>
@@ -420,10 +423,11 @@
 <!-- ================= 四、附件说明 ================= -->
 <h2>四、附件说明</h2>
 
-<!-- New: 4.x sections -->
+<!-- Chapter 4 sections: Use sectionType if available, fallback to title prefix -->
 <div th:if="${sections != null and !#lists.isEmpty(sections)}">
   <div th:each="sec : ${sections}"
-       th:if="${sec.title != null and #strings.startsWith(sec.title,'4.')}"
+       th:if="${(sec.sectionType != null and sec.sectionType == 'chapter4') or 
+               (sec.sectionType == null and sec.title != null and #strings.startsWith(sec.title,'4.'))}"
        class="section-card">
     <p th:each="p : ${sec.paragraphs}" th:text="${p}" class="list-item">附件项</p>
   </div>

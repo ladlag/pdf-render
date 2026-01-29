@@ -574,19 +574,58 @@ builder.addSection(section);
 
 #### 快速示例
 
+**使用新的 sectionType 特性（推荐）：**
+
 ```java
 ReportDataBuilder builder = ReportDataBuilder.create()
     .title("需求预审报告")
     .reportDate("2024-12-31");
 
-// 第一章：匹配结果（标题以 "1." 开头）
+// 第一章：使用 sectionType="chapter1"（标题可自定义）
+builder.addSection(new Section("精确匹配通过", "chapter1")
+    .addTable(matchTable));
+
+builder.addSection(new Section("语义匹配通过", "chapter1")
+    .addTable(semanticMatchTable));
+
+// 第二章：使用 sectionType="chapter2"
+builder.addSection(new Section("分模块匹配表现", "chapter2")
+    .addParagraph("按业务模块拆分匹配结果..."));
+
+builder.addSection(new Section("匹配失败问题根源", "chapter2")
+    .addParagraph("• 需求与文档不同步")
+    .addParagraph("• 功能定义不细致"));
+
+// 第三章：使用 sectionType="chapter3"
+builder.addSection(new Section("匹配汇总", "chapter3")
+    .addTable(createSummaryTable()));
+
+builder.addSection(new Section("核心结论", "chapter3")
+    .addParagraph("本次预审整体匹配率80.0%..."));
+
+// 第四章：使用 sectionType="chapter4"
+builder.addSection(new Section("报告说明", "chapter4")
+    .addParagraph("报告说明：使用 sectionType 特性"));
+
+// 生成 PDF
+byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
+```
+
+**传统方式（仍然支持）：**
+
+```java
+ReportDataBuilder builder = ReportDataBuilder.create()
+    .title("需求预审报告")
+    .reportDate("2024-12-31");
+
+// 第一章：标题以 "1." 开头
 builder.addSection(new Section("1.1 精确匹配通过（匹配度≥0.90）")
     .addTable(matchTable));
 
 builder.addSection(new Section("1.2 语义匹配通过（0.70≤匹配度＜0.90）")
     .addTable(semanticMatchTable));
 
-// 第二章：详细分析（标题以 "2." 开头）
+// 第二章：标题以 "2." 开头
 builder.addSection(new Section("2.1 分模块匹配表现")
     .addParagraph("按业务模块拆分匹配结果..."));
 
@@ -594,7 +633,7 @@ builder.addSection(new Section("2.2 匹配失败问题根源")
     .addParagraph("• 需求与文档不同步：...")
     .addParagraph("• 功能定义不细致：..."));
 
-// 第三章：汇总（使用 3.x Sections）
+// 第三章：使用 3.x Sections
 Section section3Summary = new Section("3. 汇总");
 section3Summary.addTable(createSummaryTable());
 builder.addSection(section3Summary);
@@ -602,7 +641,7 @@ builder.addSection(section3Summary);
 builder.addSection(new Section("3.1 核心结论")
     .addParagraph("本次预审整体匹配率80.0%..."));
 
-// 第四章：说明（标题以 "4." 开头）
+// 第四章：标题以 "4." 开头
 builder.addSection(new Section("4.1 报告说明")
     .addParagraph("报告说明：文档部分内容由 BA助手 生成"));
 
@@ -612,24 +651,30 @@ byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
 
 #### 重要说明
 
-1. **Section 标题前缀决定渲染位置** - 模板会根据标题前缀（1., 2., 3., 4.）自动将 Section 渲染到对应章节
-2. **添加顺序不影响渲染位置** - 可以按任意顺序添加 Section，模板会自动分组
-3. **每个 Section 可包含多种内容** - 标题、副标题、段落、表格、图表、TableBlock、自定义 HTML
-4. **第三章汇总表** - 可以创建标题为 "3." 或 "3.x" 的 Section 来包含汇总表格
-5. **⚠️ 没有序号的标题** - 如果标题不以 "1.", "2.", "3.", "4." 开头，该 Section 会被渲染在第三章末尾
+1. **⭐ 推荐使用 sectionType** - 新代码建议使用 `sectionType` 来标识 section，标题可以是任意文本
+2. **Section 标题前缀仍然支持** - 传统的标题前缀（1., 2., 3., 4.）方式仍然有效（向后兼容）
+3. **添加顺序不影响渲染位置** - 可以按任意顺序添加 Section，模板会根据 sectionType 或标题前缀自动分组
+4. **每个 Section 可包含多种内容** - 标题、副标题、段落、表格、图表、TableBlock、自定义 HTML
+5. **完全向后兼容** - 现有代码无需修改即可继续工作
 
-#### 常见问题：如果标题没有序号怎么办？
+#### 常见问题：如何选择使用方式？
 
-**问题：** 我的 Section 标题没有序号（如 "附加信息"、"备注"），会渲染在哪里？
+**问题：** 我应该使用 sectionType 还是标题前缀？
 
-**答案：** 没有序号或序号不是 1-4 的 Section 会被渲染在**第三章末尾**。
-
-**解决方案：**
-- **方案 1（推荐）：** 添加序号前缀，如 `"1.5 附加信息"`、`"2.4 备注"`
-- **方案 2：** 有意利用此行为，将补充内容放在第三章末尾
-- **方案 3：** 确保使用阿拉伯数字（1-4），不要用中文数字（一、二）
-
-详细说明请参考下面的完整文档。
+**答案：**
+- **新项目或新代码（推荐）：** 使用 `sectionType`，标题可以完全自定义
+  ```java
+  new Section("精确匹配通过", "chapter1")  // ✅ 推荐
+  ```
+- **现有项目：** 继续使用标题前缀，完全向后兼容
+  ```java
+  new Section("1.1 精确匹配通过")  // ✅ 仍然有效
+  ```
+- **混合使用：** 可以在同一报告中混合使用两种方式
+  ```java
+  builder.addSection(new Section("精确匹配", "chapter1"))  // sectionType
+         .addSection(new Section("1.2 语义匹配"));         // 标题前缀
+  ```
 
 #### 详细文档
 

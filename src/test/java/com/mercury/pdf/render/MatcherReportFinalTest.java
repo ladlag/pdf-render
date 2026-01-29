@@ -63,6 +63,7 @@ public class MatcherReportFinalTest {
     /**
      * Creates comprehensive test data for the matcher report final template.
      * Based on the requirement review report content from the problem statement.
+     * Uses traditional title prefix approach for backward compatibility demonstration.
      */
     private ReportData createMatcherReportFinalData() throws IOException {
         ReportDataBuilder builder = ReportDataBuilder.create()
@@ -139,6 +140,111 @@ public class MatcherReportFinalTest {
         section4.addParagraph("报告编号：AI-PRE-2024-001");
         section4.addParagraph("报告日期：2024年12月31日");
         builder.addSection(section4);
+
+        return builder.build();
+    }
+
+    /**
+     * Test using the new sectionType feature for explicit section identification.
+     * This demonstrates the recommended approach for new code.
+     */
+    @Test
+    public void testMatcherReportFinalWithSectionType() throws IOException {
+        ReportService service = new ReportService();
+        
+        // Enable HTML debug output
+        service.getHtmlRenderer().setDebugHtmlEnabled(true);
+        service.getHtmlRenderer().setDebugHtmlOutputDirectory(TEST_OUTPUT_DIR);
+        service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(true);
+
+        // Configure font
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        service.getHtmlRenderer().setFontConfig(fontConfig);
+
+        ReportData reportData = createMatcherReportWithSectionType();
+
+        byte[] pdfBytes = service.generatePdf(reportData, "matcher-report-final");
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+
+        // Save to test-output directory for manual verification
+        Path outputPath = Paths.get(TEST_OUTPUT_DIR, "matcher_report_with_sectiontype.pdf");
+        Files.write(outputPath, pdfBytes);
+        System.out.println("✓ Matcher Report with SectionType PDF generated: " + outputPath.toAbsolutePath());
+        System.out.println("  Demonstrates new sectionType feature for decoupled section identification");
+    }
+
+    /**
+     * Creates report data using the new sectionType feature.
+     * Titles can be any text without numeric prefixes.
+     */
+    private ReportData createMatcherReportWithSectionType() throws IOException {
+        ReportDataBuilder builder = ReportDataBuilder.create()
+            .title("需求预审报告（使用 sectionType）")
+            .reportDate("2024-12-31")
+            .reportNumber("TYPE-2024-001");
+
+        // ===== Chapter 1: Using sectionType="chapter1" =====
+        // Note: Titles no longer need numeric prefixes!
+        
+        Section exactMatch = new Section("精确匹配通过", "chapter1");
+        exactMatch.addTable(createExactMatchTable());
+        builder.addSection(exactMatch);
+
+        Section semanticMatch = new Section("语义匹配通过", "chapter1");
+        semanticMatch.addTable(createSemanticMatchTable());
+        builder.addSection(semanticMatch);
+
+        Section suspectedMatch = new Section("疑似匹配（需人工复核）", "chapter1");
+        suspectedMatch.addTable(createSuspectedMatchTable());
+        builder.addSection(suspectedMatch);
+
+        Section failedMatch = new Section("匹配失败", "chapter1");
+        failedMatch.addTable(createFailedMatchTable());
+        builder.addSection(failedMatch);
+
+        // ===== Chapter 2: Using sectionType="chapter2" =====
+        
+        Section moduleAnalysis = new Section("分模块匹配表现", "chapter2");
+        moduleAnalysis.addParagraph("按业务模块拆分匹配结果，用户管理、客户管理模块匹配表现优异。");
+        builder.addSection(moduleAnalysis);
+
+        Section problemAnalysis = new Section("匹配失败问题根源", "chapter2");
+        problemAnalysis.addParagraph("• 需求与文档不同步");
+        problemAnalysis.addParagraph("• 功能定义不细致");
+        builder.addSection(problemAnalysis);
+
+        Section docIssues = new Section("文档规范性问题", "chapter2");
+        docIssues.addParagraph("预审中发现Excel需求清单存在3条重复条目。");
+        builder.addSection(docIssues);
+
+        // ===== Chapter 3: Using sectionType="chapter3" =====
+        
+        Section summary = new Section("匹配汇总", "chapter3");
+        summary.addTable(createSummaryTable());
+        builder.addSection(summary);
+
+        Section conclusion = new Section("核心结论", "chapter3");
+        conclusion.addParagraph("整体匹配率80.0%，高优先级需求全部匹配。");
+        builder.addSection(conclusion);
+
+        Section chartSection = new Section("数据可视化", "chapter3");
+        List<ChartData> charts = createCharts();
+        for (ChartData chart : charts) {
+            chartSection.addChart(chart);
+        }
+        builder.addSection(chartSection);
+
+        // ===== Chapter 4: Using sectionType="chapter4" =====
+        
+        Section notes = new Section("报告说明", "chapter4");
+        notes.addParagraph("报告说明：使用 sectionType 特性生成");
+        notes.addParagraph("报告编号：TYPE-2024-001");
+        notes.addParagraph("报告日期：2024年12月31日");
+        builder.addSection(notes);
 
         return builder.build();
     }
