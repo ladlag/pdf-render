@@ -140,17 +140,19 @@ builder.addSection(section21)
 ```
 
 **重要提示：** 第三章有两种数据来源：
-1. **summaryTable** - 直接在 ReportData 中设置的汇总表格（不在 Section 中）
+1. **summaryTable 变量** - 模板中的独立变量，在模板层面直接使用 `${summaryTable}`（需要在渲染时通过 model.addAttribute 传入）
 2. **3.x Sections** - 标题以 "3." 开头的 Section，用于补充说明
 
 **对应的 Java 代码示例：**
 
 ```java
-// 方式1：使用独立的 summaryTable（推荐用于主汇总表）
+// 推荐方式：使用 3.x Section（灵活且一致）
+Section section3Summary = new Section("3. 汇总");
 TableData summaryTable = createSummaryTable();
-builder.summaryTable(summaryTable);  // 直接设置到 ReportData
+section3Summary.addTable(summaryTable);
+builder.addSection(section3Summary);
 
-// 方式2：使用 3.x Section（用于核心结论、补充说明等）
+// 用于核心结论、补充说明等
 Section section3Conclusion = new Section("3.1 核心结论");
 section3Conclusion.addParagraph("本次预审针对《智能客户管理系统V2.0需求条目清单.xlsx》...");
 section3Conclusion.addParagraph("整体匹配率80.0%，高优先级需求全部匹配...");
@@ -257,10 +259,15 @@ builder.addSection(section1)
 
 ```java
 // ✅ 推荐：添加序号前缀
-Section section = new Section("1.5 其他匹配项");  // 会渲染在第一章
-Section section = new Section("2.4 其他分析");    // 会渲染在第二章
-Section section = new Section("3.3 补充说明");    // 会渲染在第三章
-Section section = new Section("4.2 附加说明");    // 会渲染在第四章
+Section section15 = new Section("1.5 其他匹配项");  // 会渲染在第一章
+Section section24 = new Section("2.4 其他分析");    // 会渲染在第二章
+Section section33 = new Section("3.3 补充说明");    // 会渲染在第三章
+Section section42 = new Section("4.2 附加说明");    // 会渲染在第四章
+
+builder.addSection(section15)
+       .addSection(section24)
+       .addSection(section33)
+       .addSection(section42);
 ```
 
 #### 方案 2：利用"第三章末尾"区域
@@ -292,12 +299,12 @@ builder.addSection(new Section("备注")
 
 ```java
 // ❌ 不会被识别（使用中文数字）
-Section section = new Section("一、匹配结果");    // 不会被识别为第一章
-Section section = new Section("二、详细分析");    // 不会被识别为第二章
+Section chineseSection1 = new Section("一、匹配结果");    // 不会被识别为第一章
+Section chineseSection2 = new Section("二、详细分析");    // 不会被识别为第二章
 
 // ✅ 正确方式（使用阿拉伯数字）
-Section section = new Section("1. 匹配结果");     // ✅ 会渲染在第一章
-Section section = new Section("2. 详细分析");     // ✅ 会渲染在第二章
+Section arabicSection1 = new Section("1. 匹配结果");     // ✅ 会渲染在第一章
+Section arabicSection2 = new Section("2. 详细分析");     // ✅ 会渲染在第二章
 ```
 
 #### 方案 4：使用 cssClass 增强可读性
@@ -512,6 +519,8 @@ package com.mercury.pdf.render;
 
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class MatcherReportExample {
@@ -551,10 +560,11 @@ public class MatcherReportExample {
         builder.addSection(section22);
         
         // 5. 添加第三章内容
-        // 方式1：直接设置汇总表（不在 Section 中）
-        builder.summaryTable(createSummaryTable());
+        // 方式：添加 3.x Section（包含汇总表）
+        Section section3Summary = new Section("3. 汇总");
+        section3Summary.addTable(createSummaryTable());
+        builder.addSection(section3Summary);
         
-        // 方式2：添加 3.x Section
         Section section31 = new Section("3.1 核心结论");
         section31.addParagraph("本次预审整体匹配率80.0%...");
         builder.addSection(section31);
@@ -640,10 +650,11 @@ public class MatcherReportExample {
    new Section("1.x 内容")                        // ⚠️ 可以，但不够清晰
    ```
 
-2. **为第三章汇总表使用 summaryTable**
+2. **为第三章汇总表使用 3.x Section**
    ```java
-   builder.summaryTable(summaryTable);  // ✅ 推荐
-   // 而不是放在 Section 中
+   Section section3Summary = new Section("3. 汇总");
+   section3Summary.addTable(summaryTable);
+   builder.addSection(section3Summary);  // ✅ 推荐
    ```
 
 3. **按章节顺序添加 Section（便于维护）**
@@ -674,8 +685,12 @@ ReportDataBuilder builder = ReportDataBuilder.create()
     .reportDate("2024-12-31")   // 可选：报告日期
     .reportNumber("AI-001")     // 可选：报告编号
     .reportNotice("说明信息")    // 可选：报告说明（legacy）
-    .metadata("元数据")          // 可选：元数据
-    .summaryTable(table);       // 可选：第三章的汇总表
+    .metadata("元数据");         // 可选：元数据
+
+// 添加第三章汇总表（作为 Section）
+Section summarySection = new Section("3. 汇总");
+summarySection.addTable(table);
+builder.addSection(summarySection);
 ```
 
 ## 向后兼容性

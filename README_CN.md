@@ -558,8 +558,10 @@ builder.addSection(new Section("2.2 匹配失败问题根源")
     .addParagraph("• 需求与文档不同步：...")
     .addParagraph("• 功能定义不细致：..."));
 
-// 第三章：汇总（使用 summaryTable + 3.x Sections）
-builder.summaryTable(createSummaryTable());  // 汇总表格
+// 第三章：汇总（使用 3.x Sections）
+Section section3Summary = new Section("3. 汇总");
+section3Summary.addTable(createSummaryTable());
+builder.addSection(section3Summary);
 
 builder.addSection(new Section("3.1 核心结论")
     .addParagraph("本次预审整体匹配率80.0%..."));
@@ -577,7 +579,7 @@ byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
 1. **Section 标题前缀决定渲染位置** - 模板会根据标题前缀（1., 2., 3., 4.）自动将 Section 渲染到对应章节
 2. **添加顺序不影响渲染位置** - 可以按任意顺序添加 Section，模板会自动分组
 3. **每个 Section 可包含多种内容** - 标题、副标题、段落、表格、图表、TableBlock、自定义 HTML
-4. **第三章有两种数据来源** - `summaryTable`（直接设置）和 3.x Sections（灵活补充）
+4. **第三章汇总表** - 可以创建标题为 "3." 或 "3.x" 的 Section 来包含汇总表格
 5. **⚠️ 没有序号的标题** - 如果标题不以 "1.", "2.", "3.", "4." 开头，该 Section 会被渲染在第三章末尾
 
 #### 常见问题：如果标题没有序号怎么办？
