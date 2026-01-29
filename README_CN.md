@@ -638,7 +638,7 @@ public class ReportController {
 **图表自定义配置示例：**
 
 ```java
-import model.com.mercury.pdf.render.ChartConfig;
+import com.mercury.pdf.render.model.ChartConfig;
 
 import java.awt.Color;
 

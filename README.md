@@ -177,7 +177,7 @@ package com.example.myapp.service;
 
 import com.mercury.pdf.render.ReportService;
 import com.mercury.pdf.render.config.PdfRenderProperties;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -238,7 +238,7 @@ Create a service in your Spring Boot application:
 package com.example.myapp.service;
 
 import com.mercury.pdf.render.ReportService;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -266,7 +266,7 @@ Create a REST controller to expose PDF generation:
 package com.example.myapp.controller;
 
 import com.example.myapp.service.PdfReportService;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -518,7 +518,7 @@ reportData.setCharts(Arrays.asList(chart));
 Use `ChartConfig` to customize chart appearance:
 
 ```java
-import model.com.mercury.pdf.render.ChartConfig;
+import com.mercury.pdf.render.model.ChartConfig;
 
 import java.awt.Color;
 

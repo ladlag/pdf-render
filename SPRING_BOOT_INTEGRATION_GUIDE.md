@@ -419,7 +419,7 @@ public class PdfReportService {
 package com.example.myapp.controller;
 
 import com.example.myapp.service.PdfReportService;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;

@@ -41,7 +41,7 @@ src/main/resources/fonts/
 ```java
 import com.mercury.pdf.render.ReportService;
 import com.mercury.pdf.render.config.FontConfig;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 
 // 创建报表服务
 ReportService service = new ReportService();
@@ -232,7 +232,7 @@ src/main/resources/fonts/
 ```java
 import com.mercury.pdf.render.ReportService;
 import com.mercury.pdf.render.config.FontConfig;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 
 // Create report service
 ReportService service = new ReportService();
