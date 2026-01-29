@@ -23,7 +23,7 @@ src/main/resources/fonts/NotoSansCJKsc-Regular.otf
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 
 ReportService service = new ReportService();
 service.

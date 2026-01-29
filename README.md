@@ -40,7 +40,7 @@ ReportData → HtmlReportRenderer → Thymeleaf Template → HTML → Flying Sau
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 
 ReportService service = new ReportService();
 service.
@@ -176,8 +176,8 @@ If you want to use the configuration properties in your service, you can inject 
 package com.example.myapp.service;
 
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.PdfRenderProperties;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.config.PdfRenderProperties;
+import com.mercury.pdf.render.model.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -238,7 +238,7 @@ Create a service in your Spring Boot application:
 package com.example.myapp.service;
 
 import com.mercury.pdf.render.ReportService;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -266,7 +266,7 @@ Create a REST controller to expose PDF generation:
 package com.example.myapp.controller;
 
 import com.example.myapp.service.PdfReportService;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.model.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -391,7 +391,7 @@ tr {
 The project supports custom font configuration for proper CJK character rendering:
 
 ```java
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 
 // Configure fonts
 FontConfig fontConfig = new FontConfig();
@@ -518,7 +518,7 @@ reportData.setCharts(Arrays.asList(chart));
 Use `ChartConfig` to customize chart appearance:
 
 ```java
-import model.com.mercury.pdf.render.ChartConfig;
+import com.mercury.pdf.render.model.ChartConfig;
 
 import java.awt.Color;
 

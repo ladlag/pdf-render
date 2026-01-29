@@ -58,7 +58,7 @@ byte[] certPdf = service.generatePdf(data, "certificate");   // 证书
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 
 ReportService service = new ReportService();
 service.
@@ -638,7 +638,7 @@ public class ReportController {
 **图表自定义配置示例：**
 
 ```java
-import model.com.mercury.pdf.render.ChartConfig;
+import com.mercury.pdf.render.model.ChartConfig;
 
 import java.awt.Color;
 
@@ -725,7 +725,7 @@ areaChart.setConfig(areaConfig);
 **编程方式：**
 
 ```java
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 
 FontConfig fontConfig = new FontConfig();
 fontConfig.

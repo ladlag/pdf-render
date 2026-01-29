@@ -40,8 +40,8 @@ src/main/resources/fonts/
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.model.ReportData;
 
 // 创建报表服务
 ReportService service = new ReportService();
@@ -93,8 +93,8 @@ pdf-render:
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -231,8 +231,8 @@ src/main/resources/fonts/
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
-import model.com.mercury.pdf.render.ReportData;
+import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.model.ReportData;
 
 // Create report service
 ReportService service = new ReportService();
@@ -289,8 +289,8 @@ Use in Service:
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
