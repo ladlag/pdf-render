@@ -394,6 +394,31 @@
       </table>
     </div>
 
+    <!-- tableBlocks (render ALL) -->
+    <div th:each="blk : ${sec.tableBlocks}">
+      <h3 th:if="${blk.blockId != null or blk.blockTitle != null}">
+        <span th:text="${blk.blockId != null ? blk.blockId : ''}">1.1</span>
+        <span th:text="${blk.blockTitle != null ? ' ' + blk.blockTitle : ''}">标题</span>
+      </h3>
+
+      <table th:if="${blk.tableData != null}">
+        <thead>
+        <tr>
+          <th th:each="col : ${blk.tableData.headers}"
+              th:if="${col != '优先级'}"
+              th:text="${col}">列名</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row, rStat : ${blk.tableData.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+          <td th:each="cell, cStat : ${row}"
+              th:if="${blk.tableData.headers != null and blk.tableData.headers[cStat.index] != '优先级'}"
+              th:text="${cell}">数据</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div th:each="c : ${sec.charts}" class="chart">
       <div class="chart-title" th:text="${c.title}">图表标题</div>
       <img class="chart-img" th:if="${c.base64Image != null and c.base64Image != ''}" th:src="${c.base64Image}" alt="chart"/>
@@ -442,6 +467,155 @@
          style="margin-top: 10px;">
       <h3 th:text="${sec.title}">3.x ...</h3>
       <p th:each="p : ${sec.paragraphs}" th:text="${p}">总结段落</p>
+
+      <!-- tables (render ALL) -->
+      <div th:each="tbl, tStat : ${sec.tables}">
+        <table th:if="${tbl != null}">
+          <thead>
+          <tr>
+            <!-- 去掉"优先级"列（按表头名过滤） -->
+            <th th:each="col : ${tbl.headers}"
+                th:if="${col != '优先级'}"
+                th:text="${col}">列名</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="row, rStat : ${tbl.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+            <!-- 同步跳过"优先级"列（按 headers[索引] 过滤） -->
+            <td th:each="cell, cStat : ${row}"
+                th:if="${tbl.headers != null and tbl.headers[cStat.index] != '优先级'}"
+                th:text="${cell}">数据</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- tableBlocks (render ALL) -->
+      <div th:each="blk : ${sec.tableBlocks}">
+        <h3 th:if="${blk.blockId != null or blk.blockTitle != null}">
+          <span th:text="${blk.blockId != null ? blk.blockId : ''}">1.1</span>
+          <span th:text="${blk.blockTitle != null ? ' ' + blk.blockTitle : ''}">标题</span>
+        </h3>
+
+        <table th:if="${blk.tableData != null}">
+          <thead>
+          <tr>
+            <th th:each="col : ${blk.tableData.headers}"
+                th:if="${col != '优先级'}"
+                th:text="${col}">列名</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="row, rStat : ${blk.tableData.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+            <td th:each="cell, cStat : ${row}"
+                th:if="${blk.tableData.headers != null and blk.tableData.headers[cStat.index] != '优先级'}"
+                th:text="${cell}">数据</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- charts (render ALL) -->
+      <div th:each="c : ${sec.charts}" class="chart">
+        <div class="chart-title" th:text="${c.title}">图表标题</div>
+
+        <!-- ChartData.base64Image：建议你传入 data:image/png;base64,... -->
+        <img class="chart-img"
+             th:if="${c.base64Image != null and c.base64Image != ''}"
+             th:src="${c.base64Image}"
+             alt="chart"/>
+
+        <div class="chart-placeholder"
+             th:if="${c.base64Image == null or c.base64Image == ''}">
+          图表未生成图片（ChartData.base64Image 为空）。建议在 Java 侧生成 PNG 并写入 base64Image（data URI）。
+        </div>
+      </div>
+
+      <!-- customContent (raw html) -->
+      <div th:if="${sec.customContent != null and sec.customContent != ''}"
+           th:utext="${sec.customContent}"></div>
+    </div>
+  </div>
+
+  <!-- Other sections (catch-all for sections not starting with 1., 2., 3., or 4.) -->
+  <div th:if="${sections != null and !#lists.isEmpty(sections)}">
+    <div th:each="sec : ${sections}"
+         th:if="${sec.title != null and 
+                 !#strings.startsWith(sec.title,'1.') and 
+                 !#strings.startsWith(sec.title,'2.') and 
+                 !#strings.startsWith(sec.title,'3.') and 
+                 !#strings.startsWith(sec.title,'4.')}"
+         style="margin-top: 10px;">
+      <h3 th:text="${sec.title}">Other Section</h3>
+      <p class="tiny muted" th:if="${sec.subtitle != null and sec.subtitle != ''}" th:text="${sec.subtitle}"></p>
+      <p th:each="p : ${sec.paragraphs}" th:text="${p}">段落</p>
+
+      <!-- tables (render ALL) -->
+      <div th:each="tbl, tStat : ${sec.tables}">
+        <table th:if="${tbl != null}">
+          <thead>
+          <tr>
+            <!-- 去掉"优先级"列（按表头名过滤） -->
+            <th th:each="col : ${tbl.headers}"
+                th:if="${col != '优先级'}"
+                th:text="${col}">列名</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="row, rStat : ${tbl.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+            <!-- 同步跳过"优先级"列（按 headers[索引] 过滤） -->
+            <td th:each="cell, cStat : ${row}"
+                th:if="${tbl.headers != null and tbl.headers[cStat.index] != '优先级'}"
+                th:text="${cell}">数据</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- tableBlocks (render ALL) -->
+      <div th:each="blk : ${sec.tableBlocks}">
+        <h3 th:if="${blk.blockId != null or blk.blockTitle != null}">
+          <span th:text="${blk.blockId != null ? blk.blockId : ''}">1.1</span>
+          <span th:text="${blk.blockTitle != null ? ' ' + blk.blockTitle : ''}">标题</span>
+        </h3>
+
+        <table th:if="${blk.tableData != null}">
+          <thead>
+          <tr>
+            <th th:each="col : ${blk.tableData.headers}"
+                th:if="${col != '优先级'}"
+                th:text="${col}">列名</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="row, rStat : ${blk.tableData.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
+            <td th:each="cell, cStat : ${row}"
+                th:if="${blk.tableData.headers != null and blk.tableData.headers[cStat.index] != '优先级'}"
+                th:text="${cell}">数据</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- charts (render ALL) -->
+      <div th:each="c : ${sec.charts}" class="chart">
+        <div class="chart-title" th:text="${c.title}">图表标题</div>
+
+        <!-- ChartData.base64Image：建议你传入 data:image/png;base64,... -->
+        <img class="chart-img"
+             th:if="${c.base64Image != null and c.base64Image != ''}"
+             th:src="${c.base64Image}"
+             alt="chart"/>
+
+        <div class="chart-placeholder"
+             th:if="${c.base64Image == null or c.base64Image == ''}">
+          图表未生成图片（ChartData.base64Image 为空）。建议在 Java 侧生成 PNG 并写入 base64Image（data URI）。
+        </div>
+      </div>
+
+      <!-- customContent (raw html) -->
+      <div th:if="${sec.customContent != null and sec.customContent != ''}"
+           th:utext="${sec.customContent}"></div>
     </div>
   </div>
 
