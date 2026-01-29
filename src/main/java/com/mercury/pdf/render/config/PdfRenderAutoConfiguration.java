@@ -50,6 +50,34 @@ public class PdfRenderAutoConfiguration {
         if (htmlRenderer != null) {
             htmlRenderer.setDefaultTemplateName(properties.getTemplate().getDefaultName());
             htmlRenderer.setCacheTemplates(properties.getTemplate().isCacheEnabled());
+            
+            // Apply font configuration from YAML if configured
+            PdfRenderProperties.FontProperties fontProps = properties.getFonts();
+            if (fontProps != null && (fontProps.getRegularPath() != null || fontProps.getCjkPath() != null)) {
+                FontConfig fontConfig = new FontConfig();
+                
+                // Set font paths
+                if (fontProps.getRegularPath() != null) {
+                    fontConfig.setRegularFontPath(fontProps.getRegularPath());
+                }
+                if (fontProps.getBoldPath() != null) {
+                    fontConfig.setBoldFontPath(fontProps.getBoldPath());
+                }
+                if (fontProps.getCjkPath() != null) {
+                    fontConfig.setCjkFontPath(fontProps.getCjkPath());
+                }
+                
+                // Set font families
+                if (fontProps.getDefaultFamily() != null) {
+                    fontConfig.setDefaultFontFamily(fontProps.getDefaultFamily());
+                }
+                if (fontProps.getCjkFamily() != null) {
+                    fontConfig.setCjkFontFamily(fontProps.getCjkFamily());
+                }
+                
+                // Apply font config to renderer
+                htmlRenderer.setFontConfig(fontConfig);
+            }
         }
         
         return service;
