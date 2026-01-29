@@ -519,7 +519,7 @@ public class ComplexOrderExample {
 详细的模板自定义指南请参考：
 - [ADDING_TEMPLATES.md](ADDING_TEMPLATES.md) - 通用模板添加指南
 - [MATCHER_REPORT_FINAL_MAPPING_CN.md](MATCHER_REPORT_FINAL_MAPPING_CN.md) - matcher-report-final 模板与 ReportData 映射详解
-- [SECTION_TYPE_DECOUPLING_CN.md](SECTION_TYPE_DECOUPLING_CN.md) - **⭐ 新功能：SectionType 系统解耦数据与模板**
+- [SECTION_TYPE_DECOUPLING_CN.md](SECTION_TYPE_DECOUPLING_CN.md) - **⭐ 新功能：通用 sectionType 解耦数据与模板**
 
 ## 模板映射说明
 
@@ -527,15 +527,14 @@ public class ComplexOrderExample {
 
 `matcher-report-final` 是一个需求预审报告模板，专门用于生成匹配度分析报告。
 
-#### ⭐ 推荐方式：使用 SectionType（数据与模板解耦）
+#### ⭐ 推荐方式：使用 sectionType（数据与模板解耦）
 
 **新增功能：** 现在支持使用 `sectionType` 来标识 section，不再依赖标题前缀！
 
 ```java
-import com.mercury.pdf.render.model.SectionType;
-
 // ✅ 推荐：使用 sectionType，标题可以是任意文本
-Section section = new Section("精确匹配通过", SectionType.CHAPTER_1);
+// sectionType 的值完全由您和您的模板决定
+Section section = new Section("精确匹配通过", "chapter1");
 section.addTable(table);
 builder.addSection(section);
 
@@ -543,19 +542,23 @@ builder.addSection(section);
 // - 标题完全自定义，无需数字前缀
 // - 数据与模板完全解耦
 // - Section 可以按任意顺序添加
+// - sectionType 值可以是任意字符串
 ```
 
-**SectionType 映射规则：**
+**对于 matcher-report-final 模板的 sectionType 映射：**
 
-| SectionType 常量 | 渲染位置 | 示例标题（可自定义） |
-|-----------------|---------|------------------|
-| `SectionType.CHAPTER_1` | 第一章：匹配结果详细列表 | "精确匹配通过", "语义匹配通过" |
-| `SectionType.CHAPTER_2` | 第二章：详细分析内容 | "模块匹配表现", "问题根源分析" |
-| `SectionType.CHAPTER_3` | 第三章：预审结果总结 | "匹配结果汇总", "核心结论" |
-| `SectionType.CHAPTER_4` | 第四章：报告说明 | "报告说明", "免责声明" |
-| `SectionType.APPENDIX` / `SectionType.OTHER` | 第三章末尾 | "附录信息", "补充说明" |
+| sectionType 值 | 渲染位置 | 示例标题（可自定义） |
+|---------------|---------|------------------|
+| `"chapter1"` | 第一章：匹配结果详细列表 | "精确匹配通过", "语义匹配通过" |
+| `"chapter2"` | 第二章：详细分析内容 | "模块匹配表现", "问题根源分析" |
+| `"chapter3"` | 第三章：预审结果总结 | "匹配结果汇总", "核心结论" |
+| `"chapter4"` | 第四章：报告说明 | "报告说明", "免责声明" |
+| `"appendix"` 或 `"other"` | 第三章末尾 | "附录信息", "补充说明" |
 
-📖 **详细文档：** [SectionType 系统解耦指南](SECTION_TYPE_DECOUPLING_CN.md)
+**⚠️ 注意：** 上述 sectionType 值（"chapter1", "chapter2" 等）仅适用于 matcher-report-final 模板。
+其他模板可以定义自己的 sectionType 值。
+
+📖 **详细文档：** [通用 SectionType 解耦指南](SECTION_TYPE_DECOUPLING_CN.md)
 
 #### 传统方式：标题前缀匹配（向后兼容）
 

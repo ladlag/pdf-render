@@ -7,16 +7,37 @@ import java.util.List;
  * Represents a flexible section in the report that can contain various content types.
  * Supports dynamic composition of titles, paragraphs, tables, and charts.
  * 
- * <p>Section identification can be done in two ways:
+ * <p><b>Section Identification:</b>
+ * <p>The {@code sectionType} field provides a generic way to identify and categorize sections
+ * without depending on title format or content. This allows complete decoupling between
+ * your data structure and template rendering logic.
+ * 
+ * <p><b>Usage:</b>
  * <ul>
- *   <li><b>Recommended:</b> Using {@code sectionType} for explicit, template-independent identification</li>
- *   <li><b>Legacy:</b> Using title prefix matching (e.g., "1.", "2.") - maintained for backward compatibility</li>
+ *   <li>Set {@code sectionType} to any string value that your template can recognize</li>
+ *   <li>Templates can use {@code sectionType} to determine where/how to render sections</li>
+ *   <li>No predefined values - you define what makes sense for your use case</li>
+ *   <li>Backward compatible - if {@code sectionType} is null, templates may fallback to title-based logic</li>
  * </ul>
+ * 
+ * <p><b>Example:</b>
+ * <pre>
+ * // Simple usage with custom section types
+ * Section intro = new Section("Introduction", "intro");
+ * Section body = new Section("Main Content", "body");  
+ * Section conclusion = new Section("Conclusion", "conclusion");
+ * 
+ * // Or use fluent API
+ * Section section = new Section("My Section")
+ *     .withSectionType("custom-type")
+ *     .addParagraph("Content...")
+ *     .addTable(table);
+ * </pre>
  */
 public class Section {
     private String title;
     private String subtitle;
-    private String sectionType;  // Decouples section identification from title
+    private String sectionType;  // Generic identifier for template-independent section categorization
     private List<String> paragraphs;
     private List<TableData> tables;
     private List<ChartData> charts;
@@ -38,10 +59,10 @@ public class Section {
     
     /**
      * Creates a section with both title and type.
-     * This constructor allows explicit section type identification independent of the title.
      * 
-     * @param title The section title (can be any text, not required to have numeric prefix)
-     * @param sectionType The section type identifier (e.g., "chapter1", "chapter2", "summary")
+     * @param title The section title (any text)
+     * @param sectionType A custom identifier for this section (e.g., "intro", "body", "conclusion")
+     *                    The value is determined by your template's needs
      */
     public Section(String title, String sectionType) {
         this();
@@ -95,9 +116,8 @@ public class Section {
     
     /**
      * Sets the section type identifier.
-     * This provides a template-independent way to identify sections.
      * 
-     * @param sectionType The section type (e.g., "chapter1", "chapter2", "summary", "notes")
+     * @param sectionType A custom string identifier that your template can use to categorize this section
      * @return this Section for method chaining
      */
     public Section withSectionType(String sectionType) {

@@ -2,6 +2,7 @@ package com.mercury.pdf.render;
 
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.*;
+import com.mercury.pdf.render.examples.MatcherReportSectionTypes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -132,24 +133,24 @@ public class SectionTypeDecouplingTest {
         // ===== Chapter 1: Using sectionType instead of title prefix =====
         // Note: Titles don't need numeric prefixes anymore!
         
-        Section exactMatch = new Section("精确匹配通过", SectionType.CHAPTER_1);
+        Section exactMatch = new Section("精确匹配通过", MatcherReportSectionTypes.CHAPTER_1);
         exactMatch.addParagraph("✓ 使用 sectionType='chapter1'，标题不需要 '1.' 前缀");
         exactMatch.addTable(createSimpleTable("精确匹配", "10 条"));
         builder.addSection(exactMatch);
 
-        Section semanticMatch = new Section("语义匹配通过", SectionType.CHAPTER_1);
+        Section semanticMatch = new Section("语义匹配通过", MatcherReportSectionTypes.CHAPTER_1);
         semanticMatch.addParagraph("✓ 同样使用 sectionType='chapter1'");
         semanticMatch.addTable(createSimpleTable("语义匹配", "6 条"));
         builder.addSection(semanticMatch);
 
         // ===== Chapter 2: Analysis sections =====
         
-        Section moduleAnalysis = new Section("模块匹配表现分析", SectionType.CHAPTER_2);
+        Section moduleAnalysis = new Section("模块匹配表现分析", MatcherReportSectionTypes.CHAPTER_2);
         moduleAnalysis.addParagraph("✓ 使用 sectionType='chapter2'");
         moduleAnalysis.addParagraph("按业务模块拆分匹配结果，用户管理、客户管理模块匹配表现优异。");
         builder.addSection(moduleAnalysis);
 
-        Section problemAnalysis = new Section("问题根源分析", SectionType.CHAPTER_2);
+        Section problemAnalysis = new Section("问题根源分析", MatcherReportSectionTypes.CHAPTER_2);
         problemAnalysis.addParagraph("✓ 标题完全自定义，无需数字前缀");
         problemAnalysis.addParagraph("• 需求与文档不同步");
         problemAnalysis.addParagraph("• 功能定义不细致");
@@ -157,18 +158,18 @@ public class SectionTypeDecouplingTest {
 
         // ===== Chapter 3: Summary =====
         
-        Section summary = new Section("匹配结果汇总", SectionType.CHAPTER_3);
+        Section summary = new Section("匹配结果汇总", MatcherReportSectionTypes.CHAPTER_3);
         summary.addTable(createSummaryTable());
         builder.addSection(summary);
 
-        Section conclusion = new Section("核心结论", SectionType.CHAPTER_3);
+        Section conclusion = new Section("核心结论", MatcherReportSectionTypes.CHAPTER_3);
         conclusion.addParagraph("✓ 使用 sectionType='chapter3'");
         conclusion.addParagraph("整体匹配率80.0%，高优先级需求全部匹配。");
         builder.addSection(conclusion);
 
         // ===== Chapter 4: Notes =====
         
-        Section notes = new Section("报告说明", SectionType.CHAPTER_4);
+        Section notes = new Section("报告说明", MatcherReportSectionTypes.CHAPTER_4);
         notes.addParagraph("✓ 使用 sectionType='chapter4'");
         notes.addParagraph("报告编号：TYPE-001");
         notes.addParagraph("生成日期：2024-12-31");
@@ -176,7 +177,7 @@ public class SectionTypeDecouplingTest {
 
         // ===== Other sections =====
         
-        Section appendix = new Section("附录信息", SectionType.APPENDIX);
+        Section appendix = new Section("附录信息", MatcherReportSectionTypes.APPENDIX);
         appendix.addParagraph("✓ 使用 sectionType='appendix'，会渲染在第三章末尾");
         builder.addSection(appendix);
 
@@ -227,7 +228,7 @@ public class SectionTypeDecouplingTest {
         // Mix of new and old approaches
         
         // New way: sectionType
-        Section newWay1 = new Section("精确匹配通过（新方式）", SectionType.CHAPTER_1);
+        Section newWay1 = new Section("精确匹配通过（新方式）", MatcherReportSectionTypes.CHAPTER_1);
         newWay1.addParagraph("✓ 使用 sectionType");
         builder.addSection(newWay1);
 
@@ -237,7 +238,7 @@ public class SectionTypeDecouplingTest {
         builder.addSection(oldWay1);
 
         // New way for chapter 2
-        Section newWay2 = new Section("详细分析（新方式）", SectionType.CHAPTER_2);
+        Section newWay2 = new Section("详细分析（新方式）", MatcherReportSectionTypes.CHAPTER_2);
         newWay2.addParagraph("✓ 使用 sectionType");
         builder.addSection(newWay2);
 
@@ -247,7 +248,7 @@ public class SectionTypeDecouplingTest {
         builder.addSection(oldWay3);
 
         // New way for chapter 4
-        Section newWay4 = new Section("报告说明（新方式）", SectionType.CHAPTER_4);
+        Section newWay4 = new Section("报告说明（新方式）", MatcherReportSectionTypes.CHAPTER_4);
         newWay4.addParagraph("✓ 使用 sectionType");
         builder.addSection(newWay4);
 

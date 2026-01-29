@@ -1,347 +1,193 @@
-# Section Type 系统：数据与模板解耦
+# Section Type 系统：通用的数据与模板解耦方案
 
 ## 概述
 
-为了解决后端数据与模板紧密耦合的问题，我们引入了基于 `sectionType` 的标识系统。现在可以通过显式的 ID/Type 来标识 section，而不是依赖标题前缀。
+`sectionType` 是 Section 类的一个通用字符串字段，用于在不依赖标题格式的情况下标识和分类 section。
 
-## 问题背景
+**核心理念：** `sectionType` 没有预定义的值，完全由您的模板和业务需求决定。
 
-**旧系统的问题：**
-- ❌ 后端数据依赖标题前缀（"1.", "2.", "3.", "4."）
-- ❌ 标题格式与模板渲染位置紧密耦合
-- ❌ 后端数据添加顺序混乱，无法清晰表达意图
-- ❌ 不够通用和灵活
+## 设计原则
 
-**新系统的优势：**
-- ✅ 使用 `sectionType` 显式标识 section 类型
-- ✅ 标题可以是任意文本，不需要数字前缀
-- ✅ 后端数据与模板完全解耦
-- ✅ Section 可以按任意顺序添加
-- ✅ 清晰的语义表达
-- ✅ 完全向后兼容
+✅ **完全通用** - 不预设任何特定业务场景
+✅ **灵活自定义** - sectionType 可以是任意字符串
+✅ **模板自主** - 由模板决定如何使用 sectionType
+✅ **无强制依赖** - sectionType 是可选的，可以为 null
 
-## 使用方式
+## 基本用法
 
-### 方式 1：使用 SectionType 常量（推荐）
+### 示例 1：简单的报告结构
 
 ```java
-import com.mercury.pdf.render.model.Section;
-import com.mercury.pdf.render.model.SectionType;
+// 定义您自己的 section 类型（在您的代码中）
+Section intro = new Section("引言", "intro");
+Section body = new Section("正文", "body");
+Section conclusion = new Section("结论", "conclusion");
 
-// 创建 Section 时指定 sectionType
-Section section = new Section("精确匹配通过", SectionType.CHAPTER_1);
-section.addParagraph("这是第一章的内容");
-section.addTable(table);
-
-// 或使用 fluent API
-Section section = new Section("精确匹配通过")
-    .withSectionType(SectionType.CHAPTER_1)
-    .addParagraph("这是第一章的内容")
-    .addTable(table);
-
-builder.addSection(section);
+builder.addSection(intro);
+builder.addSection(body);
+builder.addSection(conclusion);
 ```
 
-### 方式 2：使用字符串 sectionType
+### 示例 2：多级结构
 
 ```java
-// 直接使用字符串
-Section section = new Section("详细分析", "chapter2");
-section.addParagraph("这是第二章的内容");
-
-builder.addSection(section);
+// 使用任意字符串作为 sectionType
+Section header = new Section("头部", "header");
+Section content1 = new Section("第一部分", "content-primary");
+Section content2 = new Section("第二部分", "content-secondary");
+Section footer = new Section("尾部", "footer");
 ```
 
-### 方式 3：传统方式（向后兼容）
+### 示例 3：语义化标识
 
 ```java
-// 仍然支持传统的标题前缀方式
-Section section = new Section("1.1 精确匹配通过");
-section.addParagraph("使用标题前缀，自动识别为第一章");
-
-builder.addSection(section);
+// 使用语义化的 sectionType
+Section summary = new Section("摘要", "summary");
+Section details = new Section("详情", "details");
+Section appendix = new Section("附录", "appendix");
 ```
+
+## 模板如何使用 sectionType
+
+在 Thymeleaf 模板中，您可以根据 `sectionType` 来决定如何渲染 section：
+
+```html
+<!-- 示例：根据 sectionType 渲染不同位置 -->
+
+<!-- 渲染 intro 类型的 sections -->
+<div th:each="sec : ${sections}"
+     th:if="${sec.sectionType == 'intro'}">
+  <h1 th:text="${sec.title}">Introduction</h1>
+  <!-- intro 的特定样式 -->
+</div>
+
+<!-- 渲染 body 类型的 sections -->
+<div th:each="sec : ${sections}"
+     th:if="${sec.sectionType == 'body'}">
+  <h2 th:text="${sec.title}">Body</h2>
+  <!-- body 的特定样式 -->
+</div>
+
+<!-- 渲染 conclusion 类型的 sections -->
+<div th:each="sec : ${sections}"
+     th:if="${sec.sectionType == 'conclusion'}">
+  <h3 th:text="${sec.title}">Conclusion</h3>
+  <!-- conclusion 的特定样式 -->
+</div>
+```
+
+## matcher-report-final 模板示例
+
+对于 matcher-report-final 模板，我们提供了一个**示例常量类**（非必需）：
+
+```java
+// 这只是一个示例，您可以定义自己的常量
+import com.mercury.pdf.render.examples.MatcherReportSectionTypes;
+
+Section section = new Section("匹配结果", MatcherReportSectionTypes.CHAPTER_1);
+
+// 或者直接使用字符串（推荐，更灵活）
+Section section = new Section("匹配结果", "chapter1");
+```
+
+**⚠️ 重要：** `MatcherReportSectionTypes` 只是一个示例，不是核心引擎的一部分。
 
 ## 完整示例
 
 ```java
 import com.mercury.pdf.render.ReportService;
 import com.mercury.pdf.render.model.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-public class DecoupledReportExample {
+public class GenericReportExample {
     
     public static void main(String[] args) throws Exception {
         ReportService service = new ReportService();
         
         ReportDataBuilder builder = ReportDataBuilder.create()
-            .title("需求预审报告")
-            .reportDate("2024-12-31");
+            .title("通用报告");
         
-        // ===== 第一章：使用 SectionType，标题完全自定义 =====
+        // 方式 1：直接使用字符串（推荐）
+        builder.addSection(new Section("概述", "overview")
+            .addParagraph("这是概述内容"));
         
-        Section exactMatch = new Section("精确匹配通过", SectionType.CHAPTER_1);
-        exactMatch.addParagraph("匹配度 ≥ 0.90 的需求");
-        exactMatch.addTable(createMatchTable());
-        builder.addSection(exactMatch);
+        builder.addSection(new Section("详细内容", "details")
+            .addParagraph("这是详细内容")
+            .addTable(table));
         
-        Section semanticMatch = new Section("语义匹配通过", SectionType.CHAPTER_1);
-        semanticMatch.addParagraph("0.70 ≤ 匹配度 < 0.90");
-        semanticMatch.addTable(createSemanticTable());
-        builder.addSection(semanticMatch);
+        builder.addSection(new Section("总结", "summary")
+            .addParagraph("这是总结"));
         
-        // ===== 第二章：分析内容 =====
-        
-        Section analysis = new Section("模块匹配表现分析", SectionType.CHAPTER_2);
-        analysis.addParagraph("按业务模块拆分匹配结果...");
-        builder.addSection(analysis);
-        
-        Section problemAnalysis = new Section("问题根源分析", SectionType.CHAPTER_2);
-        problemAnalysis.addParagraph("• 需求与文档不同步");
-        problemAnalysis.addParagraph("• 功能定义不细致");
-        builder.addSection(problemAnalysis);
-        
-        // ===== 第三章：汇总 =====
-        
-        Section summary = new Section("匹配结果汇总", SectionType.CHAPTER_3);
-        summary.addTable(createSummaryTable());
-        builder.addSection(summary);
-        
-        Section conclusion = new Section("核心结论", SectionType.CHAPTER_3);
-        conclusion.addParagraph("整体匹配率80.0%，高优先级需求全部匹配。");
-        builder.addSection(conclusion);
-        
-        // ===== 第四章：说明 =====
-        
-        Section notes = new Section("报告说明", SectionType.CHAPTER_4);
-        notes.addParagraph("报告编号：AI-PRE-2024-001");
-        notes.addParagraph("生成日期：2024-12-31");
-        builder.addSection(notes);
-        
-        // ===== 附录（会渲染在第三章末尾）=====
-        
-        Section appendix = new Section("附录信息", SectionType.APPENDIX);
-        appendix.addParagraph("补充说明...");
+        // 方式 2：先创建后设置
+        Section appendix = new Section("附录");
+        appendix.withSectionType("appendix");
+        appendix.addParagraph("附录内容");
         builder.addSection(appendix);
         
         // 生成 PDF
-        ReportData reportData = builder.build();
-        byte[] pdfBytes = service.generatePdf(reportData, "matcher-report-final");
-        Files.write(Paths.get("report.pdf"), pdfBytes);
-        
-        System.out.println("✓ 报告生成成功！");
-    }
-    
-    private static TableData createMatchTable() {
-        // 创建表格...
-        return new TableData(/* ... */);
-    }
-    
-    private static TableData createSemanticTable() {
-        // 创建表格...
-        return new TableData(/* ... */);
-    }
-    
-    private static TableData createSummaryTable() {
-        // 创建汇总表格...
-        return new TableData(/* ... */);
+        byte[] pdf = service.generatePdf(builder.build(), "your-template");
     }
 }
 ```
 
-## SectionType 常量
+## 与标题前缀的区别
 
-| 常量 | 值 | 说明 | 渲染位置 |
-|-----|-----|------|---------|
-| `SectionType.CHAPTER_1` | `"chapter1"` | 第一章：匹配结果详细列表 | 第一章 |
-| `SectionType.CHAPTER_2` | `"chapter2"` | 第二章：详细分析内容 | 第二章 |
-| `SectionType.CHAPTER_3` | `"chapter3"` | 第三章：预审结果总结 | 第三章 |
-| `SectionType.CHAPTER_4` | `"chapter4"` | 第四章：报告说明 | 第四章 |
-| `SectionType.OTHER` | `"other"` | 其他内容 | 第三章末尾 |
-| `SectionType.APPENDIX` | `"appendix"` | 附录 | 第三章末尾 |
-
-## Section 识别优先级
-
-模板使用以下优先级来识别 Section 应该渲染的位置：
-
-1. **优先：** 如果 `sectionType` 不为 null，使用 `sectionType` 判断
-2. **回退：** 如果 `sectionType` 为 null，使用标题前缀判断（向后兼容）
-
-**示例：**
+### 旧方式（依赖标题）
 
 ```java
-// 情况 1：明确指定 sectionType，标题可以是任意文本
-Section s1 = new Section("自定义标题", SectionType.CHAPTER_1);
-// 结果：渲染在第一章，因为 sectionType="chapter1"
-
-// 情况 2：没有指定 sectionType，使用标题前缀
-Section s2 = new Section("1.1 传统标题");
-// 结果：渲染在第一章，因为标题以 "1." 开头
-
-// 情况 3：同时有 sectionType 和标题前缀
-Section s3 = new Section("1.1 混合标题", SectionType.CHAPTER_2);
-// 结果：渲染在第二章，因为 sectionType 优先级更高
-
-// 情况 4：没有 sectionType，标题也没有标准前缀
-Section s4 = new Section("附加信息");
-// 结果：渲染在第三章末尾（OTHER sections）
+// 标题格式决定渲染位置 - 紧耦合
+Section section = new Section("1.1 第一章");
+// 模板通过检查标题 "1." 前缀来判断
 ```
 
-## 关键优势对比
-
-### 旧方式（标题前缀）
+### 新方式（使用 sectionType）
 
 ```java
-// 标题必须有数字前缀
-Section section1 = new Section("1.1 精确匹配通过");
-Section section2 = new Section("1.2 语义匹配通过");
-Section section3 = new Section("2.1 详细分析");
-
-// 问题：
-// 1. 标题格式受限
-// 2. 与模板耦合
-// 3. 不够灵活
-```
-
-### 新方式（SectionType）
-
-```java
+// 标题和位置独立 - 松耦合
+Section section = new Section("第一章", "chapter1");
+// 模板通过检查 sectionType 来判断
 // 标题可以是任意文本
-Section section1 = new Section("精确匹配通过", SectionType.CHAPTER_1);
-Section section2 = new Section("语义匹配通过", SectionType.CHAPTER_1);
-Section section3 = new Section("详细分析", SectionType.CHAPTER_2);
-
-// 优势：
-// 1. 标题完全自定义
-// 2. 数据与模板解耦
-// 3. 语义清晰
-// 4. 灵活可扩展
 ```
 
-## 添加顺序无关
+## 向后兼容
 
-使用 `sectionType` 后，Section 的添加顺序不会影响渲染位置：
+- ✅ `sectionType` 是可选的，可以为 null
+- ✅ 模板可以同时支持 sectionType 和标题前缀
+- ✅ 优先使用 sectionType，如果为 null 则回退到标题检查
+- ✅ 现有代码无需修改即可继续工作
+
+## 自定义您的 section 类型
+
+**推荐做法：** 在您自己的项目中定义常量
 
 ```java
-// 可以按任意顺序添加 Section
-builder.addSection(new Section("详细分析", SectionType.CHAPTER_2));
-builder.addSection(new Section("精确匹配", SectionType.CHAPTER_1));
-builder.addSection(new Section("核心结论", SectionType.CHAPTER_3));
-builder.addSection(new Section("报告说明", SectionType.CHAPTER_4));
+// 在您的项目代码中
+public class MyReportSectionTypes {
+    public static final String HEADER = "header";
+    public static final String INTRODUCTION = "introduction";
+    public static final String METHODOLOGY = "methodology";
+    public static final String RESULTS = "results";
+    public static final String DISCUSSION = "discussion";
+    public static final String CONCLUSION = "conclusion";
+    public static final String REFERENCES = "references";
+}
 
-// 模板会自动按 sectionType 分组渲染：
-// 第一章：精确匹配
-// 第二章：详细分析
-// 第三章：核心结论
-// 第四章：报告说明
+// 使用
+Section intro = new Section("Introduction", MyReportSectionTypes.INTRODUCTION);
 ```
 
-## 迁移指南
+## 关键要点
 
-### 从旧方式迁移到新方式
-
-**步骤 1：** 找到现有的 Section 创建代码
-
-```java
-// 旧代码
-Section section = new Section("1.1 精确匹配通过");
-```
-
-**步骤 2：** 添加 SectionType 常量导入
-
-```java
-import com.mercury.pdf.render.model.SectionType;
-```
-
-**步骤 3：** 更新 Section 创建方式
-
-```java
-// 新代码（推荐）
-Section section = new Section("精确匹配通过", SectionType.CHAPTER_1);
-
-// 或保持标题不变也可以
-Section section = new Section("1.1 精确匹配通过", SectionType.CHAPTER_1);
-```
-
-**步骤 4：** 逐步迁移所有 Section
-
-**注意：** 可以分批迁移，新旧方式可以共存！
-
-## 向后兼容性
-
-- ✅ 所有现有代码无需修改即可继续工作
-- ✅ 标题前缀匹配仍然支持
-- ✅ 新旧方式可以混合使用
-- ✅ 不会影响现有报告生成
-
-## 扩展性
-
-### 自定义 SectionType
-
-除了使用预定义的常量，也可以使用自定义字符串：
-
-```java
-// 自定义 sectionType（如果模板支持）
-Section section = new Section("特殊内容", "custom-section");
-section.withSectionType("my-custom-type");
-```
-
-### 模板扩展
-
-如果需要在模板中支持新的 section 类型，只需在模板中添加相应的判断条件：
-
-```html
-<!-- 示例：添加自定义 section 类型支持 -->
-<div th:each="sec : ${sections}"
-     th:if="${sec.sectionType != null and sec.sectionType == 'custom-type'}">
-  <!-- 自定义渲染逻辑 -->
-</div>
-```
-
-## 最佳实践
-
-1. **新项目：** 优先使用 `sectionType` 常量
-2. **现有项目：** 可以逐步迁移，新代码使用 `sectionType`
-3. **标题设计：** 使用有意义的标题，不必包含数字前缀
-4. **语义清晰：** 使用 `SectionType` 常量，而不是魔法字符串
-5. **保持一致：** 在同一个项目中尽量使用统一的方式
-
-## 工具方法
-
-### SectionType.inferFromTitle()
-
-自动从标题推断 sectionType（用于迁移）：
-
-```java
-String type = SectionType.inferFromTitle("1.1 精确匹配");
-// 返回: "chapter1"
-
-String type = SectionType.inferFromTitle("2.3 详细分析");
-// 返回: "chapter2"
-
-String type = SectionType.inferFromTitle("附加信息");
-// 返回: null（无法推断）
-```
-
-### SectionType.isChapterType()
-
-检查是否为标准章节类型：
-
-```java
-boolean isChapter = SectionType.isChapterType("chapter1");
-// 返回: true
-
-boolean isChapter = SectionType.isChapterType("other");
-// 返回: false
-```
+1. **sectionType 是完全自定义的** - 没有预定义的值
+2. **由模板决定如何使用** - 不同模板可以定义不同的 sectionType 值
+3. **保持核心引擎通用** - 引擎本身不关心 sectionType 的具体值
+4. **业务逻辑在您的代码中** - 在您的项目中定义 sectionType 常量
+5. **灵活且可扩展** - 可以随时添加新的 sectionType 值
 
 ## 参考资源
 
 - Section 类：`src/main/java/com/mercury/pdf/render/model/Section.java`
-- SectionType 常量：`src/main/java/com/mercury/pdf/render/model/SectionType.java`
-- 测试用例：`src/test/java/com/mercury/pdf/render/SectionTypeDecouplingTest.java`
-- 模板文件：`src/main/resources/templates/matcher-report-final.html`
+- 示例常量（matcher-report-final）：`src/main/java/com/mercury/pdf/render/examples/MatcherReportSectionTypes.java`
+- 测试示例：`src/test/java/com/mercury/pdf/render/SectionTypeDecouplingTest.java`
 
 ## 问题反馈
 
