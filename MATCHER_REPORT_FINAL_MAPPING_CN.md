@@ -20,7 +20,9 @@
 | `2.` 开头 | 第二章：详细分析内容 | 如 "2.1", "2.2", "2.3" |
 | `3.` 开头 | 第三章：预审结果总结 | 如 "3.1", "3.2" |
 | `4.` 开头 | 第四章：报告说明 | 如 "4.1" |
-| 其他前缀 | 第三章末尾（Other sections） | 不以 1-4 开头的标题 |
+| **其他前缀/无序号** | **第三章末尾（Other sections）** | **不以 1-4 开头的标题** |
+
+⚠️ **重要说明：如果标题没有序号（或序号不是 1-4 开头），该 Section 会被渲染在第三章的末尾。**
 
 ## 模板结构详解
 
@@ -219,6 +221,144 @@ notesSection.addParagraph("特别注意事项...");
 builder.addSection(customSection)
        .addSection(notesSection);
 ```
+
+## 没有序号的标题如何处理？
+
+### 当前行为
+
+如果 Section 的标题**没有以 "1.", "2.", "3.", "4." 开头**，模板会将其渲染在**第三章的末尾**（在汇总表和 3.x Sections 之后）。
+
+**示例：**
+
+```java
+// 这些 Section 都会被渲染在第三章末尾
+Section section1 = new Section("附加信息");  // 没有序号
+Section section2 = new Section("备注");      // 没有序号
+Section section3 = new Section("A. 附录");   // 序号不是 1-4
+Section section4 = new Section("说明");      // 没有序号
+Section section5 = new Section("5.1 其他"); // 序号是 5，不是 1-4
+
+builder.addSection(section1)
+       .addSection(section2)
+       .addSection(section3)
+       .addSection(section4)
+       .addSection(section5);
+```
+
+**渲染结果：** 这些 Section 会按添加顺序出现在第三章的末尾。
+
+### 解决方案
+
+根据您的需求，有以下几种解决方案：
+
+#### 方案 1：添加序号前缀（推荐）
+
+最简单的方法是为标题添加相应的序号前缀，让模板自动将其归类到正确的章节。
+
+```java
+// ✅ 推荐：添加序号前缀
+Section section = new Section("1.5 其他匹配项");  // 会渲染在第一章
+Section section = new Section("2.4 其他分析");    // 会渲染在第二章
+Section section = new Section("3.3 补充说明");    // 会渲染在第三章
+Section section = new Section("4.2 附加说明");    // 会渲染在第四章
+```
+
+#### 方案 2：利用"第三章末尾"区域
+
+如果您希望某些内容出现在第三章末尾（在主要汇总之后），可以有意使用没有序号的标题。
+
+```java
+// 第三章的主要内容（使用 3.x 序号）
+builder.addSection(new Section("3.1 核心结论")
+    .addParagraph("本次预审整体匹配率80.0%..."));
+
+// 第三章的补充内容（没有序号，会出现在末尾）
+builder.addSection(new Section("补充说明")
+    .addParagraph("以下是一些额外的注意事项..."));
+
+builder.addSection(new Section("备注")
+    .addParagraph("特别提醒事项..."));
+```
+
+**渲染顺序：**
+1. 第三章标题："三、预审结果总结"
+2. summaryTable（汇总表格）
+3. 3.x Sections（如 "3.1 核心结论"）
+4. 其他 Sections（如 "补充说明"、"备注"）
+
+#### 方案 3：使用中文章节标记
+
+如果您的标题使用中文章节标记（如"一、"、"二、"等），需要改用阿拉伯数字：
+
+```java
+// ❌ 不会被识别（使用中文数字）
+Section section = new Section("一、匹配结果");    // 不会被识别为第一章
+Section section = new Section("二、详细分析");    // 不会被识别为第二章
+
+// ✅ 正确方式（使用阿拉伯数字）
+Section section = new Section("1. 匹配结果");     // ✅ 会渲染在第一章
+Section section = new Section("2. 详细分析");     // ✅ 会渲染在第二章
+```
+
+#### 方案 4：使用 cssClass 增强可读性
+
+如果标题没有序号但需要在第三章末尾显示，可以使用 cssClass 来增强样式：
+
+```java
+Section section = new Section("重要提示")
+    .addParagraph("请注意以下事项...")
+    .withCssClass("highlight-section");  // 添加特殊样式类
+    
+builder.addSection(section);
+```
+
+### 识别规则详解
+
+模板使用 Thymeleaf 的 `#strings.startsWith()` 函数来判断标题前缀：
+
+```html
+<!-- 第一章：标题以 "1." 开头 -->
+th:if="${sec.title != null and #strings.startsWith(sec.title,'1.')}"
+
+<!-- 第二章：标题以 "2." 开头 -->
+th:if="${sec.title != null and #strings.startsWith(sec.title,'2.')}"
+
+<!-- 第三章：标题以 "3." 开头 -->
+th:if="${sec.title != null and #strings.startsWith(sec.title,'3.')}"
+
+<!-- 第四章：标题以 "4." 开头 -->
+th:if="${sec.title != null and #strings.startsWith(sec.title,'4.')}"
+
+<!-- 其他：不以 1., 2., 3., 4. 开头 -->
+th:if="${sec.title != null and 
+        !#strings.startsWith(sec.title,'1.') and 
+        !#strings.startsWith(sec.title,'2.') and 
+        !#strings.startsWith(sec.title,'3.') and 
+        !#strings.startsWith(sec.title,'4.')}"
+```
+
+### 常见标题示例
+
+| 标题示例 | 是否被识别 | 渲染位置 |
+|---------|----------|---------|
+| `"1.1 精确匹配"` | ✅ 识别为第一章 | 第一章 |
+| `"1. 匹配结果"` | ✅ 识别为第一章 | 第一章 |
+| `"1.匹配结果"` | ✅ 识别为第一章 | 第一章 |
+| `"2.1 模块分析"` | ✅ 识别为第二章 | 第二章 |
+| `"3.1 核心结论"` | ✅ 识别为第三章 | 第三章（主体） |
+| `"4.1 报告说明"` | ✅ 识别为第四章 | 第四章 |
+| `"5.1 其他内容"` | ❌ 不识别 | 第三章末尾 |
+| `"附加信息"` | ❌ 不识别 | 第三章末尾 |
+| `"一、匹配结果"` | ❌ 不识别 | 第三章末尾 |
+| `" 1.1 前面有空格"` | ❌ 不识别 | 第三章末尾 |
+| `"A.1 附录"` | ❌ 不识别 | 第三章末尾 |
+
+### 最佳实践建议
+
+1. **统一使用阿拉伯数字编号** - 如 "1.1", "2.1", "3.1", "4.1"
+2. **避免标题前有空格** - 确保序号在标题最开头
+3. **只使用 1-4 的序号** - 序号 5 及以上不会被识别
+4. **有意使用无序号标题** - 如果确实需要内容出现在第三章末尾
 
 ## Section 支持的内容类型
 
