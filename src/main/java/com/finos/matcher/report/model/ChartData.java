@@ -7,9 +7,10 @@ import java.util.Map;
  */
 public class ChartData {
     private String title;
-    private String chartType; // "bar", "pie", "line"
+    private String chartType; // "bar", "pie", "line", "area", "stackedbar"
     private Map<String, Double> data;
     private String base64Image; // For HTML rendering
+    private ChartConfig config; // Optional configuration for customization
 
     public ChartData() {
     }
@@ -50,5 +51,13 @@ public class ChartData {
 
     public void setBase64Image(String base64Image) {
         this.base64Image = base64Image;
+    }
+
+    public ChartConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ChartConfig config) {
+        this.config = config;
     }
 }
