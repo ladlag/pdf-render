@@ -65,7 +65,7 @@ public class ChartRenderer {
     }
     
     /**
-     * Generates a chart and returns it as a base64-encoded PNG string
+     * Generates a chart and returns it as a base64-encoded PNG string with data URI prefix
      */
     public String generateChartAsBase64(ChartData chartData) throws IOException {
         BufferedImage image = generateChart(chartData);
@@ -74,7 +74,7 @@ public class ChartRenderer {
         ImageIO.write(image, "PNG", baos);
         byte[] imageBytes = baos.toByteArray();
         
-        return Base64.getEncoder().encodeToString(imageBytes);
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
     }
     
     private JFreeChart createBarChart(ChartData chartData) {
