@@ -274,8 +274,8 @@ public class MatcherReportFinalTest {
         pieData.put("匹配失败", 10.0);
         ChartData pieChart = new ChartData("匹配状态分布", "pie", pieData);
         
-        // Generate and set base64 image (already includes data URI prefix)
-        String pieBase64 = renderer.generateChartAsBase64(pieChart);
+        // Generate and set base64 image (data URI format)
+        String pieBase64 = renderer.generateChartAsDataUri(pieChart);
         pieChart.setBase64Image(pieBase64);
         charts.add(pieChart);
 
@@ -287,8 +287,8 @@ public class MatcherReportFinalTest {
         barData.put("匹配失败", 2.0);
         ChartData barChart = new ChartData("各状态需求数量", "bar", barData);
         
-        // Generate and set base64 image (already includes data URI prefix)
-        String barBase64 = renderer.generateChartAsBase64(barChart);
+        // Generate and set base64 image (data URI format)
+        String barBase64 = renderer.generateChartAsDataUri(barChart);
         barChart.setBase64Image(barBase64);
         charts.add(barChart);
 

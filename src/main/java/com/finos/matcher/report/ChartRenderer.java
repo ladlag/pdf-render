@@ -65,7 +65,8 @@ public class ChartRenderer {
     }
     
     /**
-     * Generates a chart and returns it as a base64-encoded PNG string with data URI prefix
+     * Generates a chart and returns it as a base64-encoded PNG string (raw base64 without data URI prefix).
+     * For HTML embedding, consider using generateChartAsDataUri() instead.
      */
     public String generateChartAsBase64(ChartData chartData) throws IOException {
         BufferedImage image = generateChart(chartData);
@@ -74,7 +75,15 @@ public class ChartRenderer {
         ImageIO.write(image, "PNG", baos);
         byte[] imageBytes = baos.toByteArray();
         
-        return "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
+        return Base64.getEncoder().encodeToString(imageBytes);
+    }
+    
+    /**
+     * Generates a chart and returns it as a complete data URI string ready for HTML embedding.
+     * Format: data:image/png;base64,{base64-encoded-png}
+     */
+    public String generateChartAsDataUri(ChartData chartData) throws IOException {
+        return "data:image/png;base64," + generateChartAsBase64(chartData);
     }
     
     private JFreeChart createBarChart(ChartData chartData) {

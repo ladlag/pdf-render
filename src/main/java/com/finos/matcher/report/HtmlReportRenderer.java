@@ -229,11 +229,11 @@ public class HtmlReportRenderer {
             // Process flexible sections
             List<Section> sections = reportData.getSections();
             for (Section section : sections) {
-                // Convert charts in sections to base64
+                // Convert charts in sections to data URI format
                 if (section.getCharts() != null && !section.getCharts().isEmpty()) {
                     for (ChartData chart : section.getCharts()) {
                         if (chart.getBase64Image() == null) {
-                            String base64Image = chartRenderer.generateChartAsBase64(chart);
+                            String base64Image = chartRenderer.generateChartAsDataUri(chart);
                             chart.setBase64Image(base64Image);
                         }
                     }
@@ -258,11 +258,11 @@ public class HtmlReportRenderer {
         // Section 3: Summary table (always add, works for both structures)
         data.put("summaryTable", reportData.getSummaryTable());
         
-        // Section 3: Charts (convert to base64 images, works for both structures)
+        // Section 3: Charts (convert to data URI format, works for both structures)
         if (reportData.getCharts() != null && !reportData.getCharts().isEmpty()) {
             for (ChartData chart : reportData.getCharts()) {
                 if (chart.getBase64Image() == null) {
-                    String base64Image = chartRenderer.generateChartAsBase64(chart);
+                    String base64Image = chartRenderer.generateChartAsDataUri(chart);
                     chart.setBase64Image(base64Image);
                 }
             }
