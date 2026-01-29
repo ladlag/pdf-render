@@ -64,6 +64,44 @@ service.setUseHtmlPipeline(true);
 
 ---
 
+### 4️⃣ Spring Boot Bean 冲突 Bean Conflict
+
+**问题 Problem**: "如果按照SPRING_BOOT_INTEGRATION_GUIDE.md创建PdfRenderConfig会报错在PdfRenderAutoConfiguration已经创建了ReportService"
+
+**错误信息 Error**:
+```
+The bean 'reportService' could not be registered. A bean with that name 
+has already been defined in class path resource 
+[com/mercury/pdf/render/config/PdfRenderAutoConfiguration.class]
+```
+
+**原因 Cause**: 手动创建 ReportService bean，但自动配置已经创建了
+
+**解决方案 Solution**: ✅ 不要手动创建配置类！使用自动配置
+
+```yaml
+# ✅ 只需配置 YAML
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    default-family: HarmonyOS Sans SC, sans-serif
+```
+
+```java
+// ✅ 直接注入，无需配置类
+@Service
+public class MyService {
+    @Autowired
+    private ReportService reportService;  // 自动配置！
+}
+```
+
+**参考文档 Documentation**: 
+- [SPRING_BOOT_AUTO_CONFIGURATION.md](SPRING_BOOT_AUTO_CONFIGURATION.md)
+- [SPRING_BOOT_BEAN_CONFLICT_FIX.md](SPRING_BOOT_BEAN_CONFLICT_FIX.md)
+
+---
+
 ## 快速开始 Quick Start
 
 ### 步骤 1: 验证环境 Verify Environment
@@ -222,8 +260,10 @@ if (fontProps != null && (fontProps.getRegularPath() != null || fontProps.getCjk
 | 中文显示为方框 □ | [CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md) |
 | YAML 配置不生效 | [API_MIGRATION_GUIDE.md](API_MIGRATION_GUIDE.md) |
 | setUseHtmlPipeline 报错 | [API_MIGRATION_GUIDE.md](API_MIGRATION_GUIDE.md) |
+| Spring Boot Bean 冲突 | [SPRING_BOOT_AUTO_CONFIGURATION.md](SPRING_BOOT_AUTO_CONFIGURATION.md) |
+| ReportService 已定义错误 | [SPRING_BOOT_BEAN_CONFLICT_FIX.md](SPRING_BOOT_BEAN_CONFLICT_FIX.md) |
 | 不知道如何配置字体 | [FONT_CONFIGURATION.md](FONT_CONFIGURATION.md) |
-| Spring Boot 集成问题 | [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md) |
+| Spring Boot 集成问题 | [SPRING_BOOT_AUTO_CONFIGURATION.md](SPRING_BOOT_AUTO_CONFIGURATION.md) |
 | 需要验证配置 | 运行 `bash validate-chinese-fonts.sh` |
 
 ---
