@@ -124,9 +124,21 @@ Test PDFs will be generated in the `test-output/` directory for inspection.
 
 ## Integration with Spring Boot
 
+### ⚠️ Important: Bean Conflict Warning
+
+**If you encounter `The bean 'reportService' could not be registered` error:**
+
+See: **[SPRING_BOOT_AUTO_CONFIGURATION.md](SPRING_BOOT_AUTO_CONFIGURATION.md)** and **[SPRING_BOOT_BEAN_CONFLICT_FIX.md](SPRING_BOOT_BEAN_CONFLICT_FIX.md)**
+
+**Do NOT manually create `ReportService` bean! The library provides auto-configuration.**
+
+---
+
 **📘 完整集成指南:** 
-- [Spring Boot 集成指南（中文）](SPRING_BOOT_INTEGRATION_GUIDE.md) - 详细的配置说明和完整代码示例
-- [Spring Boot Examples](SPRING_BOOT_EXAMPLES.md) - 快速开始示例和项目结构
+- **[Spring Boot Auto-Configuration Guide](SPRING_BOOT_AUTO_CONFIGURATION.md)** - ⭐ Recommended! Solves bean conflicts
+- **[Spring Boot Bean Conflict Fix](SPRING_BOOT_BEAN_CONFLICT_FIX.md)** - Quick fix guide
+- **[Spring Boot 集成指南（中文）](SPRING_BOOT_INTEGRATION_GUIDE.md)** - Detailed configuration (watch for bean conflicts)
+- **[Spring Boot Examples](SPRING_BOOT_EXAMPLES.md)** - Quick start examples
 
 ### Maven Dependency
 

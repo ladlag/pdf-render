@@ -700,8 +700,20 @@ byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
 
 ## Spring Boot集成
 
+### ⚠️ 重要：Bean 冲突警告
+
+**如果您遇到 `The bean 'reportService' could not be registered` 错误：**
+
+请查看：**[SPRING_BOOT_AUTO_CONFIGURATION.md](SPRING_BOOT_AUTO_CONFIGURATION.md)** 和 **[SPRING_BOOT_BEAN_CONFLICT_FIX.md](SPRING_BOOT_BEAN_CONFLICT_FIX.md)**
+
+**不要手动创建 `ReportService` bean！库提供自动配置。**
+
+---
+
 **📘 完整集成指南和示例:** 
-- **[Spring Boot 集成指南（中文）](SPRING_BOOT_INTEGRATION_GUIDE.md)** - 详细的配置说明、完整代码示例、资源路径配置、最佳实践
+- **[Spring Boot 自动配置指南](SPRING_BOOT_AUTO_CONFIGURATION.md)** - ⭐ 推荐！解决 bean 冲突问题
+- **[Spring Boot Bean 冲突修复](SPRING_BOOT_BEAN_CONFLICT_FIX.md)** - 快速修复指南
+- **[Spring Boot 集成指南（旧版）](SPRING_BOOT_INTEGRATION_GUIDE.md)** - 详细配置说明（注意 bean 冲突）
 - **[Spring Boot Examples](SPRING_BOOT_EXAMPLES.md)** - 快速开始示例、项目结构、Docker支持
 
 本节提供快速概览，完整内容请参考上述指南文档。
