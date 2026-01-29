@@ -10,6 +10,7 @@
 - [详细使用示例](#详细使用示例)
 - [数据填充顺序说明](#数据填充顺序说明)
 - [自定义模板](#自定义模板)
+- [模板映射说明](#模板映射说明)
 - [Spring Boot集成](#spring-boot集成)
 - [常见问题](#常见问题)
 
@@ -515,7 +516,73 @@ public class ComplexOrderExample {
 | `${sections[0].tables}` | List&lt;TableData&gt; | 第一个章节的表格 |
 | `${sections[0].charts}` | List&lt;ChartData&gt; | 第一个章节的图表 |
 
-详细的模板自定义指南请参考：[ADDING_TEMPLATES.md](ADDING_TEMPLATES.md)
+详细的模板自定义指南请参考：
+- [ADDING_TEMPLATES.md](ADDING_TEMPLATES.md) - 通用模板添加指南
+- [MATCHER_REPORT_FINAL_MAPPING_CN.md](MATCHER_REPORT_FINAL_MAPPING_CN.md) - matcher-report-final 模板与 ReportData 映射详解
+
+## 模板映射说明
+
+### matcher-report-final 模板
+
+`matcher-report-final` 是一个需求预审报告模板，专门用于生成匹配度分析报告。该模板使用 **Section 标题前缀匹配机制** 来动态组织内容。
+
+#### 核心映射规则
+
+| Section 标题前缀 | 渲染位置 | 示例 |
+|---------------|---------|------|
+| `1.` 开头 | 第一章：匹配结果详细列表 | "1.1 精确匹配通过", "1.2 语义匹配通过" |
+| `2.` 开头 | 第二章：详细分析内容 | "2.1 分模块匹配表现", "2.2 匹配失败问题根源" |
+| `3.` 开头 | 第三章：预审结果总结 | "3.1 核心结论", "3.2 详细统计" |
+| `4.` 开头 | 第四章：报告说明 | "4.1 报告说明" |
+| 其他 | 第三章末尾 | 任意其他标题 |
+
+#### 快速示例
+
+```java
+ReportDataBuilder builder = ReportDataBuilder.create()
+    .title("需求预审报告")
+    .reportDate("2024-12-31");
+
+// 第一章：匹配结果（标题以 "1." 开头）
+builder.addSection(new Section("1.1 精确匹配通过（匹配度≥0.90）")
+    .addTable(matchTable));
+
+builder.addSection(new Section("1.2 语义匹配通过（0.70≤匹配度＜0.90）")
+    .addTable(semanticMatchTable));
+
+// 第二章：详细分析（标题以 "2." 开头）
+builder.addSection(new Section("2.1 分模块匹配表现")
+    .addParagraph("按业务模块拆分匹配结果..."));
+
+builder.addSection(new Section("2.2 匹配失败问题根源")
+    .addParagraph("• 需求与文档不同步：...")
+    .addParagraph("• 功能定义不细致：..."));
+
+// 第三章：汇总（使用 summaryTable + 3.x Sections）
+builder.summaryTable(createSummaryTable());  // 汇总表格
+
+builder.addSection(new Section("3.1 核心结论")
+    .addParagraph("本次预审整体匹配率80.0%..."));
+
+// 第四章：说明（标题以 "4." 开头）
+builder.addSection(new Section("4.1 报告说明")
+    .addParagraph("报告说明：文档部分内容由 BA助手 生成"));
+
+// 生成 PDF
+byte[] pdf = service.generatePdf(builder.build(), "matcher-report-final");
+```
+
+#### 重要说明
+
+1. **Section 标题前缀决定渲染位置** - 模板会根据标题前缀（1., 2., 3., 4.）自动将 Section 渲染到对应章节
+2. **添加顺序不影响渲染位置** - 可以按任意顺序添加 Section，模板会自动分组
+3. **每个 Section 可包含多种内容** - 标题、副标题、段落、表格、图表、TableBlock、自定义 HTML
+4. **第三章有两种数据来源** - `summaryTable`（直接设置）和 3.x Sections（灵活补充）
+
+#### 详细文档
+
+完整的映射规则、代码示例和最佳实践，请参考：
+**[matcher-report-final 模板与 ReportData 映射详解](MATCHER_REPORT_FINAL_MAPPING_CN.md)**
 
 ## Spring Boot集成
 
