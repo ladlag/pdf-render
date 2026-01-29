@@ -65,7 +65,7 @@ Warning: Failed to register custom fonts: Font not found in classpath: /fonts/xx
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;

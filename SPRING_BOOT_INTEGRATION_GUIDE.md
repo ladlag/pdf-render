@@ -191,7 +191,7 @@ package com.example.myapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 
 @SpringBootApplication
 @EnableConfigurationProperties(PdfRenderProperties.class)
@@ -208,8 +208,8 @@ public class MyApplication {
 package com.example.myapp.config;
 
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -269,7 +269,7 @@ public class PdfRenderConfig {
 package com.example.myapp.service;
 
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;

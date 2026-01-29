@@ -43,7 +43,7 @@ package com.example.pdfapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 
 /**
  * Spring Boot application with PDF rendering capabilities
@@ -63,8 +63,8 @@ public class PdfApplication {
 package com.example.pdfapp.config;
 
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
-import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

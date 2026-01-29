@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-config.com.mercury.pdf.render.PdfRenderAutoConfiguration
+com.mercury.pdf.render.config.PdfRenderAutoConfiguration

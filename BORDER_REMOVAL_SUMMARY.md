@@ -180,7 +180,7 @@ No code changes required! Simply regenerate PDFs using existing code:
 
 ```java
 import com.mercury.pdf.render.ReportService;
-import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.config.FontConfig;
 
 ReportService service = new ReportService();
 service.
