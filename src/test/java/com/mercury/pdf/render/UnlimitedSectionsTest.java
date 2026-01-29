@@ -180,35 +180,37 @@ public class UnlimitedSectionsTest {
     }
     
     @Test
-    public void testLegacyStructureStillWorks() throws IOException {
-        System.out.println("Testing backward compatibility with legacy 4-section structure...");
+    public void testSectionStructureWorks() throws IOException {
+        System.out.println("Testing clean section-based structure...");
         
-        // Use the legacy structure
-        ReportData report = new ReportData();
-        report.setTitle("Legacy 4-Section Report");
-        report.setSubtitle("Backward Compatibility Test");
-        report.setReportDate("2024-12-31");
+        // Use the Section structure
+        ReportData report = ReportDataBuilder.create()
+            .title("Section-Based Report")
+            .subtitle("Clean Architecture Test")
+            .reportDate("2024-12-31")
+            
+            // Section 1: Table sections
+            .addSection(new Section("1.1 Block 1")
+                .addTable(createTestTable(1)))
+            
+            // Section 2: Analysis paragraphs
+            .addSection(new Section("Analysis")
+                .addParagraph("Analysis paragraph"))
+            
+            // Section 3: Summary table and charts
+            .addSection(new Section("Summary")
+                .addTable(createTestTable(2))
+                .addChart(createTestChart(1)))
+            
+            // Section 4: Notice and metadata
+            .reportNotice("Notice text")
+            .metadata("Metadata text")
+            .build();
         
-        // Section 1: Table blocks
-        report.setTableBlocks(Arrays.asList(
-            new TableBlock("1.1", "Block 1", createTestTable(1))
-        ));
+        assertEquals(3, report.getSections().size(), 
+            "Report should have 3 sections");
         
-        // Section 2: Analysis paragraphs
-        report.setAnalysisParagraphs(Arrays.asList("Analysis paragraph"));
-        
-        // Section 3: Summary table and charts
-        report.setSummaryTable(createTestTable(2));
-        report.setCharts(Arrays.asList(createTestChart(1)));
-        
-        // Section 4: Notice and metadata
-        report.setReportNotice("Notice text");
-        report.setMetadata("Metadata text");
-        
-        assertTrue(report.hasLegacyContent(), 
-            "Report should be recognized as legacy structure");
-        
-        // Generate PDF (using default template that supports both structures)
+        // Generate PDF
         ReportService service = new ReportService();
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -216,12 +218,12 @@ public class UnlimitedSectionsTest {
         assertTrue(pdfBytes.length > 0);
         
         // Save for inspection
-        Path outputPath = Paths.get(TEST_OUTPUT_DIR, "legacy_structure_report.pdf");
+        Path outputPath = Paths.get(TEST_OUTPUT_DIR, "section_structure_report.pdf");
         Files.write(outputPath, pdfBytes);
         
-        System.out.println("✓ Legacy 4-section structure still works");
+        System.out.println("✓ Section-based structure works correctly");
         System.out.println("  Output: " + outputPath.toAbsolutePath());
-        System.out.println("  But new code should use unlimited sections!");
+        System.out.println("  Use unlimited sections for maximum flexibility!");
     }
     
     // Helper methods

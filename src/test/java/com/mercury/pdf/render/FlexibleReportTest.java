@@ -33,14 +33,15 @@ public class FlexibleReportTest {
             .subtitle("Test Subtitle")
             .reportDate("2024-12-31")
             .reportNumber("TEST-001")
-            .addAnalysisParagraph("Test paragraph")
+            .addSection(new Section("Analysis").addParagraph("Test paragraph"))
             .build();
         
         assertNotNull(report);
         assertEquals("Test Report", report.getTitle());
         assertEquals("Test Subtitle", report.getSubtitle());
         assertEquals("2024-12-31", report.getReportDate());
-        assertEquals(1, report.getAnalysisParagraphs().size());
+        assertEquals(1, report.getSections().size());
+        assertEquals(1, report.getSections().get(0).getParagraphs().size());
     }
     
     @Test
@@ -94,8 +95,6 @@ public class FlexibleReportTest {
         
         assertNotNull(report);
         assertEquals(2, report.getSections().size());
-        assertTrue(report.hasSections());
-        assertFalse(report.hasLegacyContent());
         
         // Generate PDF
         ReportService service = new ReportService();
@@ -141,36 +140,6 @@ public class FlexibleReportTest {
     }
     
     @Test
-    public void testBackwardCompatibility() throws IOException {
-        // Create report using legacy structure
-        ReportData report = new ReportData();
-        report.setTitle("Legacy Report");
-        report.setTableBlocks(Arrays.asList(
-            new TableBlock("1.1", "Block 1", createTestTable())
-        ));
-        report.setAnalysisParagraphs(Arrays.asList("Analysis paragraph"));
-        
-        assertTrue(report.hasLegacyContent());
-        assertFalse(report.hasSections());
-        
-        // Should work with both templates
-        ReportService service = new ReportService();
-        
-        // Test with default template
-        byte[] pdfBytes1 = service.generatePdf(report);
-        assertNotNull(pdfBytes1);
-        assertTrue(pdfBytes1.length > 0);
-        
-        // Test with flexible template (should handle legacy structure)
-        service.getHtmlRenderer().setDefaultTemplateName("flexible");
-        byte[] pdfBytes2 = service.generatePdf(report);
-        assertNotNull(pdfBytes2);
-        assertTrue(pdfBytes2.length > 0);
-        
-        System.out.println("✓ Backward compatibility verified");
-    }
-    
-    @Test
     public void testReportDataValidator() {
         // Valid report
         ReportData validReport = ReportDataBuilder.create()
@@ -183,7 +152,9 @@ public class FlexibleReportTest {
         
         // Invalid report - no title
         ReportData invalidReport1 = new ReportData();
-        invalidReport1.setAnalysisParagraphs(Arrays.asList("Paragraph"));
+        Section testSection = new Section("Test");
+        testSection.addParagraph("Paragraph");
+        invalidReport1.setSections(Arrays.asList(testSection));
         
         errors = ReportDataValidator.validate(invalidReport1);
         assertFalse(errors.isEmpty(), "Report without title should have errors");
@@ -195,7 +166,9 @@ public class FlexibleReportTest {
         
         errors = ReportDataValidator.validate(invalidReport2);
         assertFalse(errors.isEmpty(), "Report without content should have errors");
-        assertTrue(errors.stream().anyMatch(e -> e.contains("content")));
+        // The error might say "sections" instead of "content" in the new structure
+        assertTrue(errors.stream().anyMatch(e -> e.contains("content") || e.contains("section")), 
+            "Error should mention missing content or sections");
         
         System.out.println("✓ Validator tests passed");
     }
@@ -224,7 +197,9 @@ public class FlexibleReportTest {
         
         ReportData report = new ReportData();
         report.setTitle("Test");
-        report.setSummaryTable(invalidTable);
+        Section section = new Section("Test Section");
+        section.addTable(invalidTable);
+        report.setSections(Arrays.asList(section));
         
         List<String> errors = ReportDataValidator.validate(report);
         assertFalse(errors.isEmpty());
@@ -238,7 +213,9 @@ public class FlexibleReportTest {
         
         ReportData report = new ReportData();
         report.setTitle("Test");
-        report.setCharts(Arrays.asList(invalidChart));
+        Section section = new Section("Test Section");
+        section.addChart(invalidChart);
+        report.setSections(Arrays.asList(section));
         
         List<String> errors = ReportDataValidator.validate(report);
         assertFalse(errors.isEmpty());

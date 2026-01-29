@@ -32,7 +32,6 @@ public class ChartTypesAndConfigTest {
     @Test
     public void testAllChartTypesWithCustomization() throws IOException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -64,6 +63,9 @@ public class ChartTypesAndConfigTest {
         intro.addParagraph("支持的图表类型：柱状图、饼图、折线图、面积图、堆叠柱状图。");
         builder.addSection(intro);
 
+        // Add all charts in a section
+        Section chartsSection = new Section("图表示例");
+
         // 1. Bar chart with custom colors
         ChartConfig barConfig = new ChartConfig();
         barConfig.setWidth(600);
@@ -80,7 +82,7 @@ public class ChartTypesAndConfigTest {
         
         ChartData barChart = new ChartData("季度利润 - 柱状图", "bar", chartData);
         barChart.setConfig(barConfig);
-        builder.addChart(barChart);
+        chartsSection.addChart(barChart);
 
         // 2. Pie chart with 3D effect
         Map<String, Double> pieData = new LinkedHashMap<>();
@@ -102,7 +104,7 @@ public class ChartTypesAndConfigTest {
         
         ChartData pieChart = new ChartData("费用分布 - 3D饼图", "pie", pieData);
         pieChart.setConfig(pieConfig);
-        builder.addChart(pieChart);
+        chartsSection.addChart(pieChart);
 
         // 3. Line chart
         ChartConfig lineConfig = new ChartConfig();
@@ -121,7 +123,7 @@ public class ChartTypesAndConfigTest {
         
         ChartData lineChart = new ChartData("增长趋势 - 折线图", "line", growthData);
         lineChart.setConfig(lineConfig);
-        builder.addChart(lineChart);
+        chartsSection.addChart(lineChart);
 
         // 4. Area chart
         ChartConfig areaConfig = new ChartConfig();
@@ -140,7 +142,7 @@ public class ChartTypesAndConfigTest {
         
         ChartData areaChart = new ChartData("月度销售 - 面积图", "area", salesData);
         areaChart.setConfig(areaConfig);
-        builder.addChart(areaChart);
+        chartsSection.addChart(areaChart);
 
         // 5. Stacked bar chart
         ChartConfig stackedConfig = new ChartConfig();
@@ -156,7 +158,7 @@ public class ChartTypesAndConfigTest {
         
         ChartData stackedChart = new ChartData("产品销售 - 堆叠柱状图", "stackedbar", chartData);
         stackedChart.setConfig(stackedConfig);
-        builder.addChart(stackedChart);
+        chartsSection.addChart(stackedChart);
 
         // 6. Chart without legend
         ChartConfig noLegendConfig = new ChartConfig();
@@ -166,7 +168,9 @@ public class ChartTypesAndConfigTest {
         
         ChartData noLegendChart = new ChartData("简化柱状图 (无图例)", "bar", chartData);
         noLegendChart.setConfig(noLegendConfig);
-        builder.addChart(noLegendChart);
+        chartsSection.addChart(noLegendChart);
+
+        builder.addSection(chartsSection);
 
         ReportData reportData = builder.build();
         byte[] pdfBytes = service.generatePdf(reportData, "matcher-report-final");
@@ -183,7 +187,6 @@ public class ChartTypesAndConfigTest {
     @Test
     public void testChartWithCustomDimensions() throws IOException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         Map<String, Double> data = new LinkedHashMap<>();
         data.put("A", 10.0);
@@ -203,7 +206,9 @@ public class ChartTypesAndConfigTest {
             .reportDate("2024-12-31")
             .reportNumber("DIM-001");
         
-        builder.addChart(chart);
+        Section chartSection = new Section("Custom Dimensions");
+        chartSection.addChart(chart);
+        builder.addSection(chartSection);
 
         byte[] pdfBytes = service.generatePdf(builder.build());
         
@@ -218,7 +223,6 @@ public class ChartTypesAndConfigTest {
     @Test
     public void testLineChartWithoutGridLines() throws IOException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         Map<String, Double> data = new LinkedHashMap<>();
         data.put("Jan", 100.0);
@@ -238,7 +242,9 @@ public class ChartTypesAndConfigTest {
             .reportDate("2024-12-31")
             .reportNumber("GRID-001");
         
-        builder.addChart(chart);
+        Section chartSection = new Section("Grid Lines Test");
+        chartSection.addChart(chart);
+        builder.addSection(chartSection);
 
         byte[] pdfBytes = service.generatePdf(builder.build());
         

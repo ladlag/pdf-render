@@ -34,7 +34,6 @@ public class MatcherReportTest {
     @Test
     public void testMatcherReportWithCompleteData() throws IOException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         // Configure HarmonyOS Sans SC font for Chinese text display
         FontConfig fontConfig = new FontConfig();
@@ -108,8 +107,11 @@ public class MatcherReportTest {
 
         // ===== Section 3: Summary Results =====
         
-        // Add summary table
-        builder.summaryTable(createSummaryTable());
+        // Add summary table in a section
+        Section summarySection = new Section("3. 匹配汇总");
+        TableData summaryTable = createSummaryTable();
+        summarySection.addTable(summaryTable);
+        builder.addSection(summarySection);
 
         // Add conclusion paragraph under section 3
         Section section3Conclusion = new Section("3.1 核心结论");
@@ -117,14 +119,13 @@ public class MatcherReportTest {
         section3Conclusion.addParagraph("整体匹配率80.0%，高优先级需求全部匹配（含精确/语义匹配），2条疑似匹配需人工复核，2条普通需求匹配失败（业务功能未覆盖）。");
         builder.addSection(section3Conclusion);
 
-        // Add charts for visualization
+        // Add charts in a section with custom title
+        Section chartSection = new Section("图表");
         List<ChartData> charts = createCharts();
         for (ChartData chart : charts) {
-            builder.addChart(chart);
+            chartSection.addChart(chart);
         }
-        
-        // Set chart section title
-        builder.chartsSectionTitle("图表");
+        builder.addSection(chartSection);
 
         // ===== Section 4: Attachments =====
         
