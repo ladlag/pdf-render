@@ -178,7 +178,7 @@
                 <div th:if="${section.charts != null and !section.charts.isEmpty()}">
                     <div class="chart-inline" th:each="chart : ${section.charts}">
                         <img th:if="${chart.base64Image != null}"
-                             th:src="'data:image/png;base64,' + ${chart.base64Image}"
+                             th:src="${chart.base64Image}"
                              th:alt="${chart.title}"/>
                     </div>
                 </div>
@@ -189,7 +189,7 @@
         <div th:if="${charts != null and !charts.isEmpty()}">
             <div class="chart-inline" th:each="chart : ${charts}">
                 <img th:if="${chart.base64Image != null}"
-                     th:src="'data:image/png;base64,' + ${chart.base64Image}"
+                     th:src="${chart.base64Image}"
                      th:alt="${chart.title}"/>
             </div>
         </div>

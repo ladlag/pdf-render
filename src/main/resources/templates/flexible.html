@@ -267,7 +267,7 @@
                 <div th:each="chart : ${section.charts}" class="chart-container">
                     <div class="chart-title" th:text="${chart.title}">Chart Title</div>
                     <img th:if="${chart.base64Image != null}" 
-                         th:src="'data:image/png;base64,' + ${chart.base64Image}" 
+                         th:src="${chart.base64Image}" 
                          class="chart-image" 
                          alt="Chart"/>
                 </div>
@@ -336,7 +336,7 @@
                 <div th:each="chart : ${charts}" class="chart-container">
                     <div class="chart-title" th:text="${chart.title}">Chart Title</div>
                     <img th:if="${chart.base64Image != null}" 
-                         th:src="'data:image/png;base64,' + ${chart.base64Image}" 
+                         th:src="${chart.base64Image}" 
                          class="chart-image" 
                          alt="Chart"/>
                 </div>
