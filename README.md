@@ -1,25 +1,29 @@
 # pdf-render
 
-A Java-based PDF report generation library that uses an HTML/CSS template approach with Flying Saucer and OpenPDF for reliable, stable table pagination.
+A Java-based PDF report generation library using clean HTML/CSS architecture with Flying Saucer and OpenPDF.
 
 ## Overview
 
-This project generates multi-section PDF reports with:
+This project generates multi-section PDF reports with **unlimited dynamic sections**:
 - Cover page with title and metadata
-- Section 1: Detailed analysis tables with grouped blocks
-- Section 2: Analysis paragraphs
-- Section 3: Summary tables and charts
-- Section 4: Notice and metadata
+- Flexible sections with any combination of:
+  - Titles and subtitles
+  - Paragraphs and text content
+  - Tables with automatic pagination
+  - Charts (bar, pie, line, etc.)
+  - Custom HTML content
 
 ## Key Features
 
-### HTML/CSS → PDF Pipeline (Default)
-The project now uses **Flying Saucer + OpenPDF** for converting HTML/CSS to PDF, providing:
-- ✅ **Stable table pagination** - no more lost rows at page breaks
+### Clean HTML/CSS Architecture
+The library uses **Flying Saucer + OpenPDF** for converting HTML/CSS to PDF, providing:
+- ✅ **Unlimited sections** - add as many sections as needed
+- ✅ **Stable table pagination** - no lost rows at page breaks
 - ✅ **Repeated table headers** - headers automatically repeat on new pages using `<thead>`
 - ✅ **Page break control** - CSS `page-break-inside: avoid` prevents row splitting
 - ✅ **Easy customization** - modify templates and styles without touching Java code
 - ✅ **Professional styling** - CSS-based styling with @page rules and custom fonts
+- ✅ **Clean codebase** - no legacy code or deprecated implementations
 
 ### Architecture
 
@@ -333,6 +337,65 @@ Files.
         write(Paths.get("report.pdf"),pdfBytes);
 ```
 
+### Using Unlimited Dynamic Sections
+
+The library supports creating reports with **unlimited sections** using the flexible `Section` model:
+
+```java
+import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.model.*;
+import java.util.Arrays;
+
+// Assume tables and charts are defined (see FlexibleReportDemo.java for details)
+// TableData financialTable = ...
+// ChartData revenueChart = ...
+
+// Create report with unlimited dynamic sections using the builder
+ReportData report = ReportDataBuilder.create()
+    .title("Comprehensive Business Report")
+    .subtitle("Multi-Section Analysis")
+    .reportDate("2024-12-31")
+    
+    // Add as many sections as needed!
+    .addSection(new Section("Executive Summary")
+        .withSubtitle("Key Highlights")
+        .addParagraph("Overview of key findings and results..."))
+    
+    .addSection(new Section("Financial Performance")
+        .addTable(financialTable)
+        .addChart(revenueChart))
+    
+    .addSection(new Section("Market Analysis")
+        .addParagraph("Market trends and competitive analysis...")
+        .addChart(marketShareChart))
+    
+    .addSection(new Section("Operations")
+        .addParagraph("Operational efficiency metrics...")
+        .addTable(operationsTable))
+    
+    .addSection(new Section("Risk Assessment")
+        .addParagraph("Risk factors and mitigation strategies..."))
+    
+    .addSection(new Section("Recommendations")
+        .withCustomContent("<ul><li>Strategy 1</li><li>Strategy 2</li></ul>"))
+    
+    // Add even more sections as needed!
+    
+    .build();
+
+// Generate PDF with unlimited sections
+ReportService service = new ReportService();
+byte[] pdfBytes = service.generatePdf(report);
+```
+
+**Key Features:**
+- ✅ **Unlimited sections** - Add as many sections as your report needs
+- ✅ **Flexible content** - Each section can contain paragraphs, tables, charts, or custom HTML
+- ✅ **Fluent API** - Easy-to-use builder pattern for constructing reports
+- ✅ **Clean architecture** - single implementation, no legacy code
+
+**📖 See [FlexibleReportDemo.java](src/main/java/com/mercury/pdf/render/FlexibleReportDemo.java) for complete working examples with table and chart creation**
+
 ### Using Custom Templates
 
 You can use different templates for different report types:
@@ -349,16 +412,6 @@ byte[] customPdf = service.generatePdf(reportData, "my-template");
 ```
 
 **📖 For detailed template customization guide, see [TEMPLATE_GUIDE.md](TEMPLATE_GUIDE.md)**
-
-### Switching Between Implementations
-
-The library now defaults to the HTML/CSS pipeline. If you need to use the legacy PDFBox implementation (not recommended due to pagination issues):
-
-```java
-ReportService service = new ReportService();
-service.setUseHtmlPipeline(false); // Use legacy PDFBox (deprecated)
-byte[] pdfBytes = service.generatePdf(reportData);
-```
 
 ## Customizing Templates and Styles
 

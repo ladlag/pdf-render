@@ -67,12 +67,10 @@ public class ChineseFontConfigurationDemo {
     private static void demonstrateWithoutFontConfig(ReportData data) throws IOException {
         System.out.println("代码 Code:");
         System.out.println("  ReportService service = new ReportService();");
-        System.out.println("  service.setUseHtmlPipeline(true);");
         System.out.println("  // ❌ NO FontConfig set!");
         System.out.println("  byte[] pdf = service.generatePdf(data);");
         
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
         // ❌ NO FontConfig configured - this is the WRONG way
         
         byte[] pdf = service.generatePdf(data, "flexible");
@@ -94,7 +92,6 @@ public class ChineseFontConfigurationDemo {
     private static void demonstrateWithFontConfig(ReportData data) throws IOException {
         System.out.println("代码 Code:");
         System.out.println("  ReportService service = new ReportService();");
-        System.out.println("  service.setUseHtmlPipeline(true);");
         System.out.println("  ");
         System.out.println("  // ✓ Configure FontConfig correctly!");
         System.out.println("  FontConfig fontConfig = new FontConfig();");
@@ -107,7 +104,6 @@ public class ChineseFontConfigurationDemo {
         System.out.println("  byte[] pdf = service.generatePdf(data);");
         
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
         
         // ✓ Configure FontConfig - this is the CORRECT way
         FontConfig fontConfig = new FontConfig();

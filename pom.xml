@@ -16,19 +16,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <pdfbox.version>2.0.29</pdfbox.version>
         <junit.version>5.10.0</junit.version>
     </properties>
 
     <dependencies>
-        <!-- PDFBox for current implementation -->
+        <!-- PDFBox dependency removed - no longer needed after clean architecture refactoring -->
+        <!-- The library now uses only HTML/CSS pipeline with Flying Saucer + OpenPDF -->
+        <!--
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
         </dependency>
+        -->
 
-        <!-- Flying Saucer + OpenPDF for new HTML/CSS pipeline -->
+        <!-- Flying Saucer + OpenPDF for HTML/CSS pipeline -->
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf-openpdf</artifactId>

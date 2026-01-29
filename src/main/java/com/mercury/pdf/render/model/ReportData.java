@@ -5,21 +5,13 @@ import java.util.List;
 
 /**
  * Main data model for report generation.
- * Supports both legacy fixed-section structure and new flexible section-based structure.
+ * Uses flexible section-based structure for unlimited, dynamic content.
  * 
- * <p>Legacy structure (backward compatible):
+ * <p>Features:
  * <ul>
- *   <li>Title, subtitle, date, number</li>
- *   <li>Section 1: Detailed tables with grouped blocks</li>
- *   <li>Section 2: Analysis paragraphs</li>
- *   <li>Section 3: Summary table and charts</li>
- *   <li>Section 4: Notice and metadata</li>
- * </ul>
- * 
- * <p>New flexible structure:
- * <ul>
- *   <li>Dynamic sections with configurable content types</li>
+ *   <li>Unlimited dynamic sections with configurable content types</li>
  *   <li>Each section can contain titles, paragraphs, tables, and charts</li>
+ *   <li>Flexible composition and ordering</li>
  * </ul>
  * 
  * <p>Example using builder:
@@ -30,6 +22,9 @@ import java.util.List;
  *     .reportDate("2024-12-31")
  *     .addSection(new Section("Executive Summary")
  *         .addParagraph("Key findings..."))
+ *     .addSection(new Section("Financial Data")
+ *         .addTable(table)
+ *         .addChart(chart))
  *     .build();
  * </pre>
  */
@@ -38,17 +33,10 @@ public class ReportData {
     private String subtitle;
     private String reportDate;
     private String reportNumber;
-    
-    // Legacy fixed sections (maintained for backward compatibility)
-    private List<TableBlock> tableBlocks;
-    private List<String> analysisParagraphs;
-    private TableData summaryTable;
-    private List<ChartData> charts;
-    private String chartsSectionTitle; // Optional title for charts section (null = no title rendered)
     private String reportNotice;
     private String metadata;
     
-    // New flexible section-based structure
+    // Flexible section-based structure
     private List<Section> sections;
 
     public ReportData() {
@@ -87,46 +75,6 @@ public class ReportData {
         this.reportNumber = reportNumber;
     }
 
-    public List<TableBlock> getTableBlocks() {
-        return tableBlocks;
-    }
-
-    public void setTableBlocks(List<TableBlock> tableBlocks) {
-        this.tableBlocks = tableBlocks;
-    }
-
-    public List<String> getAnalysisParagraphs() {
-        return analysisParagraphs;
-    }
-
-    public void setAnalysisParagraphs(List<String> analysisParagraphs) {
-        this.analysisParagraphs = analysisParagraphs;
-    }
-
-    public TableData getSummaryTable() {
-        return summaryTable;
-    }
-
-    public void setSummaryTable(TableData summaryTable) {
-        this.summaryTable = summaryTable;
-    }
-
-    public List<ChartData> getCharts() {
-        return charts;
-    }
-
-    public void setCharts(List<ChartData> charts) {
-        this.charts = charts;
-    }
-
-    public String getChartsSectionTitle() {
-        return chartsSectionTitle;
-    }
-
-    public void setChartsSectionTitle(String chartsSectionTitle) {
-        this.chartsSectionTitle = chartsSectionTitle;
-    }
-
     public String getReportNotice() {
         return reportNotice;
     }
@@ -160,36 +108,8 @@ public class ReportData {
             throw new IllegalStateException("Report title is required");
         }
         
-        // Check if there's any content
-        boolean hasContent = false;
-        
-        if ((tableBlocks != null && !tableBlocks.isEmpty()) ||
-            (analysisParagraphs != null && !analysisParagraphs.isEmpty()) ||
-            (summaryTable != null) ||
-            (charts != null && !charts.isEmpty()) ||
-            (sections != null && !sections.isEmpty())) {
-            hasContent = true;
-        }
-        
-        if (!hasContent) {
+        if (sections == null || sections.isEmpty()) {
             throw new IllegalStateException("Report must contain at least one section with content");
         }
-    }
-    
-    /**
-     * Returns true if using new flexible section-based structure
-     */
-    public boolean hasSections() {
-        return sections != null && !sections.isEmpty();
-    }
-    
-    /**
-     * Returns true if using legacy fixed-section structure
-     */
-    public boolean hasLegacyContent() {
-        return (tableBlocks != null && !tableBlocks.isEmpty()) ||
-               (analysisParagraphs != null && !analysisParagraphs.isEmpty()) ||
-               (summaryTable != null) ||
-               (charts != null && !charts.isEmpty());
     }
 }

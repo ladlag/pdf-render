@@ -38,7 +38,6 @@ public class ChineseFontTest {
     public void testChineseTextWithDefaultFonts() throws IOException {
         // Test with default fonts (no custom font configuration)
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         ReportData reportData = createChineseReportData();
 
@@ -58,7 +57,6 @@ public class ChineseFontTest {
     public void testChineseTextWithCustomFonts() throws IOException {
         // Test with custom font configuration using HarmonyOS Sans SC
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         // Configure custom fonts - use HarmonyOS Sans SC
         FontConfig fontConfig = new FontConfig();
@@ -92,7 +90,6 @@ public class ChineseFontTest {
     public void testMatcherReportWithCustomFonts() throws IOException {
         // Test the matcher report with HarmonyOS Sans SC font configuration
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         // Configure HarmonyOS Sans SC font for Chinese
         FontConfig fontConfig = new FontConfig();

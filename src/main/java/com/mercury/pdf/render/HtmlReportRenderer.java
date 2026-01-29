@@ -223,11 +223,12 @@ public class HtmlReportRenderer {
         data.put("subtitle", reportData.getSubtitle());
         data.put("reportDate", reportData.getReportDate());
         data.put("reportNumber", reportData.getReportNumber());
+        data.put("reportNotice", reportData.getReportNotice());
+        data.put("metadata", reportData.getMetadata());
         
-        // Check if using new flexible sections or legacy structure
-        if (reportData.hasSections()) {
-            // Process flexible sections
-            List<Section> sections = reportData.getSections();
+        // Process flexible sections
+        List<Section> sections = reportData.getSections();
+        if (sections != null && !sections.isEmpty()) {
             for (Section section : sections) {
                 // Convert charts in sections to data URI format
                 if (section.getCharts() != null && !section.getCharts().isEmpty()) {
@@ -239,38 +240,8 @@ public class HtmlReportRenderer {
                     }
                 }
             }
-            data.put("sections", sections);
-        } else {
-            // Legacy structure
-            data.put("sections", null);
-            
-            // Section 1: Table blocks
-            data.put("tableBlocks", reportData.getTableBlocks());
-            
-            // Section 2: Analysis paragraphs
-            data.put("analysisParagraphs", reportData.getAnalysisParagraphs());
-            
-            // Section 4: Notice and metadata
-            data.put("reportNotice", reportData.getReportNotice());
-            data.put("metadata", reportData.getMetadata());
         }
-        
-        // Section 3: Summary table (always add, works for both structures)
-        data.put("summaryTable", reportData.getSummaryTable());
-        
-        // Section 3: Charts (convert to data URI format, works for both structures)
-        if (reportData.getCharts() != null && !reportData.getCharts().isEmpty()) {
-            for (ChartData chart : reportData.getCharts()) {
-                if (chart.getBase64Image() == null) {
-                    String base64Image = chartRenderer.generateChartAsDataUri(chart);
-                    chart.setBase64Image(base64Image);
-                }
-            }
-            data.put("charts", reportData.getCharts());
-        }
-        
-        // Charts section title (optional, null = no title rendered)
-        data.put("chartsSectionTitle", reportData.getChartsSectionTitle());
+        data.put("sections", sections);
         
         // Add font configuration if available
         if (fontConfig != null) {

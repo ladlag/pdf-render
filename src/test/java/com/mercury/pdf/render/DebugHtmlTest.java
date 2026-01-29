@@ -42,7 +42,6 @@ public class DebugHtmlTest {
     @Test
     public void testDebugHtmlOutput() throws IOException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         // Configure font for Chinese text
         FontConfig fontConfig = new FontConfig();
@@ -85,7 +84,6 @@ public class DebugHtmlTest {
     @Test
     public void testDebugHtmlWithTimestamp() throws IOException, InterruptedException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
 
         // Configure font for Chinese text
         FontConfig fontConfig = new FontConfig();
@@ -145,7 +143,8 @@ public class DebugHtmlTest {
         section.addTable(table);
         builder.addSection(section);
 
-        // Add summary
+        // Add summary section
+        Section summarySection = new Section("汇总结果");
         TableData summaryTable = new TableData(
             Arrays.asList("状态", "数量", "占比"),
             Arrays.asList(
@@ -153,7 +152,8 @@ public class DebugHtmlTest {
                 Arrays.asList("语义匹配", "1", "50%")
             )
         );
-        builder.summaryTable(summaryTable);
+        summarySection.addTable(summaryTable);
+        builder.addSection(summarySection);
 
         return builder.build();
     }

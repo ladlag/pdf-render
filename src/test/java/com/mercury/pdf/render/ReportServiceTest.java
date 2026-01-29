@@ -2,7 +2,8 @@ package com.mercury.pdf.render;
 
 import com.mercury.pdf.render.model.ChartData;
 import com.mercury.pdf.render.model.ReportData;
-import com.mercury.pdf.render.model.TableBlock;
+import com.mercury.pdf.render.model.ReportDataBuilder;
+import com.mercury.pdf.render.model.Section;
 import com.mercury.pdf.render.model.TableData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,33 +41,8 @@ public class ReportServiceTest {
     }
 
     @Test
-    public void testReportGenerationWithPdfBox() throws IOException {
-        ReportService service = new ReportService();
-        service.setUseHtmlPipeline(false);
-        
-        ReportData reportData = createTestReportData();
-        
-        byte[] pdfBytes = service.generatePdf(reportData);
-        
-        assertNotNull(pdfBytes);
-        assertTrue(pdfBytes.length > 0);
-        
-        // Save to temp directory for JUnit cleanup
-        Path tempOutputPath = tempDir.resolve("report_pdfbox.pdf");
-        try (FileOutputStream fos = new FileOutputStream(tempOutputPath.toFile())) {
-            fos.write(pdfBytes);
-        }
-        
-        // Also save to test-output directory for visibility
-        Path visibleOutputPath = Paths.get(TEST_OUTPUT_DIR, "report_pdfbox.pdf");
-        Files.write(visibleOutputPath, pdfBytes);
-        System.out.println("✓ PDFBox PDF generated: " + visibleOutputPath.toAbsolutePath());
-    }
-
-    @Test
     public void testReportGenerationWithHtmlPipeline() throws IOException {
         ReportService service = new ReportService();
-        service.setUseHtmlPipeline(true);
         
         ReportData reportData = createTestReportData();
         
@@ -136,53 +112,46 @@ public class ReportServiceTest {
     }
     
     /**
-     * Creates test data with many table rows to demonstrate pagination issues
+     * Creates test data with many table rows to demonstrate pagination
      */
     private ReportData createTestReportData() {
-        ReportData reportData = new ReportData();
+        ReportDataBuilder builder = ReportDataBuilder.create()
+            .title("Annual Financial Report")
+            .subtitle("Comprehensive Analysis and Summary")
+            .reportDate("2024-01-27")
+            .reportNumber("RPT-2024-001");
         
-        // Cover page data
-        reportData.setTitle("Annual Financial Report");
-        reportData.setSubtitle("Comprehensive Analysis and Summary");
-        reportData.setReportDate("2024-01-27");
-        reportData.setReportNumber("RPT-2024-001");
-        
-        // Section 1: Detailed table blocks (1.1-1.4)
-        List<TableBlock> tableBlocks = new ArrayList<>();
-        
+        // Section 1: Detailed table sections (1.1-1.4)
         for (int i = 1; i <= 4; i++) {
-            TableBlock block = new TableBlock();
-            block.setBlockId("1." + i);
-            block.setBlockTitle("Analysis Block " + i);
-            block.setTableData(createLargeTableData(50)); // 50 rows to force pagination
-            tableBlocks.add(block);
+            Section section = new Section("1." + i + " Analysis Block " + i);
+            section.addTable(createLargeTableData(50)); // 50 rows to force pagination
+            builder.addSection(section);
         }
         
-        reportData.setTableBlocks(tableBlocks);
-        
         // Section 2: Analysis paragraphs
-        List<String> paragraphs = Arrays.asList(
-            "This report provides a comprehensive analysis of the financial performance for the fiscal year. " +
-            "The data presented includes detailed breakdowns across multiple categories and timeframes.",
-            
-            "Key findings indicate significant growth in several sectors, with notable improvements in " +
+        Section analysisSection = new Section("2. Analysis Summary");
+        analysisSection.addParagraph("This report provides a comprehensive analysis of the financial performance for the fiscal year. " +
+            "The data presented includes detailed breakdowns across multiple categories and timeframes.");
+        analysisSection.addParagraph("Key findings indicate significant growth in several sectors, with notable improvements in " +
             "operational efficiency and cost management. The detailed tables in Section 1 provide granular " +
-            "insights into these trends.",
-            
-            "Based on the analysis, we recommend continued investment in high-performing areas while " +
-            "maintaining vigilant cost controls in emerging markets."
-        );
-        reportData.setAnalysisParagraphs(paragraphs);
+            "insights into these trends.");
+        analysisSection.addParagraph("Based on the analysis, we recommend continued investment in high-performing areas while " +
+            "maintaining vigilant cost controls in emerging markets.");
+        builder.addSection(analysisSection);
         
         // Section 3: Summary table and charts
-        reportData.setSummaryTable(createSummaryTable());
-        reportData.setCharts(createCharts());
+        Section summarySection = new Section("3. Summary");
+        summarySection.addTable(createSummaryTable());
+        for (ChartData chart : createCharts()) {
+            summarySection.addChart(chart);
+        }
+        builder.addSection(summarySection);
         
         // Section 4: Notice and metadata
-        reportData.setReportNotice("This report is confidential and intended for internal use only.");
-        reportData.setMetadata("Generated by PDF Render v1.0 | Contact: reports@example.com");
+        builder.reportNotice("This report is confidential and intended for internal use only.");
+        builder.metadata("Generated by PDF Render v1.0 | Contact: reports@example.com");
         
-        return reportData;
+        return builder.build();
     }
     
     private TableData createLargeTableData(int numRows) {
