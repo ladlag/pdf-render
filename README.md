@@ -2,6 +2,21 @@
 
 A Java-based PDF report generation library using clean HTML/CSS architecture with Flying Saucer and OpenPDF.
 
+---
+
+## 🚨 Chinese Display Issues?
+
+**If Chinese characters show as boxes (□) in your PDF:**
+
+📖 **[Chinese Quick Fix Guide](CHINESE_QUICKSTART.md)** (中文显示快速解决指南)
+
+Or run the validation script:
+```bash
+./validate-chinese-fonts.sh
+```
+
+---
+
 ## Overview
 
 This project generates multi-section PDF reports with **unlimited dynamic sections**:

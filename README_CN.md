@@ -2,6 +2,22 @@
 
 一个基于Java的PDF报告生成库，使用HTML/CSS模板方式，结合Flying Saucer和OpenPDF实现可靠、稳定的表格分页。
 
+---
+
+## 🚨 中文显示问题？Chinese Display Issues?
+
+**如果您的 PDF 中中文显示为方框 (□)，请立即查看：**
+**If Chinese characters show as boxes (□) in your PDF, see:**
+
+📖 **[中文显示快速解决指南 Chinese Quick Fix Guide](CHINESE_QUICKSTART.md)**
+
+或运行验证脚本 Or run validation script:
+```bash
+./validate-chinese-fonts.sh
+```
+
+---
+
 ## 目录
 
 - [概述](#概述)
