@@ -350,6 +350,10 @@ import com.mercury.pdf.render.ReportService;
 import com.mercury.pdf.render.model.*;
 import java.util.Arrays;
 
+// Assume tables and charts are defined (see FlexibleReportDemo.java for details)
+// TableData financialTable = ...
+// ChartData revenueChart = ...
+
 // Create report with unlimited dynamic sections using the builder
 ReportData report = ReportDataBuilder.create()
     .title("Comprehensive Business Report")
@@ -394,7 +398,7 @@ byte[] pdfBytes = service.generatePdf(report);
 - ✅ **Fluent API** - Easy-to-use builder pattern for constructing reports
 - ✅ **No hardcoded limits** - Unlike the legacy 4-section structure
 
-**📖 See [FlexibleReportDemo.java](src/main/java/com/mercury/pdf/render/FlexibleReportDemo.java) for complete examples**
+**📖 See [FlexibleReportDemo.java](src/main/java/com/mercury/pdf/render/FlexibleReportDemo.java) for complete working examples with table and chart creation**
 
 ### Legacy 4-Section Structure (Backward Compatible)
 
