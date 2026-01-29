@@ -43,7 +43,7 @@ package com.example.pdfapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import com.finos.matcher.report.config.PdfRenderProperties;
+import config.com.mercury.pdf.render.PdfRenderProperties;
 
 /**
  * Spring Boot application with PDF rendering capabilities
@@ -62,9 +62,9 @@ public class PdfApplication {
 ```java
 package com.example.pdfapp.config;
 
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.config.PdfRenderProperties;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import config.com.mercury.pdf.render.PdfRenderProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -73,26 +73,26 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class PdfRenderConfig {
-    
+
     private final PdfRenderProperties properties;
-    
+
     public PdfRenderConfig(PdfRenderProperties properties) {
         this.properties = properties;
     }
-    
+
     @Bean
     public ReportService reportService() {
         ReportService service = new ReportService();
         service.setUseHtmlPipeline(true);
-        
+
         // Configure template settings
         service.getHtmlRenderer().setDefaultTemplateName(
-            properties.getTemplate().getDefaultName()
+                properties.getTemplate().getDefaultName()
         );
         service.getHtmlRenderer().setCacheTemplates(
-            properties.getTemplate().isCacheEnabled()
+                properties.getTemplate().isCacheEnabled()
         );
-        
+
         // Configure fonts for Chinese text
         if (properties.getFonts().getRegularPath() != null) {
             FontConfig fontConfig = new FontConfig();
@@ -100,15 +100,15 @@ public class PdfRenderConfig {
             fontConfig.setDefaultFontFamily(properties.getFonts().getDefaultFamily());
             service.getHtmlRenderer().setFontConfig(fontConfig);
         }
-        
+
         // Enable debug mode if configured
         if (properties.getDebug().isEnabled()) {
             service.getHtmlRenderer().setDebugHtmlEnabled(true);
             service.getHtmlRenderer().setDebugHtmlOutputDirectory(
-                properties.getDebug().getOutputDirectory()
+                    properties.getDebug().getOutputDirectory()
             );
         }
-        
+
         return service;
     }
 }
@@ -146,7 +146,7 @@ server:
 
 logging:
   level:
-    com.finos.matcher.report: INFO
+    com.mercury.pdf.render: INFO
     com.example.pdfapp: INFO
 ```
 
@@ -191,7 +191,7 @@ logging:
     <dependencies>
         <!-- PDF Rendering Library -->
         <dependency>
-            <groupId>com.finos.matcher</groupId>
+            <groupId>com.mercury</groupId>
             <artifactId>pdf-render</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>

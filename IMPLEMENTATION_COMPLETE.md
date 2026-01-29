@@ -21,7 +21,7 @@ This implementation successfully completed all requirements, establishing a univ
 **使用方式 / Usage:**
 ```xml
 <dependency>
-    <groupId>com.finos.matcher</groupId>
+    <groupId>com.mercury</groupId>
     <artifactId>pdf-render</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>

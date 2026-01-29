@@ -179,17 +179,27 @@ No code changes required! Simply regenerate PDFs using existing code:
 无需代码更改！只需使用现有代码重新生成PDF：
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
 
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
+
+setUseHtmlPipeline(true);
 
 // Configure Chinese font (if needed)
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
-service.getHtmlRenderer().setFontConfig(fontConfig);
+fontConfig.
+
+setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.
+
+setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+service.
+
+getHtmlRenderer().
+
+setFontConfig(fontConfig);
 
 // Generate PDF with improved styling
 byte[] pdf = service.generatePdf(reportData, "matcher-report-1.0");

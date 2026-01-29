@@ -133,18 +133,28 @@ chinese_text_custom_fonts.pdf:
 To display Chinese text correctly in your PDFs, configure FontConfig with HarmonyOS Sans SC:
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
 
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
+
+setUseHtmlPipeline(true);
 
 // Configure HarmonyOS Sans SC font for Chinese
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+fontConfig.
 
-service.getHtmlRenderer().setFontConfig(fontConfig);
+setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.
+
+setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+
+service.
+
+getHtmlRenderer().
+
+setFontConfig(fontConfig);
 
 // Generate PDF with Chinese text
 byte[] pdf = service.generatePdf(reportData, "matcher-report-1.0");

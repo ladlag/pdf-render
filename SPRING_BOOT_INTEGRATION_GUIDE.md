@@ -39,7 +39,7 @@ mvn clean install
 <dependencies>
     <!-- PDF渲染库 -->
     <dependency>
-        <groupId>com.finos.matcher</groupId>
+        <groupId>com.mercury</groupId>
         <artifactId>pdf-render</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </dependency>
@@ -191,14 +191,14 @@ package com.example.myapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import com.finos.matcher.report.config.PdfRenderProperties;
+import config.com.mercury.pdf.render.PdfRenderProperties;
 
 @SpringBootApplication
 @EnableConfigurationProperties(PdfRenderProperties.class)
 public class MyApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(MyApplication.class, args);
-    }
+   public static void main(String[] args) {
+      SpringApplication.run(MyApplication.class, args);
+   }
 }
 ```
 
@@ -207,22 +207,21 @@ public class MyApplication {
 ```java
 package com.example.myapp.config;
 
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.config.PdfRenderProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import config.com.mercury.pdf.render.PdfRenderProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PdfRenderConfig {
-    
+
     private final PdfRenderProperties properties;
-    
+
     public PdfRenderConfig(PdfRenderProperties properties) {
         this.properties = properties;
     }
-    
+
     /**
      * 创建ReportService Bean
      * 配置模板、字体等设置
@@ -230,18 +229,18 @@ public class PdfRenderConfig {
     @Bean
     public ReportService reportService() {
         ReportService service = new ReportService();
-        
+
         // 启用HTML渲染管道（推荐）
         service.setUseHtmlPipeline(true);
-        
+
         // 配置模板设置
         service.getHtmlRenderer().setDefaultTemplateName(
-            properties.getTemplate().getDefaultName()
+                properties.getTemplate().getDefaultName()
         );
         service.getHtmlRenderer().setCacheTemplates(
-            properties.getTemplate().isCacheEnabled()
+                properties.getTemplate().isCacheEnabled()
         );
-        
+
         // 配置字体（用于中文显示）
         if (properties.getFonts().getRegularPath() != null) {
             FontConfig fontConfig = new FontConfig();
@@ -250,15 +249,15 @@ public class PdfRenderConfig {
             fontConfig.setDefaultFontFamily(properties.getFonts().getDefaultFamily());
             service.getHtmlRenderer().setFontConfig(fontConfig);
         }
-        
+
         // 配置调试模式
         if (properties.getDebug().isEnabled()) {
             service.getHtmlRenderer().setDebugHtmlEnabled(true);
             service.getHtmlRenderer().setDebugHtmlOutputDirectory(
-                properties.getDebug().getOutputDirectory()
+                    properties.getDebug().getOutputDirectory()
             );
         }
-        
+
         return service;
     }
 }
@@ -269,9 +268,12 @@ public class PdfRenderConfig {
 ```java
 package com.example.myapp.service;
 
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.model.*;
-import com.finos.matcher.report.config.PdfRenderProperties;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.PdfRenderProperties;
+import com.mercury.pdf.render.model.ReportData;
+import com.mercury.pdf.render.model.ReportDataBuilder;
+import com.mercury.pdf.render.model.Section;
+import com.mercury.pdf.render.model.TableData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -285,129 +287,129 @@ import java.util.*;
 
 @Service
 public class PdfReportService {
-    
-    private static final Logger log = LoggerFactory.getLogger(PdfReportService.class);
-    
-    private final ReportService reportService;
-    private final PdfRenderProperties properties;
-    
-    public PdfReportService(ReportService reportService, PdfRenderProperties properties) {
-        this.reportService = reportService;
-        this.properties = properties;
-    }
-    
-    /**
-     * 生成需求预审报告PDF
-     * 
-     * @param reportData 报告数据
-     * @return PDF字节数组
-     * @throws IOException 如果生成失败
-     */
-    public byte[] generateMatcherReport(ReportData reportData) throws IOException {
-        log.info("开始生成需求预审报告PDF，标题: {}", reportData.getTitle());
-        
-        // 使用matcher-report-final模板生成PDF
-        byte[] pdfBytes = reportService.generatePdf(reportData, "matcher-report-final");
-        
-        // 如果配置了自动保存，则保存到文件
-        if (properties.getOutput().isSaveToDirectory() 
-                && properties.getOutput().getDirectory() != null) {
-            savePdfToFile(pdfBytes, reportData.getTitle());
-        }
-        
-        log.info("需求预审报告PDF生成成功，大小: {} KB", pdfBytes.length / 1024);
-        return pdfBytes;
-    }
-    
-    /**
-     * 生成通用报告（使用默认模板）
-     * 
-     * @param reportData 报告数据
-     * @return PDF字节数组
-     * @throws IOException 如果生成失败
-     */
-    public byte[] generateReport(ReportData reportData) throws IOException {
-        log.info("开始生成报告PDF，标题: {}", reportData.getTitle());
-        byte[] pdfBytes = reportService.generatePdf(reportData);
-        log.info("报告PDF生成成功");
-        return pdfBytes;
-    }
-    
-    /**
-     * 生成自定义模板报告
-     * 
-     * @param reportData 报告数据
-     * @param templateName 模板名称（不含.html扩展名）
-     * @return PDF字节数组
-     * @throws IOException 如果生成失败
-     */
-    public byte[] generateCustomReport(ReportData reportData, String templateName) throws IOException {
-        log.info("使用模板 {} 生成报告PDF", templateName);
-        return reportService.generatePdf(reportData, templateName);
-    }
-    
-    /**
-     * 创建需求预审报告示例数据
-     * 
-     * @return 报告数据
-     */
-    public ReportData createSampleMatcherReportData() {
-        ReportDataBuilder builder = ReportDataBuilder.create()
-            .title("需求预审报告")
-            .reportDate("2024-12-31")
-            .reportNumber("AI-PRE-2024-001");
-        
-        // 第一章节：匹配结果
-        Section section11 = new Section("1.1 精确匹配通过（匹配度≥0.90）");
-        List<String> headers = Arrays.asList("需求编号", "需求名称", "匹配的Word功能", "匹配度", "匹配说明");
-        List<List<String>> rows = Arrays.asList(
-            Arrays.asList("C001", "用户注册功能", "3.5.1-用户注册功能", "1.00", "需求名称、描述完全一致"),
-            Arrays.asList("C002", "用户登录功能", "3.5.2-用户登录功能", "0.98", "名称一致，含密码和第三方登录")
-        );
-        section11.addTable(new TableData(headers, rows));
-        builder.addSection(section11);
-        
-        // 第二章节：详细分析
-        Section section21 = new Section("2.1 分模块匹配表现");
-        section21.addParagraph("按业务模块拆分匹配结果，用户管理、客户管理模块匹配表现优异。");
-        builder.addSection(section21);
-        
-        // 第三章节：预审结果总结
-        builder.summaryTable(new TableData(
-            Arrays.asList("匹配状态", "数量（条）", "占比"),
-            Arrays.asList(
-                Arrays.asList("精确匹配通过", "10", "50.0%"),
-                Arrays.asList("语义匹配通过", "6", "30.0%")
-            )
-        ));
-        
-        return builder.build();
-    }
-    
-    /**
-     * 保存PDF到文件系统
-     */
-    private void savePdfToFile(byte[] pdfBytes, String title) throws IOException {
-        String outputDir = properties.getOutput().getDirectory();
-        Path dirPath = Paths.get(outputDir);
-        
-        // 创建目录（如果不存在）
-        if (!Files.exists(dirPath)) {
-            Files.createDirectories(dirPath);
-        }
-        
-        // 生成文件名
-        String fileName = title.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5-]", "_") 
-                        + "_" + System.currentTimeMillis() + ".pdf";
-        Path filePath = dirPath.resolve(fileName);
-        
-        // 保存文件
-        try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
-            fos.write(pdfBytes);
-        }
-        
-        log.info("PDF已保存到: {}", filePath.toAbsolutePath());
-    }
+
+   private static final Logger log = LoggerFactory.getLogger(PdfReportService.class);
+
+   private final ReportService reportService;
+   private final PdfRenderProperties properties;
+
+   public PdfReportService(ReportService reportService, PdfRenderProperties properties) {
+      this.reportService = reportService;
+      this.properties = properties;
+   }
+
+   /**
+    * 生成需求预审报告PDF
+    *
+    * @param reportData 报告数据
+    * @return PDF字节数组
+    * @throws IOException 如果生成失败
+    */
+   public byte[] generateMatcherReport(ReportData reportData) throws IOException {
+      log.info("开始生成需求预审报告PDF，标题: {}", reportData.getTitle());
+
+      // 使用matcher-report-final模板生成PDF
+      byte[] pdfBytes = reportService.generatePdf(reportData, "matcher-report-final");
+
+      // 如果配置了自动保存，则保存到文件
+      if (properties.getOutput().isSaveToDirectory()
+              && properties.getOutput().getDirectory() != null) {
+         savePdfToFile(pdfBytes, reportData.getTitle());
+      }
+
+      log.info("需求预审报告PDF生成成功，大小: {} KB", pdfBytes.length / 1024);
+      return pdfBytes;
+   }
+
+   /**
+    * 生成通用报告（使用默认模板）
+    *
+    * @param reportData 报告数据
+    * @return PDF字节数组
+    * @throws IOException 如果生成失败
+    */
+   public byte[] generateReport(ReportData reportData) throws IOException {
+      log.info("开始生成报告PDF，标题: {}", reportData.getTitle());
+      byte[] pdfBytes = reportService.generatePdf(reportData);
+      log.info("报告PDF生成成功");
+      return pdfBytes;
+   }
+
+   /**
+    * 生成自定义模板报告
+    *
+    * @param reportData 报告数据
+    * @param templateName 模板名称（不含.html扩展名）
+    * @return PDF字节数组
+    * @throws IOException 如果生成失败
+    */
+   public byte[] generateCustomReport(ReportData reportData, String templateName) throws IOException {
+      log.info("使用模板 {} 生成报告PDF", templateName);
+      return reportService.generatePdf(reportData, templateName);
+   }
+
+   /**
+    * 创建需求预审报告示例数据
+    *
+    * @return 报告数据
+    */
+   public ReportData createSampleMatcherReportData() {
+      ReportDataBuilder builder = ReportDataBuilder.create()
+              .title("需求预审报告")
+              .reportDate("2024-12-31")
+              .reportNumber("AI-PRE-2024-001");
+
+      // 第一章节：匹配结果
+      Section section11 = new Section("1.1 精确匹配通过（匹配度≥0.90）");
+      List<String> headers = Arrays.asList("需求编号", "需求名称", "匹配的Word功能", "匹配度", "匹配说明");
+      List<List<String>> rows = Arrays.asList(
+              Arrays.asList("C001", "用户注册功能", "3.5.1-用户注册功能", "1.00", "需求名称、描述完全一致"),
+              Arrays.asList("C002", "用户登录功能", "3.5.2-用户登录功能", "0.98", "名称一致，含密码和第三方登录")
+      );
+      section11.addTable(new TableData(headers, rows));
+      builder.addSection(section11);
+
+      // 第二章节：详细分析
+      Section section21 = new Section("2.1 分模块匹配表现");
+      section21.addParagraph("按业务模块拆分匹配结果，用户管理、客户管理模块匹配表现优异。");
+      builder.addSection(section21);
+
+      // 第三章节：预审结果总结
+      builder.summaryTable(new TableData(
+              Arrays.asList("匹配状态", "数量（条）", "占比"),
+              Arrays.asList(
+                      Arrays.asList("精确匹配通过", "10", "50.0%"),
+                      Arrays.asList("语义匹配通过", "6", "30.0%")
+              )
+      ));
+
+      return builder.build();
+   }
+
+   /**
+    * 保存PDF到文件系统
+    */
+   private void savePdfToFile(byte[] pdfBytes, String title) throws IOException {
+      String outputDir = properties.getOutput().getDirectory();
+      Path dirPath = Paths.get(outputDir);
+
+      // 创建目录（如果不存在）
+      if (!Files.exists(dirPath)) {
+         Files.createDirectories(dirPath);
+      }
+
+      // 生成文件名
+      String fileName = title.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5-]", "_")
+              + "_" + System.currentTimeMillis() + ".pdf";
+      Path filePath = dirPath.resolve(fileName);
+
+      // 保存文件
+      try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+         fos.write(pdfBytes);
+      }
+
+      log.info("PDF已保存到: {}", filePath.toAbsolutePath());
+   }
 }
 ```
 
@@ -417,7 +419,7 @@ public class PdfReportService {
 package com.example.myapp.controller;
 
 import com.example.myapp.service.PdfReportService;
-import com.finos.matcher.report.model.ReportData;
+import model.com.mercury.pdf.render.ReportData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -435,125 +437,125 @@ import java.nio.charset.StandardCharsets;
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
-    
-    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
-    
-    private final PdfReportService pdfReportService;
-    
-    public ReportController(PdfReportService pdfReportService) {
-        this.pdfReportService = pdfReportService;
-    }
-    
-    /**
-     * 生成需求预审报告PDF
-     * 
-     * POST /api/reports/matcher
-     * Content-Type: application/json
-     * 
-     * @param reportData 报告数据（JSON格式）
-     * @return PDF文件
-     */
-    @PostMapping(value = "/matcher", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> generateMatcherReport(@RequestBody ReportData reportData) {
-        log.info("收到生成需求预审报告请求");
-        
-        try {
-            byte[] pdfBytes = pdfReportService.generateMatcherReport(reportData);
-            
-            // 设置响应头
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            
-            // 文件名支持中文
-            String filename = reportData.getTitle() != null 
-                ? reportData.getTitle() + ".pdf" 
-                : "需求预审报告.pdf";
-            
-            // 使用RFC 5987编码文件名以支持中文
-            String encodedFilename = new String(filename.getBytes(StandardCharsets.UTF_8), 
-                                               StandardCharsets.ISO_8859_1);
-            headers.setContentDispositionFormData("attachment", encodedFilename);
-            headers.setContentLength(pdfBytes.length);
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-                    
-        } catch (IOException e) {
-            log.error("生成PDF失败", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
-    
-    /**
-     * 生成示例需求预审报告（用于测试）
-     * 
-     * GET /api/reports/matcher/sample
-     * 
-     * @return PDF文件
-     */
-    @GetMapping(value = "/matcher/sample", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> generateSampleMatcherReport() {
-        log.info("生成示例需求预审报告");
-        
-        try {
-            ReportData sampleData = pdfReportService.createSampleMatcherReportData();
-            byte[] pdfBytes = pdfReportService.generateMatcherReport(sampleData);
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "sample_matcher_report.pdf");
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-                    
-        } catch (IOException e) {
-            log.error("生成示例PDF失败", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
-    
-    /**
-     * 生成通用报告
-     * 
-     * POST /api/reports/generate
-     * 
-     * @param reportData 报告数据
-     * @param templateName 模板名称（可选）
-     * @return PDF文件
-     */
-    @PostMapping(value = "/generate", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> generateReport(
-            @RequestBody ReportData reportData,
-            @RequestParam(required = false) String templateName) {
-        
-        log.info("生成报告，模板: {}", templateName);
-        
-        try {
-            byte[] pdfBytes;
-            if (templateName != null && !templateName.isEmpty()) {
-                pdfBytes = pdfReportService.generateCustomReport(reportData, templateName);
-            } else {
-                pdfBytes = pdfReportService.generateReport(reportData);
-            }
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "report.pdf");
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-                    
-        } catch (IOException e) {
-            log.error("生成PDF失败", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
+
+   private static final Logger log = LoggerFactory.getLogger(ReportController.class);
+
+   private final PdfReportService pdfReportService;
+
+   public ReportController(PdfReportService pdfReportService) {
+      this.pdfReportService = pdfReportService;
+   }
+
+   /**
+    * 生成需求预审报告PDF
+    *
+    * POST /api/reports/matcher
+    * Content-Type: application/json
+    *
+    * @param reportData 报告数据（JSON格式）
+    * @return PDF文件
+    */
+   @PostMapping(value = "/matcher", produces = MediaType.APPLICATION_PDF_VALUE)
+   public ResponseEntity<byte[]> generateMatcherReport(@RequestBody ReportData reportData) {
+      log.info("收到生成需求预审报告请求");
+
+      try {
+         byte[] pdfBytes = pdfReportService.generateMatcherReport(reportData);
+
+         // 设置响应头
+         HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_PDF);
+
+         // 文件名支持中文
+         String filename = reportData.getTitle() != null
+                 ? reportData.getTitle() + ".pdf"
+                 : "需求预审报告.pdf";
+
+         // 使用RFC 5987编码文件名以支持中文
+         String encodedFilename = new String(filename.getBytes(StandardCharsets.UTF_8),
+                 StandardCharsets.ISO_8859_1);
+         headers.setContentDispositionFormData("attachment", encodedFilename);
+         headers.setContentLength(pdfBytes.length);
+
+         return ResponseEntity.ok()
+                 .headers(headers)
+                 .body(pdfBytes);
+
+      } catch (IOException e) {
+         log.error("生成PDF失败", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                 .body(null);
+      }
+   }
+
+   /**
+    * 生成示例需求预审报告（用于测试）
+    *
+    * GET /api/reports/matcher/sample
+    *
+    * @return PDF文件
+    */
+   @GetMapping(value = "/matcher/sample", produces = MediaType.APPLICATION_PDF_VALUE)
+   public ResponseEntity<byte[]> generateSampleMatcherReport() {
+      log.info("生成示例需求预审报告");
+
+      try {
+         ReportData sampleData = pdfReportService.createSampleMatcherReportData();
+         byte[] pdfBytes = pdfReportService.generateMatcherReport(sampleData);
+
+         HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_PDF);
+         headers.setContentDispositionFormData("attachment", "sample_matcher_report.pdf");
+
+         return ResponseEntity.ok()
+                 .headers(headers)
+                 .body(pdfBytes);
+
+      } catch (IOException e) {
+         log.error("生成示例PDF失败", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                 .body(null);
+      }
+   }
+
+   /**
+    * 生成通用报告
+    *
+    * POST /api/reports/generate
+    *
+    * @param reportData 报告数据
+    * @param templateName 模板名称（可选）
+    * @return PDF文件
+    */
+   @PostMapping(value = "/generate", produces = MediaType.APPLICATION_PDF_VALUE)
+   public ResponseEntity<byte[]> generateReport(
+           @RequestBody ReportData reportData,
+           @RequestParam(required = false) String templateName) {
+
+      log.info("生成报告，模板: {}", templateName);
+
+      try {
+         byte[] pdfBytes;
+         if (templateName != null && !templateName.isEmpty()) {
+            pdfBytes = pdfReportService.generateCustomReport(reportData, templateName);
+         } else {
+            pdfBytes = pdfReportService.generateReport(reportData);
+         }
+
+         HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_PDF);
+         headers.setContentDispositionFormData("attachment", "report.pdf");
+
+         return ResponseEntity.ok()
+                 .headers(headers)
+                 .body(pdfBytes);
+
+      } catch (IOException e) {
+         log.error("生成PDF失败", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                 .body(null);
+      }
+   }
 }
 ```
 
@@ -662,7 +664,7 @@ public class ReportExceptionHandler {
 ```yaml
 logging:
   level:
-    com.finos.matcher.report: DEBUG
+    com.mercury.pdf.render: DEBUG
     com.example.myapp: INFO
 ```
 

@@ -376,28 +376,40 @@ java TestFontMismatch
 ### 基本配置模板 Basic Configuration Template
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.model.*;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.model.ReportData;
+import com.mercury.pdf.render.model.ReportDataBuilder;
+import com.mercury.pdf.render.model.Section;
 
 // 创建服务
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
 
-// 配置字体
-FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
-fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
-service.getHtmlRenderer().setFontConfig(fontConfig);
+        setUseHtmlPipeline(true);
 
-// 创建报告数据
-ReportData data = ReportDataBuilder.create()
-    .title("中文报告 Chinese Report")
-    .addSection(new Section("章节").addParagraph("中文内容"))
-    .build();
+        // 配置字体
+        FontConfig fontConfig = new FontConfig();
+fontConfig.
 
-// 生成PDF
-byte[] pdf = service.generatePdf(data);
+        setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+fontConfig.
+
+        setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+service.
+
+        getHtmlRenderer().
+
+        setFontConfig(fontConfig);
+
+        // 创建报告数据
+        ReportData data = ReportDataBuilder.create()
+                .title("中文报告 Chinese Report")
+                .addSection(new Section("章节").addParagraph("中文内容"))
+                .build();
+
+        // 生成PDF
+        byte[] pdf = service.generatePdf(data);
 ```
 
 ### 故障排除命令 Troubleshooting Commands

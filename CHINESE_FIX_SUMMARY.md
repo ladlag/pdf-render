@@ -22,19 +22,29 @@ src/main/resources/fonts/NotoSansCJKsc-Regular.otf
 ### 2. 正确的配置方式
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
 
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
+
+setUseHtmlPipeline(true);
 
 // 配置字体
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
-// 重要：必须设置为字体的内部名称
-fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, Arial, sans-serif");
+fontConfig.
 
-service.getHtmlRenderer().setFontConfig(fontConfig);
+setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+// 重要：必须设置为字体的内部名称
+fontConfig.
+
+setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, Arial, sans-serif");
+
+service.
+
+getHtmlRenderer().
+
+setFontConfig(fontConfig);
 
 // 生成 PDF
 byte[] pdf = service.generatePdf(reportData);

@@ -39,25 +39,33 @@ src/main/resources/fonts/
 #### 2. 编程方式配置
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.model.ReportData;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import model.com.mercury.pdf.render.ReportData;
 
 // 创建报表服务
 ReportService service = new ReportService();
 
-// 配置中文字体
-FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+        // 配置中文字体
+        FontConfig fontConfig = new FontConfig();
+fontConfig.
+
+        setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
 // 重要：font family 必须匹配字体文件的内部名称
-fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+fontConfig.
+
+        setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
 
 // 应用字体配置
-service.getHtmlRenderer().setFontConfig(fontConfig);
+service.
 
-// 生成PDF
-ReportData reportData = createYourReportData();  // 包含中文内容
-byte[] pdfBytes = service.generatePdf(reportData);
+        getHtmlRenderer().
+
+        setFontConfig(fontConfig);
+
+        // 生成PDF
+        ReportData reportData = createYourReportData();  // 包含中文内容
+        byte[] pdfBytes = service.generatePdf(reportData);
 ```
 
 **重要提示：**
@@ -84,33 +92,33 @@ pdf-render:
 在 Service 中使用：
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.config.PdfRenderProperties;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import config.com.mercury.pdf.render.PdfRenderProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PdfReportService {
-    
+
     private final ReportService reportService;
     private final PdfRenderProperties properties;
-    
+
     @Autowired
     public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
         this.reportService = new ReportService();
-        
+
         // 从配置创建 FontConfig
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath(properties.getFonts().getRegularPath());
         fontConfig.setBoldFontPath(properties.getFonts().getBoldPath());
         fontConfig.setDefaultFontFamily(properties.getFonts().getDefaultFamily());
-        
+
         // 应用字体配置
         reportService.getHtmlRenderer().setFontConfig(fontConfig);
     }
-    
+
     public byte[] generateReport(ReportData reportData) throws IOException {
         return reportService.generatePdf(reportData);
     }
@@ -222,25 +230,33 @@ src/main/resources/fonts/
 #### 2. Programmatic Configuration
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.model.ReportData;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import model.com.mercury.pdf.render.ReportData;
 
 // Create report service
 ReportService service = new ReportService();
 
-// Configure Chinese fonts
-FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
+        // Configure Chinese fonts
+        FontConfig fontConfig = new FontConfig();
+fontConfig.
+
+        setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
 // IMPORTANT: defaultFontFamily must match the font's internal name
-fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+fontConfig.
+
+        setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
 
 // Apply font configuration
-service.getHtmlRenderer().setFontConfig(fontConfig);
+service.
 
-// Generate PDF
-ReportData reportData = createYourReportData();  // With Chinese content
-byte[] pdfBytes = service.generatePdf(reportData);
+        getHtmlRenderer().
+
+        setFontConfig(fontConfig);
+
+        // Generate PDF
+        ReportData reportData = createYourReportData();  // With Chinese content
+        byte[] pdfBytes = service.generatePdf(reportData);
 ```
 
 **Important Notes:**
@@ -272,33 +288,33 @@ pdf-render:
 Use in Service:
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.config.PdfRenderProperties;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import config.com.mercury.pdf.render.PdfRenderProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PdfReportService {
-    
+
     private final ReportService reportService;
     private final PdfRenderProperties properties;
-    
+
     @Autowired
     public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
         this.reportService = new ReportService();
-        
+
         // Create FontConfig from properties
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath(properties.getFonts().getRegularPath());
         fontConfig.setBoldFontPath(properties.getFonts().getBoldPath());
         fontConfig.setDefaultFontFamily(properties.getFonts().getDefaultFamily());
-        
+
         // Apply font configuration
         reportService.getHtmlRenderer().setFontConfig(fontConfig);
     }
-    
+
     public byte[] generateReport(ReportData reportData) throws IOException {
         return reportService.generatePdf(reportData);
     }

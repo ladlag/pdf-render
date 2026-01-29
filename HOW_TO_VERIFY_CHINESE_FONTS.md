@@ -64,45 +64,48 @@ Warning: Failed to register custom fonts: Font not found in classpath: /fonts/xx
 ## 完整验证代码 Complete Verification Code
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
-import com.finos.matcher.report.model.*;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
+import com.mercury.pdf.render.model.ReportData;
+import com.mercury.pdf.render.model.ReportDataBuilder;
+import com.mercury.pdf.render.model.Section;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class VerifyChineseFont {
     public static void main(String[] args) throws Exception {
         System.out.println("=== 中文字体验证 Chinese Font Verification ===\n");
-        
+
         // 1. 创建服务 Create service
         ReportService service = new ReportService();
         service.setUseHtmlPipeline(true);
-        
+
         // 2. 配置字体 Configure fonts
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
         fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
         service.getHtmlRenderer().setFontConfig(fontConfig);
-        
+
         // 3. 创建测试数据 Create test data
         ReportData data = ReportDataBuilder.create()
-            .title("中文测试报告 Chinese Test")
-            .subtitle("字体验证 Font Verification")
-            .reportDate("2024-12-31")
-            .addSection(new Section("测试章节 Test Section")
-                .addParagraph("这是中文段落，包含常用汉字。")
-                .addParagraph("This is a Chinese paragraph with common characters."))
-            .build();
-        
+                .title("中文测试报告 Chinese Test")
+                .subtitle("字体验证 Font Verification")
+                .reportDate("2024-12-31")
+                .addSection(new Section("测试章节 Test Section")
+                        .addParagraph("这是中文段落，包含常用汉字。")
+                        .addParagraph("This is a Chinese paragraph with common characters."))
+                .build();
+
         // 4. 生成PDF Generate PDF
         byte[] pdf = service.generatePdf(data, "flexible");
         Files.write(Paths.get("verify_chinese.pdf"), pdf);
-        
+
         // 5. 验证结果 Verify results
         System.out.println("✓ PDF生成成功 PDF generated successfully");
         System.out.println("  文件 File: verify_chinese.pdf");
         System.out.println("  大小 Size: " + (pdf.length / 1024) + " KB");
-        
+
         if (pdf.length > 100000) {
             System.out.println("\n✅ 成功 SUCCESS: 字体已嵌入，中文应该正常显示");
             System.out.println("   Font embedded, Chinese should display correctly");
@@ -228,8 +231,9 @@ cannot find symbol: class FontConfig
 ```
 
 **解决方案 Solution**:
+
 ```java
-import com.finos.matcher.report.config.FontConfig; // 添加这行 Add this line
+
 ```
 
 ## 推荐的字体 Recommended Fonts

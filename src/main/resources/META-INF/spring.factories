@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.finos.matcher.report.config.PdfRenderAutoConfiguration
+config.com.mercury.pdf.render.PdfRenderAutoConfiguration

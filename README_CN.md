@@ -57,23 +57,33 @@ byte[] certPdf = service.generatePdf(data, "certificate");   // 证书
 **如果您的PDF需要显示中文，必须配置 FontConfig，否则中文会显示为方框（□）**
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
 
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
+
+setUseHtmlPipeline(true);
 
 // ✅ 必须配置 FontConfig 才能显示中文
 // 方案1：使用鸿蒙字体（推荐用于中文显示）
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+fontConfig.
+
+setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.
+
+setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
 
 // 方案2：使用思源黑体 Noto Sans（备选方案）
 // fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
 // fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
 
-service.getHtmlRenderer().setFontConfig(fontConfig);
+service.
+
+getHtmlRenderer().
+
+setFontConfig(fontConfig);
 
 // 现在可以生成包含中文的PDF了
 byte[] pdf = service.generatePdf(reportData);
@@ -81,7 +91,7 @@ byte[] pdf = service.generatePdf(reportData);
 
 **快速验证：** 运行演示程序查看对比效果
 ```bash
-java -cp "target/classes:..." com.finos.matcher.report.ChineseFontConfigurationDemo
+java -cp "target/classes:..." com.mercury.pdf.render.ChineseFontConfigurationDemo
 ```
 
 **详细文档：**
@@ -118,37 +128,39 @@ mvn test
 ### 示例1：创建简单报告
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.model.*;
+import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.model.ReportData;
+import com.mercury.pdf.render.model.ReportDataBuilder;
+import com.mercury.pdf.render.model.Section;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 public class SimpleReportExample {
     public static void main(String[] args) throws Exception {
         // 使用构建器创建报告数据
         ReportData reportData = ReportDataBuilder.create()
-            .title("2024年度财务报告")
-            .subtitle("第四季度业绩总结")
-            .reportDate("2024-12-31")
-            .reportNumber("RPT-2024-Q4-001")
-            
-            // 添加执行摘要章节
-            .addSection(new Section("执行摘要")
-                .addParagraph("本季度公司业绩表现优异，营收同比增长25%。")
-                .addParagraph("运营效率持续提升，成本控制在合理范围内。"))
-            
-            .reportNotice("本报告为内部文件，仅供参考。")
-            .metadata("生成时间：2024-12-31 | 生成系统：PDF-Render v1.0")
-            .build();
-        
+                .title("2024年度财务报告")
+                .subtitle("第四季度业绩总结")
+                .reportDate("2024-12-31")
+                .reportNumber("RPT-2024-Q4-001")
+
+                // 添加执行摘要章节
+                .addSection(new Section("执行摘要")
+                        .addParagraph("本季度公司业绩表现优异，营收同比增长25%。")
+                        .addParagraph("运营效率持续提升，成本控制在合理范围内。"))
+
+                .reportNotice("本报告为内部文件，仅供参考。")
+                .metadata("生成时间：2024-12-31 | 生成系统：PDF-Render v1.0")
+                .build();
+
         // 生成PDF
         ReportService service = new ReportService();
         byte[] pdfBytes = service.generatePdf(reportData);
-        
+
         // 保存到文件
         Files.write(Paths.get("财务报告.pdf"), pdfBytes);
-        
+
         System.out.println("PDF生成成功！");
     }
 }
@@ -519,7 +531,7 @@ public class ComplexOrderExample {
 
 ```xml
 <dependency>
-    <groupId>com.finos.matcher</groupId>
+    <groupId>com.mercury</groupId>
     <artifactId>pdf-render</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -626,25 +638,44 @@ public class ReportController {
 **图表自定义配置示例：**
 
 ```java
-import com.finos.matcher.report.model.ChartConfig;
+import model.com.mercury.pdf.render.ChartConfig;
+
 import java.awt.Color;
 
 // 创建图表配置
 ChartConfig config = new ChartConfig();
-config.setWidth(800);                     // 宽度
-config.setHeight(400);                    // 高度
-config.setColors(Arrays.asList(
-    new Color(52, 152, 219),              // 蓝色
-    new Color(46, 204, 113)               // 绿色
-));
-config.setXAxisLabel("季度");              // X轴标签
-config.setYAxisLabel("销售额（万元）");    // Y轴标签
-config.setShowGridLines(true);            // 显示网格线
-config.setShow3D(false);                  // 3D效果（饼图）
+config.
 
-// 应用配置到图表
-ChartData chart = new ChartData("季度销售", "bar", data);
-chart.setConfig(config);
+        setWidth(800);                     // 宽度
+config.
+
+        setHeight(400);                    // 高度
+config.
+
+        setColors(Arrays.asList(
+                new Color(52, 152,219),              // 蓝色
+    new
+
+        Color(46,204,113)               // 绿色
+));
+        config.
+
+        setXAxisLabel("季度");              // X轴标签
+config.
+
+        setYAxisLabel("销售额（万元）");    // Y轴标签
+config.
+
+        setShowGridLines(true);            // 显示网格线
+config.
+
+        setShow3D(false);                  // 3D效果（饼图）
+
+        // 应用配置到图表
+        ChartData chart = new ChartData("季度销售", "bar", data);
+chart.
+
+        setConfig(config);
 ```
 
 **配置选项说明：**
@@ -692,13 +723,22 @@ areaChart.setConfig(areaConfig);
 **A:** 本项目支持通过 `FontConfig` 配置中文字体。**详细指南请查看 [FONT_CONFIGURATION.md](FONT_CONFIGURATION.md)**
 
 **编程方式：**
+
 ```java
-import com.finos.matcher.report.config.FontConfig;
+import config.com.mercury.pdf.render.FontConfig;
 
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
-fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
-service.getHtmlRenderer().setFontConfig(fontConfig);
+fontConfig.
+
+setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
+fontConfig.
+
+setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
+service.
+
+getHtmlRenderer().
+
+setFontConfig(fontConfig);
 ```
 
 **Spring Boot配置方式：**

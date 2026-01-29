@@ -39,23 +39,33 @@ ReportData → HtmlReportRenderer → Thymeleaf Template → HTML → Flying Sau
 **If your PDF needs to display Chinese/Japanese/Korean characters, you MUST configure FontConfig, otherwise CJK text will show as boxes (□)**
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.FontConfig;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.FontConfig;
 
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
+
+setUseHtmlPipeline(true);
 
 // ✅ REQUIRED for Chinese/CJK character display
 // Option 1: Using HarmonyOS Sans SC (recommended for Chinese)
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+fontConfig.
+
+setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.
+
+setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
 
 // Option 2: Using Noto Sans CJK SC (alternative)
 // fontConfig.setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
 // fontConfig.setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
 
-service.getHtmlRenderer().setFontConfig(fontConfig);
+service.
+
+getHtmlRenderer().
+
+setFontConfig(fontConfig);
 
 // Now you can generate PDFs with Chinese text
 byte[] pdf = service.generatePdf(reportData);
@@ -63,7 +73,7 @@ byte[] pdf = service.generatePdf(reportData);
 
 **Quick Demo:** Run the demonstration to see the difference
 ```bash
-java -cp "target/classes:..." com.finos.matcher.report.ChineseFontConfigurationDemo
+java -cp "target/classes:..." com.mercury.pdf.render.ChineseFontConfigurationDemo
 ```
 
 **Documentation:**
@@ -104,7 +114,7 @@ To use this library in your Spring Boot project, add the dependency to your `pom
 
 ```xml
 <dependency>
-    <groupId>com.finos.matcher</groupId>
+    <groupId>com.mercury</groupId>
     <artifactId>pdf-render</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -165,9 +175,9 @@ If you want to use the configuration properties in your service, you can inject 
 ```java
 package com.example.myapp.service;
 
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.config.PdfRenderProperties;
-import com.finos.matcher.report.model.ReportData;
+import com.mercury.pdf.render.ReportService;
+import config.com.mercury.pdf.render.PdfRenderProperties;
+import model.com.mercury.pdf.render.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -177,43 +187,43 @@ import java.nio.file.Paths;
 
 @Service
 public class PdfReportService {
-    
+
     private final ReportService reportService;
     private final PdfRenderProperties properties;
-    
+
     @Autowired
     public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
         this.reportService = new ReportService();
-        
+
         // Configure the service with properties from application.yml
         reportService.getHtmlRenderer().setDefaultTemplateName(
-            properties.getTemplate().getDefaultName()
+                properties.getTemplate().getDefaultName()
         );
         reportService.getHtmlRenderer().setCacheTemplates(
-            properties.getTemplate().isCacheEnabled()
+                properties.getTemplate().isCacheEnabled()
         );
     }
-    
+
     public byte[] generateReport(ReportData reportData) throws IOException {
         byte[] pdfBytes = reportService.generatePdf(reportData);
-        
+
         // Optionally save to configured directory
-        if (properties.getOutput().isSaveToDirectory() 
+        if (properties.getOutput().isSaveToDirectory()
                 && properties.getOutput().getDirectory() != null) {
             String outputPath = Paths.get(
-                properties.getOutput().getDirectory(), 
-                "report-" + System.currentTimeMillis() + ".pdf"
+                    properties.getOutput().getDirectory(),
+                    "report-" + System.currentTimeMillis() + ".pdf"
             ).toString();
-            
+
             try (FileOutputStream fos = new FileOutputStream(outputPath)) {
                 fos.write(pdfBytes);
             }
         }
-        
+
         return pdfBytes;
     }
-    
+
     public byte[] generateInvoice(ReportData reportData) throws IOException {
         return reportService.generatePdf(reportData, "invoice");
     }
@@ -227,21 +237,21 @@ Create a service in your Spring Boot application:
 ```java
 package com.example.myapp.service;
 
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.model.ReportData;
+import com.mercury.pdf.render.ReportService;
+import model.com.mercury.pdf.render.ReportData;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
 public class PdfReportService {
-    
+
     private final ReportService reportService = new ReportService();
-    
+
     public byte[] generateReport(ReportData reportData) throws IOException {
         return reportService.generatePdf(reportData);
     }
-    
+
     public byte[] generateInvoice(ReportData reportData) throws IOException {
         return reportService.generatePdf(reportData, "invoice");
     }
@@ -256,7 +266,7 @@ Create a REST controller to expose PDF generation:
 package com.example.myapp.controller;
 
 import com.example.myapp.service.PdfReportService;
-import com.finos.matcher.report.model.ReportData;
+import model.com.mercury.pdf.render.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -268,18 +278,18 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
-    
+
     @Autowired
     private PdfReportService pdfReportService;
-    
+
     @PostMapping("/generate")
     public ResponseEntity<byte[]> generateReport(@RequestBody ReportData reportData) throws IOException {
         byte[] pdfBytes = pdfReportService.generateReport(reportData);
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "report.pdf");
-        
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(pdfBytes);
@@ -298,23 +308,29 @@ public class ReportController {
 ### Basic Example
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.model.*;
+import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.model.ReportData;
 
 // Create report data
 ReportData reportData = new ReportData();
-reportData.setTitle("Annual Financial Report");
-reportData.setReportDate("2024-01-27");
+reportData.
+
+        setTitle("Annual Financial Report");
+reportData.
+
+        setReportDate("2024-01-27");
 
 // Add table blocks, charts, etc.
 // ...
 
-// Generate PDF
-ReportService service = new ReportService();
-byte[] pdfBytes = service.generatePdf(reportData);
+        // Generate PDF
+        ReportService service = new ReportService();
+        byte[] pdfBytes = service.generatePdf(reportData);
 
 // Save to file
-Files.write(Paths.get("report.pdf"), pdfBytes);
+Files.
+
+        write(Paths.get("report.pdf"),pdfBytes);
 ```
 
 ### Using Custom Templates
@@ -375,15 +391,23 @@ tr {
 The project supports custom font configuration for proper CJK character rendering:
 
 ```java
-import com.finos.matcher.report.config.FontConfig;
+import config.com.mercury.pdf.render.FontConfig;
 
 // Configure fonts
 FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
-fontConfig.setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
+fontConfig.
+
+        setRegularFontPath("classpath:/fonts/HarmonyOS_SansSC_Regular.ttf");
+fontConfig.
+
+        setBoldFontPath("classpath:/fonts/HarmonyOS_SansSC_Bold.ttf");
 
 // Apply to renderer
-service.getHtmlRenderer().setFontConfig(fontConfig);
+service.
+
+        getHtmlRenderer().
+
+        setFontConfig(fontConfig);
 ```
 
 Or via Spring Boot `application.yml`:
@@ -494,37 +518,64 @@ reportData.setCharts(Arrays.asList(chart));
 Use `ChartConfig` to customize chart appearance:
 
 ```java
-import com.finos.matcher.report.model.ChartConfig;
+import model.com.mercury.pdf.render.ChartConfig;
+
 import java.awt.Color;
 
 // Create chart configuration
 ChartConfig config = new ChartConfig();
 
 // Set custom dimensions
-config.setWidth(800);
-config.setHeight(400);
+config.
+
+        setWidth(800);
+config.
+
+        setHeight(400);
 
 // Set custom colors
-config.setColors(Arrays.asList(
-    new Color(52, 152, 219),   // Blue
-    new Color(46, 204, 113),   // Green
-    new Color(155, 89, 182),   // Purple
-    new Color(241, 196, 15)    // Yellow
+config.
+
+        setColors(Arrays.asList(
+                new Color(52, 152,219),   // Blue
+    new
+
+        Color(46,204,113),   // Green
+    new
+
+        Color(155,89,182),   // Purple
+    new
+
+        Color(241,196,15)    // Yellow
 ));
 
 // Configure axis labels
-config.setXAxisLabel("Quarter");
-config.setYAxisLabel("Revenue ($)");
+        config.
+
+        setXAxisLabel("Quarter");
+config.
+
+        setYAxisLabel("Revenue ($)");
 
 // Configure display options
-config.setShowLegend(true);
-config.setShowGridLines(true);
-config.setShow3D(false);  // 3D effect (for pie charts)
-config.setBackgroundColorHex("#f8f9fa");
+config.
 
-// Apply configuration to chart
-ChartData chart = new ChartData("Quarterly Revenue", "bar", data);
-chart.setConfig(config);
+        setShowLegend(true);
+config.
+
+        setShowGridLines(true);
+config.
+
+        setShow3D(false);  // 3D effect (for pie charts)
+config.
+
+        setBackgroundColorHex("#f8f9fa");
+
+        // Apply configuration to chart
+        ChartData chart = new ChartData("Quarterly Revenue", "bar", data);
+chart.
+
+        setConfig(config);
 ```
 
 ### Chart Configuration Options

@@ -11,26 +11,34 @@ PDF渲染库现在支持保存中间态HTML文件用于调试。此功能帮助�
 ### Method 1: Programmatic Configuration / 方法1：编程方式配置
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.HtmlReportRenderer;
+import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.HtmlReportRenderer;
 
 // Create report service
 ReportService service = new ReportService();
-service.setUseHtmlPipeline(true);
+service.
 
-HtmlReportRenderer renderer = service.getHtmlRenderer();
+        setUseHtmlPipeline(true);
+
+        HtmlReportRenderer renderer = service.getHtmlRenderer();
 
 // Enable debug HTML output
-renderer.setDebugHtmlEnabled(true);
+renderer.
+
+        setDebugHtmlEnabled(true);
 
 // Set output directory (default: "debug-html")
-renderer.setDebugHtmlOutputDirectory("target/debug-html");
+renderer.
+
+        setDebugHtmlOutputDirectory("target/debug-html");
 
 // Include timestamp in filename (default: false)
-renderer.setDebugHtmlIncludeTimestamp(false);
+renderer.
 
-// Generate PDF (HTML will be saved automatically)
-byte[] pdf = service.generatePdf(reportData, "matcher-report-1.0");
+        setDebugHtmlIncludeTimestamp(false);
+
+        // Generate PDF (HTML will be saved automatically)
+        byte[] pdf = service.generatePdf(reportData, "matcher-report-1.0");
 ```
 
 ### Method 2: Spring Boot Configuration / 方法2：Spring Boot配置

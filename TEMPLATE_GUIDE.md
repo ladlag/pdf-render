@@ -54,7 +54,7 @@ src/main/resources/templates/
    ```bash
    mvn clean test
    # 或运行demo程序
-   mvn exec:java -Dexec.mainClass="com.finos.matcher.report.ReportDemo"
+   mvn exec:java -Dexec.mainClass="com.mercury.pdf.render.ReportDemo"
    ```
 
 ### 可修改的内容 / What You Can Modify:
@@ -182,27 +182,28 @@ The following variables are available in templates:
 ### 在代码中使用 / Using in Code
 
 ```java
-import com.finos.matcher.report.ReportService;
-import com.finos.matcher.report.model.ReportData;
+import com.mercury.pdf.render.ReportService;
 
 // 方法1: 使用默认模板
 ReportService service = new ReportService();
-byte[] pdf = service.generatePdf(reportData);
+        byte[] pdf = service.generatePdf(reportData);
 
-// 方法2: 指定模板名称（不含.html扩展名）
-byte[] pdf = service.generatePdf(reportData, "invoice");
+        // 方法2: 指定模板名称（不含.html扩展名）
+        byte[] pdf = service.generatePdf(reportData, "invoice");
 
-// 方法3: 使用自定义模板
-byte[] pdf = service.generatePdf(reportData, "my-template");
+        // 方法3: 使用自定义模板
+        byte[] pdf = service.generatePdf(reportData, "my-template");
 ```
 
 ### 配置默认模板 / Configure Default Template
 
 ```java
-import com.finos.matcher.report.HtmlReportRenderer;
+import com.mercury.pdf.render.HtmlReportRenderer;
 
 HtmlReportRenderer renderer = new HtmlReportRenderer();
-renderer.setDefaultTemplateName("invoice"); // 设置默认模板
+renderer.
+
+setDefaultTemplateName("invoice"); // 设置默认模板
 
 // 之后所有调用都使用invoice模板
 byte[] pdf = renderer.generatePdf(reportData);
