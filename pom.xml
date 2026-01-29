@@ -72,6 +72,14 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- SLF4J API for logging (optional, provided by Spring Boot) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
