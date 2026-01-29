@@ -242,7 +242,7 @@
         <h3>Charts</h3>
         <div th:each="chart : ${charts}" class="chart-container">
             <div class="chart-title" th:text="${chart.title}">Chart Title</div>
-            <img th:src="'data:image/png;base64,' + ${chart.base64Image}" alt="Chart"/>
+            <img th:src="${chart.base64Image}" alt="Chart"/>
         </div>
     </div>
 </div>

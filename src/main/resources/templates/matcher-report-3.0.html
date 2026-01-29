@@ -279,7 +279,7 @@
       <div th:each="c : ${sec.charts}">
         <div class="chart-title" th:text="${c.title}">图表标题</div>
         <img th:if="${c.base64Image != null}"
-             th:src="'data:image/png;base64,' + ${c.base64Image}"
+             th:src="${c.base64Image}"
              alt="chart"/>
         <div th:if="${c.base64Image == null}" class="small">（图表图片为空）</div>
       </div>
@@ -350,7 +350,7 @@
     <div class="chart" th:each="c : ${charts}">
       <div class="chart-title" th:text="${c.title}">图表标题</div>
       <img th:if="${c.base64Image != null}"
-           th:src="'data:image/png;base64,' + ${c.base64Image}"
+           th:src="${c.base64Image}"
            alt="chart"/>
       <div th:if="${c.base64Image == null}" class="small">（图表图片为空）</div>
     </div>

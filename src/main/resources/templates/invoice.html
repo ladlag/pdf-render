@@ -180,7 +180,7 @@
     <h2>Charts</h2>
     <div th:each="chart : ${charts}" class="chart-container">
         <p><strong th:text="${chart.title}">Chart Title</strong></p>
-        <img th:src="'data:image/png;base64,' + ${chart.base64Image}" alt="Chart"/>
+        <img th:src="${chart.base64Image}" alt="Chart"/>
     </div>
 </div>
 

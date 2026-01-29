@@ -274,9 +274,9 @@ public class MatcherReportFinalTest {
         pieData.put("匹配失败", 10.0);
         ChartData pieChart = new ChartData("匹配状态分布", "pie", pieData);
         
-        // Generate and set base64 image
-        String pieBase64 = renderer.generateChartAsBase64(pieChart);
-        pieChart.setBase64Image("data:image/png;base64," + pieBase64);
+        // Generate and set base64 image (data URI format)
+        String pieBase64 = renderer.generateChartAsDataUri(pieChart);
+        pieChart.setBase64Image(pieBase64);
         charts.add(pieChart);
 
         // Chart 2: Requirement counts by status (Bar chart)
@@ -287,9 +287,9 @@ public class MatcherReportFinalTest {
         barData.put("匹配失败", 2.0);
         ChartData barChart = new ChartData("各状态需求数量", "bar", barData);
         
-        // Generate and set base64 image
-        String barBase64 = renderer.generateChartAsBase64(barChart);
-        barChart.setBase64Image("data:image/png;base64," + barBase64);
+        // Generate and set base64 image (data URI format)
+        String barBase64 = renderer.generateChartAsDataUri(barChart);
+        barChart.setBase64Image(barBase64);
         charts.add(barChart);
 
         return charts;
