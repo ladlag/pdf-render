@@ -20,17 +20,17 @@ public class FlexibleReportDemo {
         // Example 1: Using builder pattern with flexible sections
         generateFlexibleReport();
         
-        // Example 2: Using legacy structure (backward compatibility)
-        generateLegacyReport();
+        // Example 2: Another flexible report with different content
+        generateMultiSectionReport();
         
         System.out.println("\n✓ Demo completed successfully!");
         System.out.println("Generated PDFs:");
         System.out.println("  - flexible-report-demo.pdf");
-        System.out.println("  - legacy-report-demo.pdf");
+        System.out.println("  - multi-section-report-demo.pdf");
     }
     
     /**
-     * Example 1: Generate a report using the new flexible section structure
+     * Example 1: Generate a report using the flexible section structure
      */
     private static void generateFlexibleReport() throws IOException {
         System.out.println("1. Generating flexible structure report...");
@@ -91,45 +91,51 @@ public class FlexibleReportDemo {
     }
     
     /**
-     * Example 2: Generate a report using legacy structure (for backward compatibility)
+     * Example 2: Generate a report with multiple sections demonstrating versatility
      */
-    private static void generateLegacyReport() throws IOException {
-        System.out.println("2. Generating legacy structure report (backward compatibility)...");
+    private static void generateMultiSectionReport() throws IOException {
+        System.out.println("2. Generating multi-section report...");
         
-        ReportData report = new ReportData();
-        report.setTitle("Legacy Format Report");
-        report.setSubtitle("Testing Backward Compatibility");
-        report.setReportDate("2024-12-31");
-        report.setReportNumber("RPT-LEGACY-001");
+        ReportData report = ReportDataBuilder.create()
+            .title("Comprehensive Analysis Report")
+            .subtitle("Multi-Section Demonstration")
+            .reportDate("2024-12-31")
+            .reportNumber("RPT-DEMO-002")
+            
+            // Section with text only
+            .addSection(new Section("Introduction")
+                .addParagraph("This report demonstrates the flexible section architecture.")
+                .addParagraph("Each section can contain any combination of content types."))
+            
+            // Section with table only
+            .addSection(new Section("Data Analysis")
+                .addTable(createFinancialTable()))
+            
+            // Section with chart only
+            .addSection(new Section("Visual Insights")
+                .addChart(createRevenueChart()))
+            
+            // Section with mixed content
+            .addSection(new Section("Combined Analysis")
+                .addParagraph("This section demonstrates mixed content.")
+                .addTable(createMetricsTable())
+                .addChart(createEfficiencyChart()))
+            
+            .reportNotice("Demo report")
+            .metadata("Clean architecture example")
+            .build();
         
-        // Add table blocks (Section 1)
-        TableBlock block1 = new TableBlock("1.1", "Sales Data", createFinancialTable());
-        report.setTableBlocks(Arrays.asList(block1));
-        
-        // Add analysis paragraphs (Section 2)
-        report.setAnalysisParagraphs(Arrays.asList(
-            "This demonstrates the legacy report structure.",
-            "All existing code will continue to work without modifications."
-        ));
-        
-        // Add summary table and charts (Section 3)
-        report.setSummaryTable(createMetricsTable());
-        report.setCharts(Arrays.asList(createRevenueChart()));
-        
-        // Add notice (Section 4)
-        report.setReportNotice("Legacy format notice");
-        report.setMetadata("Legacy metadata");
-        
-        // Generate PDF using default template (supports both structures)
+        // Generate PDF
         ReportService service = new ReportService();
+        service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
         // Save to file
-        try (FileOutputStream fos = new FileOutputStream("legacy-report-demo.pdf")) {
+        try (FileOutputStream fos = new FileOutputStream("multi-section-report-demo.pdf")) {
             fos.write(pdfBytes);
         }
         
-        System.out.println("  ✓ Generated: legacy-report-demo.pdf (" + pdfBytes.length + " bytes)");
+        System.out.println("  ✓ Generated: multi-section-report-demo.pdf (" + pdfBytes.length + " bytes)");
     }
     
     // Helper methods to create sample data

@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Builder class for creating ReportData instances with a fluent API.
- * Provides a more convenient and robust way to construct report data.
+ * Provides a convenient and robust way to construct reports with flexible sections.
  * 
  * Example usage:
  * <pre>
@@ -15,8 +15,9 @@ import java.util.List;
  *     .reportDate("2024-12-31")
  *     .addSection(new Section("Executive Summary")
  *         .addParagraph("This report summarizes..."))
- *     .addTableBlock(tableBlock)
- *     .addChart(chart)
+ *     .addSection(new Section("Financial Data")
+ *         .addTable(table)
+ *         .addChart(chart))
  *     .build();
  * </pre>
  */
@@ -35,7 +36,7 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Sets the report title
+     * Sets the report title (required)
      */
     public ReportDataBuilder title(String title) {
         if (title == null || title.trim().isEmpty()) {
@@ -46,7 +47,7 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Sets the report subtitle
+     * Sets the report subtitle (optional)
      */
     public ReportDataBuilder subtitle(String subtitle) {
         reportData.setSubtitle(subtitle);
@@ -54,7 +55,7 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Sets the report date
+     * Sets the report date (optional)
      */
     public ReportDataBuilder reportDate(String date) {
         reportData.setReportDate(date);
@@ -62,7 +63,7 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Sets the report number
+     * Sets the report number (optional)
      */
     public ReportDataBuilder reportNumber(String number) {
         reportData.setReportNumber(number);
@@ -70,96 +71,7 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Adds a table block to the report
-     */
-    public ReportDataBuilder addTableBlock(TableBlock block) {
-        if (block == null) {
-            throw new IllegalArgumentException("TableBlock cannot be null");
-        }
-        List<TableBlock> blocks = reportData.getTableBlocks();
-        if (blocks == null) {
-            blocks = new ArrayList<>();
-            reportData.setTableBlocks(blocks);
-        }
-        blocks.add(block);
-        return this;
-    }
-    
-    /**
-     * Sets all table blocks at once
-     */
-    public ReportDataBuilder tableBlocks(List<TableBlock> blocks) {
-        reportData.setTableBlocks(blocks);
-        return this;
-    }
-    
-    /**
-     * Adds an analysis paragraph
-     */
-    public ReportDataBuilder addAnalysisParagraph(String paragraph) {
-        if (paragraph == null || paragraph.trim().isEmpty()) {
-            return this; // Skip empty paragraphs
-        }
-        List<String> paragraphs = reportData.getAnalysisParagraphs();
-        if (paragraphs == null) {
-            paragraphs = new ArrayList<>();
-            reportData.setAnalysisParagraphs(paragraphs);
-        }
-        paragraphs.add(paragraph);
-        return this;
-    }
-    
-    /**
-     * Sets all analysis paragraphs at once
-     */
-    public ReportDataBuilder analysisParagraphs(List<String> paragraphs) {
-        reportData.setAnalysisParagraphs(paragraphs);
-        return this;
-    }
-    
-    /**
-     * Sets the summary table
-     */
-    public ReportDataBuilder summaryTable(TableData table) {
-        reportData.setSummaryTable(table);
-        return this;
-    }
-    
-    /**
-     * Adds a chart to the report
-     */
-    public ReportDataBuilder addChart(ChartData chart) {
-        if (chart == null) {
-            throw new IllegalArgumentException("Chart cannot be null");
-        }
-        List<ChartData> charts = reportData.getCharts();
-        if (charts == null) {
-            charts = new ArrayList<>();
-            reportData.setCharts(charts);
-        }
-        charts.add(chart);
-        return this;
-    }
-    
-    /**
-     * Sets all charts at once
-     */
-    public ReportDataBuilder charts(List<ChartData> charts) {
-        reportData.setCharts(charts);
-        return this;
-    }
-    
-    /**
-     * Sets the title for the charts section
-     * If not set (null), no section title will be rendered
-     */
-    public ReportDataBuilder chartsSectionTitle(String title) {
-        reportData.setChartsSectionTitle(title);
-        return this;
-    }
-    
-    /**
-     * Sets the report notice
+     * Sets the report notice (optional)
      */
     public ReportDataBuilder reportNotice(String notice) {
         reportData.setReportNotice(notice);
@@ -167,7 +79,7 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Sets the metadata
+     * Sets the metadata (optional)
      */
     public ReportDataBuilder metadata(String metadata) {
         reportData.setMetadata(metadata);
@@ -175,7 +87,8 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Adds a flexible section to the report (if sections are supported)
+     * Adds a flexible section to the report.
+     * Sections can contain any combination of paragraphs, tables, and charts.
      */
     public ReportDataBuilder addSection(Section section) {
         if (section == null) {
@@ -191,7 +104,8 @@ public class ReportDataBuilder {
     }
     
     /**
-     * Validates and builds the ReportData instance
+     * Validates and builds the ReportData instance.
+     * Ensures title and at least one section are present.
      */
     public ReportData build() {
         // Validate required fields
@@ -199,27 +113,16 @@ public class ReportDataBuilder {
             throw new IllegalStateException("Report title is required");
         }
         
-        // Initialize empty lists for null collections to prevent NPE
-        if (reportData.getTableBlocks() == null) {
-            reportData.setTableBlocks(new ArrayList<>());
-        }
-        if (reportData.getAnalysisParagraphs() == null) {
-            reportData.setAnalysisParagraphs(new ArrayList<>());
-        }
-        if (reportData.getCharts() == null) {
-            reportData.setCharts(new ArrayList<>());
-        }
+        // Initialize empty list if null
         if (reportData.getSections() == null) {
             reportData.setSections(new ArrayList<>());
         }
         
-        return reportData;
-    }
-    
-    /**
-     * Builds without validation for backward compatibility
-     */
-    public ReportData buildUnchecked() {
+        // Validate at least one section exists
+        if (reportData.getSections().isEmpty()) {
+            throw new IllegalStateException("Report must contain at least one section");
+        }
+        
         return reportData;
     }
 }

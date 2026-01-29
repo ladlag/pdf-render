@@ -31,37 +31,12 @@ public class ReportDataValidator {
             errors.add("Report title is required and cannot be empty");
         }
         
-        // Check for content
-        boolean hasContent = reportData.hasLegacyContent() || reportData.hasSections();
-        if (!hasContent) {
-            errors.add("Report must contain at least one section or content item");
+        // Check for content - must have at least one section
+        if (reportData.getSections() == null || reportData.getSections().isEmpty()) {
+            errors.add("Report must contain at least one section");
         }
         
-        // Validate table blocks
-        if (reportData.getTableBlocks() != null) {
-            for (int i = 0; i < reportData.getTableBlocks().size(); i++) {
-                TableBlock block = reportData.getTableBlocks().get(i);
-                List<String> blockErrors = validateTableBlock(block, i);
-                errors.addAll(blockErrors);
-            }
-        }
-        
-        // Validate summary table
-        if (reportData.getSummaryTable() != null) {
-            List<String> tableErrors = validateTableData(reportData.getSummaryTable(), "Summary table");
-            errors.addAll(tableErrors);
-        }
-        
-        // Validate charts
-        if (reportData.getCharts() != null) {
-            for (int i = 0; i < reportData.getCharts().size(); i++) {
-                ChartData chart = reportData.getCharts().get(i);
-                List<String> chartErrors = validateChartData(chart, i);
-                errors.addAll(chartErrors);
-            }
-        }
-        
-        // Validate sections (new structure)
+        // Validate sections
         if (reportData.getSections() != null) {
             for (int i = 0; i < reportData.getSections().size(); i++) {
                 Section section = reportData.getSections().get(i);
@@ -75,7 +50,9 @@ public class ReportDataValidator {
     
     /**
      * Validates a TableBlock and returns validation errors
+     * @deprecated No longer used - kept for potential future use
      */
+    @Deprecated
     private static List<String> validateTableBlock(TableBlock block, int index) {
         List<String> errors = new ArrayList<>();
         
