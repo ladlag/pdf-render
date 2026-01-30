@@ -70,7 +70,11 @@ public class ChartRenderer {
             String resourcePath = path.substring("classpath:".length());
             return getClass().getResourceAsStream(resourcePath);
         } else {
-            return new java.io.FileInputStream(path.replace('\\', '/'));
+            java.io.File file = new java.io.File(path);
+            if (!file.exists() && path.indexOf('\\') >= 0) {
+                file = new java.io.File(path.replace('\\', '/'));
+            }
+            return new java.io.FileInputStream(file);
         }
     }
     
@@ -416,5 +420,9 @@ public class ChartRenderer {
         if (chart.getLegend() != null) {
             chart.getLegend().setItemFont(chartFont.deriveFont(11f));
         }
+    }
+
+    Font getChartFont() {
+        return chartFont;
     }
 }

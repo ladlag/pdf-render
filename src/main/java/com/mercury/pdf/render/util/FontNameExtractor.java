@@ -44,12 +44,12 @@ public class FontNameExtractor {
             String fontName = normalizeFamilyName(font.getFontName(Locale.ROOT));
             String resolvedName = familyName;
             
-            if (isGenericFamilyName(resolvedName)) {
+            if (resolvedName.isEmpty() || isGenericFamilyName(resolvedName)) {
                 resolvedName = fontName;
             }
             
-            if (resolvedName == null || resolvedName.isEmpty()) {
-                resolvedName = familyName.isEmpty() ? fontName : familyName;
+            if (resolvedName.isEmpty()) {
+                resolvedName = familyName;
             }
             
             return resolvedName;
@@ -143,7 +143,7 @@ public class FontNameExtractor {
         }
         normalized = normalized.replace('_', ' ').replace('-', ' ');
         normalized = normalized.replaceAll("\\s+", " ");
-        normalized = normalized.replaceAll("(?i)\\s+(regular|bold|italic|oblique|medium|light|thin|black|book|semibold)$", "");
+        normalized = normalized.replaceAll("(?i)(\\s*(regular|bolditalic|italicbold|bold|italic|oblique|medium|light|thin|black|book|semibold))+\\s*$", "");
         return normalized.trim();
     }
 

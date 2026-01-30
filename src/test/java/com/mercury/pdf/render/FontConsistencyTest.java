@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.awt.Font;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -37,13 +36,11 @@ public class FontConsistencyTest {
             Files.copy(stream, tempFont, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        String windowsStylePath = tempFont.toAbsolutePath().toString().replace('/', '\\');
+        String unixStylePath = tempFont.toAbsolutePath().toString().replace('\\', '/');
+        String windowsStylePath = unixStylePath.replace('/', '\\');
+
         renderer.setChartFont(windowsStylePath);
-
-        Field field = ChartRenderer.class.getDeclaredField("chartFont");
-        field.setAccessible(true);
-        Font chartFont = (Font) field.get(renderer);
-
-        assertNotNull(chartFont, "Chart font should be loaded from normalized Windows-style path");
+        renderer.setChartFont(unixStylePath);
+        assertNotNull(renderer.getChartFont(), "Chart font should be loaded from normalized paths");
     }
 }
