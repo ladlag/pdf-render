@@ -1,11 +1,13 @@
 package com.mercury.pdf.render;
 
 import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import com.mercury.pdf.render.model.ChartData;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.Section;
 import com.mercury.pdf.render.util.FontNameExtractor;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -27,7 +29,7 @@ public class HtmlReportRenderer {
     private final ChartRenderer chartRenderer;
     private boolean cacheTemplates = true; // Enable caching by default for production
     private String defaultTemplateName = "report"; // Default template name
-    private FontConfig fontConfig; // Optional font configuration
+    private PdfRenderProperties.FontProperties fontProperties; // Optional font configuration
     
     // Font cache to avoid extracting same font multiple times
     private final java.util.Map<String, String> fontPathCache = new java.util.concurrent.ConcurrentHashMap<>();
@@ -40,7 +42,7 @@ public class HtmlReportRenderer {
     public HtmlReportRenderer() {
         this.chartRenderer = new ChartRenderer();
         this.templateEngine = createTemplateEngine();
-        this.fontConfig = null; // No custom fonts by default
+        this.fontProperties = null; // No custom fonts by default
     }
     
     /**
@@ -74,39 +76,90 @@ public class HtmlReportRenderer {
     }
     
     /**
-     * Sets the font configuration for custom fonts.
+     * Sets the font properties for custom fonts.
      * This allows specification of custom fonts for regular text, bold text, and CJK text.
      * Also configures the chart renderer to use the same font for proper Chinese rendering.
      * 
-     * This method is safe to call from @PostConstruct - font loading failures will be logged
+     * This method is safe to call during initialization - font loading failures will be logged
      * but will not throw exceptions that could prevent application startup.
      * 
-     * @param fontConfig Font configuration object
+     * @param fontProperties Font properties object from application configuration
      */
-    public void setFontConfig(FontConfig fontConfig) {
-        this.fontConfig = fontConfig;
+    public void setFontProperties(PdfRenderProperties.FontProperties fontProperties) {
+        this.fontProperties = fontProperties;
         
         // Also configure chart renderer with the same font for consistent rendering
-        // This is wrapped in try-catch to ensure @PostConstruct safety
+        // This is wrapped in try-catch to ensure safe initialization
         try {
-            if (fontConfig != null && fontConfig.getRegularFontPath() != null) {
-                chartRenderer.setChartFont(fontConfig.getRegularFontPath());
+            if (fontProperties != null && fontProperties.getRegularPath() != null) {
+                chartRenderer.setChartFont(fontProperties.getRegularPath());
             }
         } catch (Exception e) {
             // Log warning but don't throw - allows application to start even if font loading fails
-            System.err.println("Warning: Failed to configure chart font in setFontConfig: " + e.getMessage());
+            System.err.println("Warning: Failed to configure chart font in setFontProperties: " + e.getMessage());
             e.printStackTrace(); // Include stack trace for debugging
             // Continue - PDF generation will work but may not render Chinese characters correctly
         }
     }
     
     /**
-     * Gets the current font configuration
+     * Gets the current font properties
+     * 
+     * @return Current font properties, or null if not set
+     */
+    public PdfRenderProperties.FontProperties getFontProperties() {
+        return fontProperties;
+    }
+    
+    /**
+     * Sets font configuration using the legacy FontConfig object.
+     * This method provides backward compatibility for existing code.
+     * 
+     * @param fontConfig Font configuration object
+     * @deprecated Use setFontProperties(PdfRenderProperties.FontProperties) instead.
+     *             FontConfig is redundant with PdfRenderProperties.FontProperties.
+     */
+    @Deprecated
+    public void setFontConfig(FontConfig fontConfig) {
+        if (fontConfig == null) {
+            this.fontProperties = null;
+            return;
+        }
+        
+        // Convert FontConfig to FontProperties for internal use
+        PdfRenderProperties.FontProperties props = new PdfRenderProperties.FontProperties();
+        props.setRegularPath(fontConfig.getRegularFontPath());
+        props.setBoldPath(fontConfig.getBoldFontPath());
+        props.setCjkPath(fontConfig.getCjkFontPath());
+        props.setDefaultFamily(fontConfig.getDefaultFontFamily());
+        props.setCjkFamily(fontConfig.getCjkFontFamily());
+        
+        setFontProperties(props);
+    }
+    
+    /**
+     * Gets the current font configuration as a FontConfig object.
+     * This method provides backward compatibility for existing code.
      * 
      * @return Current font configuration, or null if not set
+     * @deprecated Use getFontProperties() instead.
+     *             FontConfig is redundant with PdfRenderProperties.FontProperties.
      */
+    @Deprecated
     public FontConfig getFontConfig() {
-        return fontConfig;
+        if (fontProperties == null) {
+            return null;
+        }
+        
+        // Convert FontProperties to FontConfig for backward compatibility
+        FontConfig config = new FontConfig();
+        config.setRegularFontPath(fontProperties.getRegularPath());
+        config.setBoldFontPath(fontProperties.getBoldPath());
+        config.setCjkFontPath(fontProperties.getCjkPath());
+        config.setDefaultFontFamily(fontProperties.getDefaultFamily());
+        config.setCjkFontFamily(fontProperties.getCjkFamily());
+        
+        return config;
     }
     
     /**
@@ -264,14 +317,82 @@ public class HtmlReportRenderer {
         data.put("sections", sections);
         
         // Add font configuration if available
-        if (fontConfig != null) {
-            data.put("fontFaceDeclaration", fontConfig.getCssFontFaceDeclaration());
-            data.put("fontFamily", fontConfig.getFontFamilyCss());
-            data.put("cjkFontFamily", fontConfig.getCjkFontFamily());
+        if (fontProperties != null) {
+            data.put("fontFaceDeclaration", ""); // No @font-face needed with Identity-H encoding
+            
+            // Use actual font family names for reliable CSS matching in JAR deployments
+            // Extract the font's internal family name to match what's registered
+            StringBuilder fontFamily = new StringBuilder();
+            
+            try {
+                // Primary font: use font's internal family name
+                if (fontProperties.getRegularPath() != null) {
+                    String fontPath = resolveFontPath(fontProperties.getRegularPath());
+                    String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    fontFamily.append(familyName);
+                }
+                
+                // Add CJK font's internal family name if configured
+                if (fontProperties.getCjkPath() != null) {
+                    String fontPath = resolveFontPath(fontProperties.getCjkPath());
+                    String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    if (fontFamily.length() > 0) {
+                        fontFamily.append(", ");
+                    }
+                    fontFamily.append(familyName);
+                }
+            } catch (Exception e) {
+                System.err.println("Warning: Failed to extract font family names: " + e.getMessage());
+                // Fall back to configured family names if extraction fails
+                if (fontProperties.getDefaultFamily() != null && !fontProperties.getDefaultFamily().isEmpty()) {
+                    fontFamily.append(fontProperties.getDefaultFamily());
+                }
+            }
+            
+            // Fallback to sans-serif (standard CSS fallback)
+            if (fontFamily.length() > 0) {
+                fontFamily.append(", sans-serif");
+            } else {
+                fontFamily.append("sans-serif");
+            }
+            
+            data.put("fontFamily", fontFamily.toString());
+            
+            // Set CJK font family with actual font name
+            StringBuilder cjkFamily = new StringBuilder();
+            try {
+                if (fontProperties.getCjkPath() != null) {
+                    String fontPath = resolveFontPath(fontProperties.getCjkPath());
+                    String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    cjkFamily.append(familyName);
+                }
+                if (fontProperties.getRegularPath() != null) {
+                    String fontPath = resolveFontPath(fontProperties.getRegularPath());
+                    String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    if (cjkFamily.length() > 0) {
+                        cjkFamily.append(", ");
+                    }
+                    cjkFamily.append(familyName);
+                }
+            } catch (Exception e) {
+                System.err.println("Warning: Failed to extract CJK font family names: " + e.getMessage());
+                // Fall back to configured family names if extraction fails
+                if (fontProperties.getCjkFamily() != null && !fontProperties.getCjkFamily().isEmpty()) {
+                    cjkFamily.append(fontProperties.getCjkFamily());
+                }
+            }
+            
+            if (cjkFamily.length() > 0) {
+                cjkFamily.append(", sans-serif");
+            } else {
+                cjkFamily.append("sans-serif");
+            }
+            
+            data.put("cjkFontFamily", cjkFamily.toString());
         } else {
             // Provide empty strings as defaults
             data.put("fontFaceDeclaration", "");
-            data.put("fontFamily", "DejaVu Sans, Arial, sans-serif");
+            data.put("fontFamily", "sans-serif");
             data.put("cjkFontFamily", "");
         }
         
@@ -297,7 +418,7 @@ public class HtmlReportRenderer {
         ITextRenderer renderer = new ITextRenderer();
         
         // Register custom fonts if configured
-        if (fontConfig != null) {
+        if (fontProperties != null) {
             registerFontsWithRenderer(renderer);
         }
         
@@ -312,38 +433,66 @@ public class HtmlReportRenderer {
      * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
      * 
      * Uses Identity-H encoding for proper Unicode/CJK character support.
+     * Fonts are explicitly embedded in the PDF for cross-platform compatibility.
+     * 
+     * Uses the font's internal family name as the alias to ensure reliable font matching
+     * regardless of system fonts. This is critical for JAR deployments.
+     * 
      * Also validates that CSS font-family matches the registered font's internal name.
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
+            int fontsRegistered = 0;
+            
             // Register regular font with Identity-H encoding for Unicode support
-            if (fontConfig.getRegularFontPath() != null) {
-                String fontPath = resolveFontPath(fontConfig.getRegularFontPath());
+            // Use font's internal name as alias for reliable CSS matching
+            if (fontProperties.getRegularPath() != null) {
+                String fontPath = resolveFontPath(fontProperties.getRegularPath());
                 
-                // Validate font configuration
-                validateFontConfiguration(fontConfig.getRegularFontPath(), fontConfig.getDefaultFontFamily(), "regular");
+                // Extract the font's actual internal family name
+                String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
                 
-                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                // Use BaseFont constants for explicit encoding and embedding
+                // IDENTITY_H: Unicode encoding for CJK character support
+                // EMBEDDED: Embeds font in PDF for cross-platform compatibility
+                // ALIAS: Use font's internal name for reliable CSS matching
+                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
+                fontsRegistered++;
+                System.out.println("✓ Font registered with Flying Saucer: " + fontPath);
+                System.out.println("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
+                System.out.println("  Font family name (for CSS): " + fontFamilyName);
             }
             
             // Register bold font with Identity-H encoding
-            if (fontConfig.getBoldFontPath() != null) {
-                String fontPath = resolveFontPath(fontConfig.getBoldFontPath());
-                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+            // Use font's internal name as alias
+            if (fontProperties.getBoldPath() != null) {
+                String fontPath = resolveFontPath(fontProperties.getBoldPath());
+                String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
+                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
+                fontsRegistered++;
+                System.out.println("✓ Bold font registered with Flying Saucer: " + fontPath);
+                System.out.println("  Font family name: " + fontFamilyName);
             }
             
             // Register CJK font with Identity-H encoding (essential for CJK characters)
-            if (fontConfig.getCjkFontPath() != null) {
-                String fontPath = resolveFontPath(fontConfig.getCjkFontPath());
+            // Use font's internal name as alias
+            if (fontProperties.getCjkPath() != null) {
+                String fontPath = resolveFontPath(fontProperties.getCjkPath());
+                String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
                 
-                // Validate CJK font configuration
-                validateFontConfiguration(fontConfig.getCjkFontPath(), fontConfig.getCjkFontFamily(), "CJK");
-                
-                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
+                fontsRegistered++;
+                System.out.println("✓ CJK font registered with Flying Saucer: " + fontPath);
+                System.out.println("  Font family name: " + fontFamilyName);
+            }
+            
+            if (fontsRegistered > 0) {
+                System.out.println("✓ Total fonts registered for PDF: " + fontsRegistered);
+                System.out.println("  Fonts registered with their internal family names for reliable CSS matching");
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
-            System.err.println("Warning: Failed to register custom fonts: " + e.getMessage());
+            System.err.println("✗ Warning: Failed to register custom fonts: " + e.getMessage());
             e.printStackTrace();
         }
     }

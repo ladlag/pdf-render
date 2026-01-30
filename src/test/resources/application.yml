@@ -1,0 +1,16 @@
+# Test configuration for Spring Boot auto-configuration
+pdf-render:
+  template:
+    default-name: report
+    cache-enabled: true
+  
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    bold-path: classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf
+    default-family: HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif
+    cjk-family: Noto Sans CJK, SimSun, sans-serif
+  
+  debug:
+    enabled: true
+    output-directory: test-output/debug-html
+    include-timestamp: false

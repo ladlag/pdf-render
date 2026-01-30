@@ -80,34 +80,13 @@ public class PdfRenderAutoConfiguration {
     private void configureFonts(HtmlReportRenderer htmlRenderer) {
         PdfRenderProperties.FontProperties fontProps = properties.getFonts();
         
-        // Only create FontConfig if at least one font path is specified
+        // Only configure if at least one font path is specified
         if (fontProps.getRegularPath() != null || 
             fontProps.getBoldPath() != null || 
             fontProps.getCjkPath() != null) {
             
-            FontConfig fontConfig = new FontConfig();
-            
-            // Set font paths
-            if (fontProps.getRegularPath() != null) {
-                fontConfig.setRegularFontPath(fontProps.getRegularPath());
-            }
-            if (fontProps.getBoldPath() != null) {
-                fontConfig.setBoldFontPath(fontProps.getBoldPath());
-            }
-            if (fontProps.getCjkPath() != null) {
-                fontConfig.setCjkFontPath(fontProps.getCjkPath());
-            }
-            
-            // Set font families
-            if (fontProps.getDefaultFamily() != null) {
-                fontConfig.setDefaultFontFamily(fontProps.getDefaultFamily());
-            }
-            if (fontProps.getCjkFamily() != null) {
-                fontConfig.setCjkFontFamily(fontProps.getCjkFamily());
-            }
-            
-            // Apply font configuration to renderer
-            htmlRenderer.setFontConfig(fontConfig);
+            // Pass the FontProperties directly - no need for intermediate FontConfig object
+            htmlRenderer.setFontProperties(fontProps);
             
             logger.info("PDF Render: Font configuration applied from properties");
             if (fontProps.getCjkPath() != null) {

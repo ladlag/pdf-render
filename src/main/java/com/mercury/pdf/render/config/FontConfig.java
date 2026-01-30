@@ -3,7 +3,12 @@ package com.mercury.pdf.render.config;
 /**
  * Configuration for fonts used in PDF generation.
  * Allows customization of font paths and families for both regular and CJK text.
+ * 
+ * @deprecated Use {@link PdfRenderProperties.FontProperties} instead.
+ *             This class is redundant with the Spring Boot properties system.
+ *             It will be removed in a future version.
  */
+@Deprecated
 public class FontConfig {
     
     private String regularFontPath;
