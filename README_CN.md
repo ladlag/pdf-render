@@ -14,6 +14,7 @@
 **特定环境指南：**
 - **[Windows兼容性 WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+自动处理路径兼容性
 - **[容器云部署 CONTAINER_DEPLOYMENT.md](CONTAINER_DEPLOYMENT.md)** - Docker/Kubernetes部署指南 🐳
+- **[OpenJDK 8 配置 JDK8_CUSTOM_TEMPDIR.md](JDK8_CUSTOM_TEMPDIR.md)** - JDK 8 和自定义临时目录 ☕
 
 **运行诊断工具找出问题：**
 ```bash

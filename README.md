@@ -18,6 +18,7 @@ A Java PDF report generation library using clean HTML/CSS architecture with Flyi
 **Environment-Specific Guides:**
 - **[Windows Compatibility - WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+ auto-handles path compatibility
 - **[Container Deployment - CONTAINER_DEPLOYMENT.md](CONTAINER_DEPLOYMENT.md)** - Docker/Kubernetes deployment guide 🐳
+- **[OpenJDK 8 Configuration - JDK8_CUSTOM_TEMPDIR.md](JDK8_CUSTOM_TEMPDIR.md)** - JDK 8 and custom temp directory ☕
 
 **Run diagnostic tools to find the issue:**
 ```bash

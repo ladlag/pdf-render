@@ -3,7 +3,8 @@ version: '3.8'
 # Docker Compose for PDF Rendering Service
 # 
 # Usage:
-#   docker-compose up --build
+#   docker-compose up --build           # Start with JDK 11 (default)
+#   docker-compose up pdf-service-jdk8  # Start with JDK 8
 #   docker-compose down
 
 services:
@@ -42,6 +43,61 @@ services:
       
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    
+    networks:
+      - pdf-network
+
+  # OpenJDK 8 variant (for environments requiring JDK 8)
+  pdf-service-jdk8:
+    build:
+      context: .
+      dockerfile: Dockerfile.jdk8
+    container_name: pdf-service-jdk8
+    ports:
+      - "8081:8080"  # Different port to avoid conflict
+    environment:
+      # Spring Profile
+      - SPRING_PROFILES_ACTIVE=dev
+      
+      # JVM Options - using /app/data as temp directory
+      - JAVA_OPTS=-Xmx1g -Djava.io.tmpdir=/app/data
+      
+      # PDF Render Configuration
+      - PDF_RENDER_FONTS_REGULAR_PATH=classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+      - PDF_RENDER_FONTS_DEFAULT_FAMILY=HarmonyOS Sans SC, DejaVu Sans, sans-serif
+      
+      # Debug settings
+      - PDF_RENDER_DEBUG_ENABLED=false
+      - PDF_RENDER_DEBUG_OUTPUT_DIRECTORY=/app/data/debug-html
+      
+      # Logging
+      - LOGGING_LEVEL_COM_MERCURY_PDF_RENDER=INFO
+      
+    volumes:
+      # Mount /app/data for font extraction and debug output
+      - ./app-data:/app/data
+      
+      # Optional: Mount logs directory
+      - ./logs:/app/logs
+      
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/app.jar"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -24,6 +24,43 @@ Container environment differs from local development in several ways:
 4. **资源路径在JAR中可能不同**
    Resource paths may differ when packaged in JAR
 
+5. **不同的JDK版本** (JDK 8 vs JDK 11)
+   Different JDK versions may require different configurations
+
+## Java版本支持 / Java Version Support
+
+本项目提供两个版本的容器配置：
+
+This project provides two container configurations:
+
+### OpenJDK 11 (默认 / Default)
+- **文件:** `Dockerfile`
+- **推荐:** 新项目和生产环境
+- **临时目录:** `/tmp` (标准)
+
+### OpenJDK 8 (兼容 / Compatible)
+- **文件:** `Dockerfile.jdk8`
+- **适用:** 现有JDK 8项目
+- **临时目录:** `/app/data` (可自定义)
+- **构建命令:** `docker build -f Dockerfile.jdk8 -t pdf-service:jdk8 .`
+
+## 临时目录配置 / Temp Directory Configuration
+
+字体提取需要可写的临时目录。支持的选项：
+
+Font extraction requires a writable temp directory. Supported options:
+
+| 目录 Directory | 用途 Usage | 配置 Configuration |
+|---------------|-----------|-------------------|
+| `/tmp` | 标准临时目录 | `-Djava.io.tmpdir=/tmp` (默认) |
+| `/app/data` | 应用数据目录 | `-Djava.io.tmpdir=/app/data` |
+| 自定义 Custom | 任意可写目录 | `-Djava.io.tmpdir=/your/path` |
+
+**选择建议 Recommendations:**
+- ✅ `/tmp` - 标准选择，大多数容器支持
+- ✅ `/app/data` - 如果环境保证该目录可用
+- ✅ 自定义路径 - 根据具体环境需求
+
 ## 解决方案 / Solution
 
 ### 方案1：使用 classpath 字体（推荐 Recommended）
@@ -138,7 +175,58 @@ docker run -p 8080:8080 \
 
 ## 完整示例 / Complete Example
 
-### Spring Boot 应用 Dockerfile
+### OpenJDK 8 配置 (使用 /app/data)
+
+**如果您的环境使用 OpenJDK 8 并且 /app/data 目录可用：**
+
+If your environment uses OpenJDK 8 and /app/data directory is available:
+
+**使用 Dockerfile.jdk8:**
+```bash
+# 构建 OpenJDK 8 镜像
+docker build -f Dockerfile.jdk8 -t pdf-service:jdk8 .
+
+# 运行容器
+docker run -p 8080:8080 \
+  -e JAVA_OPTS="-Xmx1g -Djava.io.tmpdir=/app/data" \
+  pdf-service:jdk8
+```
+
+**或使用 docker-compose:**
+```bash
+# 启动 JDK 8 服务
+docker-compose up pdf-service-jdk8
+
+# 查看日志
+docker-compose logs -f pdf-service-jdk8
+```
+
+**Kubernetes 部署:**
+```bash
+# 应用 JDK 8 配置
+kubectl apply -f kubernetes-deployment-jdk8.yaml
+
+# 检查 pod 状态
+kubectl get pods -l version=jdk8
+
+# 查看日志
+kubectl logs -l version=jdk8 --tail=50
+```
+
+**验证临时目录配置:**
+```bash
+# 进入容器
+docker exec -it pdf-service-jdk8 sh
+
+# 检查临时目录
+ls -la /app/data/pdf-render-font-*
+
+# 查看Java系统属性
+java -XshowSettings:properties -version 2>&1 | grep tmpdir
+# 应该显示: java.io.tmpdir = /app/data
+```
+
+### Spring Boot 应用 Dockerfile (JDK 11)
 
 **Dockerfile:**
 ```dockerfile
