@@ -488,7 +488,6 @@ public class HtmlReportRenderer {
             
             if (fontsRegistered > 0) {
                 System.out.println("✓ Total fonts registered for PDF: " + fontsRegistered);
-                System.out.println("  Fonts registered with their internal family names for reliable CSS matching");
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
