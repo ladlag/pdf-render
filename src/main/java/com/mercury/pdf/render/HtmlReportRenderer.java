@@ -77,6 +77,7 @@ public class HtmlReportRenderer {
             this.templateLocation = normalizeTemplateLocation(location);
         }
         this.templateEngine = createTemplateEngine();
+        System.out.println("✓ Template location set: " + templateLocation);
     }
 
     /**
@@ -92,6 +93,7 @@ public class HtmlReportRenderer {
     public void setCacheTemplates(boolean cacheTemplates) {
         this.cacheTemplates = cacheTemplates;
         this.templateEngine = createTemplateEngine();
+        System.out.println("✓ Template cache enabled: " + cacheTemplates);
     }
     
     /**
@@ -106,11 +108,13 @@ public class HtmlReportRenderer {
      */
     public void setFontProperties(PdfRenderProperties.FontProperties fontProperties) {
         this.fontProperties = fontProperties;
+        logFontConfiguration("FontProperties", fontProperties);
         
         // Also configure chart renderer with the same font for consistent rendering
         // This is wrapped in try-catch to ensure safe initialization
         try {
             if (fontProperties != null && fontProperties.getRegularPath() != null) {
+                System.out.println("✓ Configuring chart font from regular font: " + fontProperties.getRegularPath());
                 chartRenderer.setChartFont(fontProperties.getRegularPath());
             }
         } catch (Exception e) {
@@ -375,7 +379,9 @@ public class HtmlReportRenderer {
                 fontFamily.append("sans-serif");
             }
             
-            data.put("fontFamily", fontFamily.toString());
+            String fontFamilyCss = fontFamily.toString();
+            data.put("fontFamily", fontFamilyCss);
+            System.out.println("✓ PDF CSS font-family: " + fontFamilyCss);
             
             // Set CJK font family with actual font name
             StringBuilder cjkFamily = new StringBuilder();
@@ -407,12 +413,15 @@ public class HtmlReportRenderer {
                 cjkFamily.append("sans-serif");
             }
             
-            data.put("cjkFontFamily", cjkFamily.toString());
+            String cjkFamilyCss = cjkFamily.toString();
+            data.put("cjkFontFamily", cjkFamilyCss);
+            System.out.println("✓ PDF CSS CJK font-family: " + cjkFamilyCss);
         } else {
             // Provide empty strings as defaults
             data.put("fontFaceDeclaration", "");
             data.put("fontFamily", "sans-serif");
             data.put("cjkFontFamily", "");
+            System.out.println("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
         }
         
         return data;
@@ -490,6 +499,8 @@ public class HtmlReportRenderer {
                 System.out.println("✓ Font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
                 System.out.println("  Font family name (for CSS): " + fontFamilyName);
+                validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "regular");
+                logFontConfiguration("regular", fontPath, fontFamilyName);
             }
             
             // Register bold font with Identity-H encoding
@@ -501,6 +512,8 @@ public class HtmlReportRenderer {
                 fontsRegistered++;
                 System.out.println("✓ Bold font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Font family name: " + fontFamilyName);
+                validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "bold");
+                logFontConfiguration("bold", fontPath, fontFamilyName);
             }
             
             // Register CJK font with Identity-H encoding (essential for CJK characters)
@@ -513,6 +526,8 @@ public class HtmlReportRenderer {
                 fontsRegistered++;
                 System.out.println("✓ CJK font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Font family name: " + fontFamilyName);
+                validateFontConfiguration(fontPath, fontProperties.getCjkFamily(), "cjk");
+                logFontConfiguration("cjk", fontPath, fontFamilyName);
             }
             
             if (fontsRegistered > 0) {
@@ -639,9 +654,11 @@ public class HtmlReportRenderer {
                 try {
                     org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
                     logger.info("Font extracted for PDF rendering: {}", fileName);
+                    logger.info("Resolved font temp path: {}", resolvedPath);
                 } catch (NoClassDefFoundError e) {
                     // SLF4J not available, use System.out
                     System.out.println("✓ Font extracted for PDF rendering: " + fileName);
+                    System.out.println("  Resolved font temp path: " + resolvedPath);
                 }
                 
                 return resolvedPath;
@@ -654,6 +671,25 @@ public class HtmlReportRenderer {
             // On Windows, file paths may contain backslashes which should be converted
             return path.replace('\\', '/');
         }
+    }
+
+    private void logFontConfiguration(String source, PdfRenderProperties.FontProperties props) {
+        if (props == null) {
+            System.out.println("⚠️ Font configuration source " + source + " was null");
+            return;
+        }
+        System.out.println("✓ Font configuration (" + source + "):");
+        System.out.println("  Regular path: " + props.getRegularPath());
+        System.out.println("  Bold path: " + props.getBoldPath());
+        System.out.println("  CJK path: " + props.getCjkPath());
+        System.out.println("  Default family: " + props.getDefaultFamily());
+        System.out.println("  CJK family: " + props.getCjkFamily());
+    }
+
+    private void logFontConfiguration(String fontType, String fontPath, String fontFamilyName) {
+        System.out.println("✓ Font configuration (" + fontType + "):");
+        System.out.println("  Source path: " + fontPath);
+        System.out.println("  Resolved family: " + fontFamilyName);
     }
     
     /**

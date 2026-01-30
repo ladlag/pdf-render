@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -49,13 +50,18 @@ public class ChartRenderer {
         
         try {
             InputStream fontStream = resolveFontStream(fontPath);
-            if (fontStream != null) {
-                Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-                // Create font with default size (12pt) and style
-                this.chartFont = baseFont.deriveFont(12f);
-                fontStream.close();
-                System.out.println("✓ Chart font loaded successfully: " + fontPath);
+            if (fontStream == null) {
+                System.err.println("Warning: Chart font not found: " + fontPath);
+                this.chartFont = null;
+                return;
             }
+            Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            // Create font with default size (12pt) and style
+            this.chartFont = baseFont.deriveFont(12f);
+            fontStream.close();
+            System.out.println("✓ Chart font loaded successfully: " + fontPath);
+            System.out.println("  Chart font family: " + baseFont.getFamily(Locale.ROOT));
+            System.out.println("  Chart font name: " + baseFont.getFontName(Locale.ROOT));
         } catch (Exception e) {
             System.err.println("Warning: Failed to load chart font from " + fontPath + ": " + e.getMessage());
             this.chartFont = null; // Fall back to default
