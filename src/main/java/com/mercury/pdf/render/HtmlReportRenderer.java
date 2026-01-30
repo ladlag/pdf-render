@@ -7,6 +7,7 @@ import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.Section;
 import com.mercury.pdf.render.util.FontNameExtractor;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -378,6 +379,7 @@ public class HtmlReportRenderer {
      * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
      * 
      * Uses Identity-H encoding for proper Unicode/CJK character support.
+     * Fonts are explicitly embedded in the PDF for cross-platform compatibility.
      * Also validates that CSS font-family matches the registered font's internal name.
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
@@ -389,13 +391,16 @@ public class HtmlReportRenderer {
                 // Validate font configuration
                 validateFontConfiguration(fontProperties.getRegularPath(), fontProperties.getDefaultFamily(), "regular");
                 
-                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                // Use BaseFont constants for explicit encoding and embedding
+                // IDENTITY_H: Unicode encoding for CJK character support
+                // EMBEDDED: Embeds font in PDF for cross-platform compatibility
+                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             }
             
             // Register bold font with Identity-H encoding
             if (fontProperties.getBoldPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getBoldPath());
-                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             }
             
             // Register CJK font with Identity-H encoding (essential for CJK characters)
@@ -405,7 +410,7 @@ public class HtmlReportRenderer {
                 // Validate CJK font configuration
                 validateFontConfiguration(fontProperties.getCjkPath(), fontProperties.getCjkFamily(), "CJK");
                 
-                renderer.getFontResolver().addFont(fontPath, "Identity-H", true);
+                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
