@@ -12,10 +12,14 @@
 1. 默认字体（DejaVu Sans、Arial）不包含中文字形
 2. 服务器环境可能没有安装中文系统字体
 3. Flying Saucer PDF渲染引擎需要显式注册字体才能正确嵌入
+4. **JFreeChart 图表引擎也需要中文字体才能正确渲染图表标签**
 
 ### 解决方案
 
 本项目支持通过 `FontConfig` 类配置自定义字体，确保中文正确显示。
+**v1.0.1+ 版本自动同步字体配置到图表引擎，一次配置，全局生效。**
+
+**✓ JAR集成支持**：v1.0.1+ 完全支持打包成JAR后集成到其他项目，字体自动从JAR中提取并缓存。
 
 ### 快速开始
 
@@ -134,8 +138,55 @@ public class PdfReportService {
 2. 确认路径正确（使用 `classpath:/fonts/字体文件名.ttf`）
 3. 确认字体文件支持中文字符集
 4. 查看控制台是否有字体加载错误
+5. **检查控制台是否显示 "✓ Chart font loaded successfully"（v1.0.1+）**
 
-#### Q2: 哪里可以下载免费的中文字体？
+**如果图表中的中文显示为方框：**
+- 确保调用了 `setFontConfig()` 方法
+- v1.0.1+ 版本会自动配置图表字体
+- 控制台应显示："✓ Chart font loaded successfully: classpath:/fonts/xxx.ttf"
+
+**JAR集成后中文显示为方框：**
+- ✅ v1.0.1+ 已修复此问题
+- 字体会自动从JAR中提取并缓存到临时文件
+- 控制台应显示："✓ Font extracted for PDF rendering: xxx.ttf"
+- 确保字体文件已打包到JAR中（Maven会自动打包resources目录）
+
+#### Q2: JAR集成到Spring Boot项目后如何使用？
+
+**步骤：**
+1. 添加依赖（将pdf-render-1.0.1.jar放入项目）
+2. 准备字体文件放在 `src/main/resources/fonts/`
+3. 配置并使用：
+
+```java
+@Service
+public class PdfService {
+    private final ReportService reportService;
+    
+    @PostConstruct
+    public void init() {
+        reportService = new ReportService();
+        
+        // 配置字体（只需配置一次）
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+        reportService.getHtmlRenderer().setFontConfig(fontConfig);
+    }
+    
+    public byte[] generatePdf(ReportData data) throws IOException {
+        return reportService.generatePdf(data);
+    }
+}
+```
+
+**注意事项：**
+- ✓ 字体路径使用 `classpath:` 前缀
+- ✓ 字体文件会自动从JAR中提取并缓存
+- ✓ 长期运行的应用不会积累临时文件（使用缓存）
+- ✓ 控制台会显示字体提取信息
+
+#### Q3: 哪里可以下载免费的中文字体？
 
 **开源字体推荐：**
 - **思源黑体 (Noto Sans CJK)**
@@ -150,14 +201,14 @@ public class PdfReportService {
   - 下载：http://wenq.org/wqy2/index.cgi
   - 许可：GPL with exception
 
-#### Q3: 如何减小PDF文件大小？
+#### Q4: 如何减小PDF文件大小？
 
 如果嵌入完整中文字体导致PDF文件过大：
 1. 使用字体子集（目前不支持，计划中）
 2. 选择较小的字体文件
 3. 对于纯文字报告，使用OTF而不是TTF
 
-#### Q4: 支持繁体中文吗？
+#### Q5: 支持繁体中文吗？
 
 支持。使用支持繁体的字体即可，如：
 - Noto Sans CJK TC（思源黑体繁体）

@@ -29,6 +29,9 @@ public class HtmlReportRenderer {
     private String defaultTemplateName = "report"; // Default template name
     private FontConfig fontConfig; // Optional font configuration
     
+    // Font cache to avoid extracting same font multiple times
+    private final java.util.Map<String, String> fontPathCache = new java.util.concurrent.ConcurrentHashMap<>();
+    
     // Debug HTML configuration
     private boolean debugHtmlEnabled = false; // Whether to save intermediate HTML
     private String debugHtmlOutputDirectory = "debug-html"; // Directory for debug HTML files
@@ -73,11 +76,28 @@ public class HtmlReportRenderer {
     /**
      * Sets the font configuration for custom fonts.
      * This allows specification of custom fonts for regular text, bold text, and CJK text.
+     * Also configures the chart renderer to use the same font for proper Chinese rendering.
+     * 
+     * This method is safe to call from @PostConstruct - font loading failures will be logged
+     * but will not throw exceptions that could prevent application startup.
      * 
      * @param fontConfig Font configuration object
      */
     public void setFontConfig(FontConfig fontConfig) {
         this.fontConfig = fontConfig;
+        
+        // Also configure chart renderer with the same font for consistent rendering
+        // This is wrapped in try-catch to ensure @PostConstruct safety
+        try {
+            if (fontConfig != null && fontConfig.getRegularFontPath() != null) {
+                chartRenderer.setChartFont(fontConfig.getRegularFontPath());
+            }
+        } catch (Exception e) {
+            // Log warning but don't throw - allows application to start even if font loading fails
+            System.err.println("Warning: Failed to configure chart font in setFontConfig: " + e.getMessage());
+            e.printStackTrace(); // Include stack trace for debugging
+            // Continue - PDF generation will work but may not render Chinese characters correctly
+        }
     }
     
     /**
@@ -370,18 +390,79 @@ public class HtmlReportRenderer {
     }
     
     /**
-     * Resolves a font path, handling both classpath and file system paths
+     * Resolves a font path, handling both classpath and file system paths.
+     * For classpath resources, extracts them to a temporary file to ensure
+     * compatibility when running from a JAR file. Uses caching to avoid
+     * extracting the same font multiple times.
      */
     private String resolveFontPath(String path) throws IOException {
         if (path.startsWith("classpath:")) {
+            // Check cache first
+            String cachedPath = fontPathCache.get(path);
+            if (cachedPath != null && new java.io.File(cachedPath).exists()) {
+                return cachedPath;
+            }
+            
             // Load from classpath
             String resourcePath = path.substring("classpath:".length());
-            // Return the classpath URL - Flying Saucer can handle it
-            java.net.URL resource = getClass().getResource(resourcePath);
-            if (resource == null) {
+            
+            // Validate resource path
+            if (resourcePath.isEmpty() || !resourcePath.startsWith("/")) {
+                throw new IOException("Invalid classpath resource path: " + resourcePath + 
+                    " (must start with /)");
+            }
+            
+            // Get resource as stream (works reliably from both filesystem and JAR)
+            java.io.InputStream fontStream = getClass().getResourceAsStream(resourcePath);
+            if (fontStream == null) {
                 throw new IOException("Font not found in classpath: " + resourcePath);
             }
-            return resource.toString();
+            
+            try {
+                // Extract font file name from path
+                int lastSlash = resourcePath.lastIndexOf('/');
+                String fileName = resourcePath.substring(lastSlash + 1);
+                
+                // Validate fileName contains an extension
+                int lastDot = fileName.lastIndexOf('.');
+                if (lastDot <= 0 || lastDot == fileName.length() - 1) {
+                    throw new IOException("Font file must have a valid extension: " + fileName);
+                }
+                
+                String extension = fileName.substring(lastDot);
+                
+                // Create temporary file with same extension
+                java.io.File tempFile = java.io.File.createTempFile("pdf-render-font-", extension);
+                tempFile.deleteOnExit(); // Clean up on JVM exit
+                
+                // Copy font data to temporary file
+                try (java.io.FileOutputStream out = new java.io.FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = fontStream.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+                
+                String resolvedPath = tempFile.getAbsolutePath();
+                
+                // Cache the resolved path
+                fontPathCache.put(path, resolvedPath);
+                
+                // Use SLF4J if available, otherwise fall back to System.out
+                try {
+                    org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+                    logger.info("Font extracted for PDF rendering: {}", fileName);
+                } catch (NoClassDefFoundError e) {
+                    // SLF4J not available, use System.out
+                    System.out.println("✓ Font extracted for PDF rendering: " + fileName);
+                }
+                
+                return resolvedPath;
+                
+            } finally {
+                fontStream.close();
+            }
         } else {
             // Direct file path
             return path;

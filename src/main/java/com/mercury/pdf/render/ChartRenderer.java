@@ -13,9 +13,11 @@ import org.jfree.data.general.DefaultPieDataset;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,49 @@ public class ChartRenderer {
     
     private static final int DEFAULT_CHART_WIDTH = 500;
     private static final int DEFAULT_CHART_HEIGHT = 300;
+    
+    // Font configuration for charts
+    private Font chartFont = null; // Default is null, will use JFreeChart defaults
 
+    /**
+     * Sets a custom font for chart rendering (labels, legends, etc.)
+     * This is essential for proper Chinese/CJK character rendering.
+     * 
+     * @param fontPath Path to the font file (e.g., "classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf")
+     */
+    public void setChartFont(String fontPath) {
+        if (fontPath == null || fontPath.isEmpty()) {
+            this.chartFont = null;
+            return;
+        }
+        
+        try {
+            InputStream fontStream = resolveFontStream(fontPath);
+            if (fontStream != null) {
+                Font baseFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+                // Create font with default size (12pt) and style
+                this.chartFont = baseFont.deriveFont(12f);
+                fontStream.close();
+                System.out.println("✓ Chart font loaded successfully: " + fontPath);
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Failed to load chart font from " + fontPath + ": " + e.getMessage());
+            this.chartFont = null; // Fall back to default
+        }
+    }
+    
+    /**
+     * Resolves a font path to an InputStream
+     */
+    private InputStream resolveFontStream(String path) throws IOException {
+        if (path.startsWith("classpath:")) {
+            String resourcePath = path.substring("classpath:".length());
+            return getClass().getResourceAsStream(resourcePath);
+        } else {
+            return new java.io.FileInputStream(path);
+        }
+    }
+    
     /**
      * Generates a chart and returns it as a BufferedImage
      */
@@ -55,6 +99,11 @@ public class ChartRenderer {
         
         // Apply configuration
         applyChartConfig(chart, chartData.getConfig());
+        
+        // Apply custom font if configured (for Chinese/CJK support)
+        if (chartFont != null) {
+            applyChartFont(chart);
+        }
         
         int width = (chartData.getConfig() != null && chartData.getConfig().getWidth() != null) 
             ? chartData.getConfig().getWidth() : DEFAULT_CHART_WIDTH;
@@ -290,6 +339,46 @@ public class ChartRenderer {
                 plot.setSectionPaint((Comparable) key, colors.get(colorIndex));
                 colorIndex++;
             }
+        }
+    }
+    
+    /**
+     * Applies the custom font to all text elements in the chart.
+     * This ensures Chinese/CJK characters are rendered correctly.
+     */
+    private void applyChartFont(JFreeChart chart) {
+        if (chartFont == null) {
+            return;
+        }
+        
+        Plot plot = chart.getPlot();
+        
+        // Apply font to category plot axes
+        if (plot instanceof CategoryPlot) {
+            CategoryPlot categoryPlot = (CategoryPlot) plot;
+            
+            // Domain axis (X-axis)
+            if (categoryPlot.getDomainAxis() != null) {
+                categoryPlot.getDomainAxis().setLabelFont(chartFont.deriveFont(Font.BOLD, 12f));
+                categoryPlot.getDomainAxis().setTickLabelFont(chartFont.deriveFont(11f));
+            }
+            
+            // Range axis (Y-axis)
+            if (categoryPlot.getRangeAxis() != null) {
+                categoryPlot.getRangeAxis().setLabelFont(chartFont.deriveFont(Font.BOLD, 12f));
+                categoryPlot.getRangeAxis().setTickLabelFont(chartFont.deriveFont(11f));
+            }
+        }
+        
+        // Apply font to pie plot labels
+        if (plot instanceof PiePlot) {
+            PiePlot piePlot = (PiePlot) plot;
+            piePlot.setLabelFont(chartFont.deriveFont(11f));
+        }
+        
+        // Apply font to legend
+        if (chart.getLegend() != null) {
+            chart.getLegend().setItemFont(chartFont.deriveFont(11f));
         }
     }
 }
