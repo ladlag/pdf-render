@@ -384,6 +384,8 @@ public class HtmlReportRenderer {
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
+            int fontsRegistered = 0;
+            
             // Register regular font with Identity-H encoding for Unicode support
             if (fontProperties.getRegularPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getRegularPath());
@@ -395,12 +397,17 @@ public class HtmlReportRenderer {
                 // IDENTITY_H: Unicode encoding for CJK character support
                 // EMBEDDED: Embeds font in PDF for cross-platform compatibility
                 renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                fontsRegistered++;
+                System.out.println("✓ Font registered with Flying Saucer: " + fontPath);
+                System.out.println("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
             }
             
             // Register bold font with Identity-H encoding
             if (fontProperties.getBoldPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getBoldPath());
                 renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                fontsRegistered++;
+                System.out.println("✓ Bold font registered with Flying Saucer: " + fontPath);
             }
             
             // Register CJK font with Identity-H encoding (essential for CJK characters)
@@ -411,10 +418,17 @@ public class HtmlReportRenderer {
                 validateFontConfiguration(fontProperties.getCjkPath(), fontProperties.getCjkFamily(), "CJK");
                 
                 renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                fontsRegistered++;
+                System.out.println("✓ CJK font registered with Flying Saucer: " + fontPath);
+            }
+            
+            if (fontsRegistered > 0) {
+                System.out.println("✓ Total fonts registered for PDF: " + fontsRegistered);
+                System.out.println("  CSS font-family should match: " + fontProperties.getDefaultFamily());
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
-            System.err.println("Warning: Failed to register custom fonts: " + e.getMessage());
+            System.err.println("✗ Warning: Failed to register custom fonts: " + e.getMessage());
             e.printStackTrace();
         }
     }
