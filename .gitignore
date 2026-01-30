@@ -39,3 +39,10 @@ build/
 # Test output directory
 test-output/
 
+# Historical documentation (archived)
+docs/archive/
+
+# Old backups
+*.old
+*.backup
+
