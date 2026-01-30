@@ -2,6 +2,9 @@
 
 本文档回答关于pdf-render库配置的常见问题，特别是关于Spring Boot集成时YAML配置与代码配置的关系。
 
+> **💡 需要JAR集成到Spring Boot的完整步骤？**  
+> 请查看 [SPRING_BOOT_JAR_INTEGRATION_STEPS.md](SPRING_BOOT_JAR_INTEGRATION_STEPS.md) - 详细的分步指南
+
 ## 目录
 
 - [Spring Boot配置问题](#spring-boot配置问题)
@@ -537,6 +540,7 @@ PDF Render: Font configuration applied from properties
 
 ### 相关文档
 
+- **[SPRING_BOOT_JAR_INTEGRATION_STEPS.md](SPRING_BOOT_JAR_INTEGRATION_STEPS.md)** - Spring Boot JAR集成完整步骤（⭐ 推荐）
 - [JAR_INTEGRATION.md](JAR_INTEGRATION.md) - JAR集成和普通Java项目配置
 - [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md) - Spring Boot详细集成指南
 - [FONT_CONFIGURATION.md](FONT_CONFIGURATION.md) - 字体配置详解

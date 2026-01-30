@@ -1154,6 +1154,7 @@ pdf-render/
 
 ## 相关文档
 
+- **[SPRING_BOOT_JAR_INTEGRATION_STEPS.md](SPRING_BOOT_JAR_INTEGRATION_STEPS.md)** - **Spring Boot JAR集成完整步骤指南** ⭐⭐⭐
 - [JAR_INTEGRATION.md](JAR_INTEGRATION.md) - JAR集成使用指南（含字体配置示例）
 - [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md) - Spring Boot集成指南
 - [CONFIGURATION_FAQ.md](CONFIGURATION_FAQ.md) - **配置常见问题（YAML vs 代码配置）** ⭐
