@@ -538,13 +538,13 @@ public class HtmlReportRenderer {
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
             logWarn("✗ Warning: Failed to register custom fonts: " + e.getMessage());
-            e.printStackTrace();
+            logWarn("Stack trace:", e);
         }
     }
     
     /**
      * Validates that the CSS font-family contains the font file's internal name.
-     * Prints warnings if mismatch is detected, which would cause CJK characters to display as boxes.
+     * Logs warnings if mismatch is detected, which would cause CJK characters to display as boxes.
      * 
      * @param fontPath Path to the font file
      * @param cssFontFamily CSS font-family string
@@ -709,6 +709,16 @@ public class HtmlReportRenderer {
             logger.warn(message);
         } catch (NoClassDefFoundError e) {
             System.err.println(message);
+        }
+    }
+
+    private void logWarn(String message, Throwable exception) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+            logger.warn(message, exception);
+        } catch (NoClassDefFoundError e) {
+            System.err.println(message);
+            exception.printStackTrace();
         }
     }
     
