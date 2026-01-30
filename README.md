@@ -15,6 +15,9 @@ A Java PDF report generation library using clean HTML/CSS architecture with Flyi
 **Or see quick guide:**
 - **[3-Step Quick Start - CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
 
+**Windows Users:**
+- **[Windows Compatibility Guide - WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+ auto-handles path compatibility
+
 **Run diagnostic tools to find the issue:**
 ```bash
 # Verify font files and get correct configuration

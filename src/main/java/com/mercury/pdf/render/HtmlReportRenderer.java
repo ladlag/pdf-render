@@ -608,7 +608,10 @@ public class HtmlReportRenderer {
                     }
                 }
                 
-                String resolvedPath = tempFile.getAbsolutePath();
+                // Get absolute path and normalize for cross-platform compatibility
+                // On Windows, paths use backslashes which can cause issues with PDF libraries
+                // Convert to forward slashes which work on all platforms
+                String resolvedPath = tempFile.getAbsolutePath().replace('\\', '/');
                 
                 // Cache the resolved path
                 fontPathCache.put(path, resolvedPath);
