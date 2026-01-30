@@ -429,7 +429,9 @@ A: **代码配置优先级更高**。调用`setFontProperties()`会覆盖YAML配
 
 A: **YAML配置不会生效**。Spring Boot无法识别`pdf-render`配置节点，字体配置将不会被应用到ReportService中。
 
-**详细的Spring Boot集成说明请参考：** [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md)
+**详细的Spring Boot集成说明请参考：**
+- [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md) - Spring Boot完整集成指南
+- [CONFIGURATION_FAQ.md](CONFIGURATION_FAQ.md) - **配置常见问题详解** ⭐
 
 ---
 
@@ -470,6 +472,8 @@ service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(true);
 
 - [README.md](README.md) - 项目概述
 - [README_CN.md](README_CN.md) - 中文项目说明
+- [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md) - Spring Boot集成指南
+- [CONFIGURATION_FAQ.md](CONFIGURATION_FAQ.md) - **配置常见问题（YAML vs 代码配置）** ⭐
 - [FONT_CONFIGURATION.md](FONT_CONFIGURATION.md) - 字体配置详解
 - [TEMPLATE_GUIDE.md](TEMPLATE_GUIDE.md) - 模板使用指南
 - [EXAMPLE_APPLICATION.md](EXAMPLE_APPLICATION.md) - 完整应用示例
