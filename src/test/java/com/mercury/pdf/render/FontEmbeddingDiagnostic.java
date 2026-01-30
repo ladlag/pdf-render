@@ -41,7 +41,9 @@ public class FontEmbeddingDiagnostic {
         System.out.println("─────────────────────────────────────────────────────────────────");
         
         HtmlReportRenderer renderer = new HtmlReportRenderer();
-        System.out.println("✓ HtmlReportRenderer 创建成功\n");
+        renderer.setDebugHtmlEnabled(true);  // Enable debug HTML output
+        renderer.setDebugHtmlOutputDirectory("test-output/debug-html");
+        System.out.println("✓ HtmlReportRenderer 创建成功 (Debug mode enabled)\n");
         
         System.out.println("步骤 2/5: 配置字体属性");
         System.out.println("Step 2/5: Configuring font properties");
@@ -84,7 +86,7 @@ public class FontEmbeddingDiagnostic {
         System.out.println("─────────────────────────────────────────────────────────────────");
         System.out.println("请注意以下日志输出 / Watch for the following logs:\n");
         
-        byte[] pdfBytes = renderer.generatePdf(reportData);
+        byte[] pdfBytes = renderer.generatePdf(reportData, "flexible");
         
         System.out.println("\n✓ PDF 生成完成");
         System.out.println("  文件大小: " + pdfBytes.length + " bytes");
