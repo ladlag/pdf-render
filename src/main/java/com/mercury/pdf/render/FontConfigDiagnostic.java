@@ -33,6 +33,9 @@ public class FontConfigDiagnostic {
         "classpath:/fonts/NotoSansCJKsc-Regular.otf"
     };
     
+    private static final int BUFFER_SIZE = 8192;
+    private static final int FONT_EMBED_SIZE_MULTIPLIER = 3; // Font-embedded PDF should be at least 3x larger
+    
     private static int errorCount = 0;
     private static int warningCount = 0;
 
@@ -116,42 +119,41 @@ public class FontConfigDiagnostic {
             
             // Test if we can extract the font
             String resourcePath = testFontPath.substring("classpath:".length());
-            InputStream fontStream = FontConfigDiagnostic.class.getResourceAsStream(resourcePath);
             
-            if (fontStream == null) {
-                System.err.println("✗ 无法加载字体文件 Cannot load font file");
-                errorCount++;
-                return;
-            }
-            
-            // Extract to temp file
-            File tempFile = File.createTempFile("diagnostic-font-", ".ttf");
-            tempFile.deleteOnExit();
-            
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            try (java.io.FileOutputStream out = new java.io.FileOutputStream(tempFile)) {
-                while ((bytesRead = fontStream.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
+            try (InputStream fontStream = FontConfigDiagnostic.class.getResourceAsStream(resourcePath)) {
+                if (fontStream == null) {
+                    System.err.println("✗ 无法加载字体文件 Cannot load font file");
+                    errorCount++;
+                    return;
                 }
+                
+                // Extract to temp file
+                File tempFile = File.createTempFile("diagnostic-font-", ".ttf");
+                tempFile.deleteOnExit();
+                
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int bytesRead;
+                try (java.io.FileOutputStream out = new java.io.FileOutputStream(tempFile)) {
+                    while ((bytesRead = fontStream.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+                
+                System.out.println("✓ 字体提取成功 Font extracted successfully");
+                System.out.println("  临时文件 Temp file: " + tempFile.getAbsolutePath());
+                
+                // Extract font internal name
+                String internalName = FontNameExtractor.extractFontFamilyName(tempFile.getAbsolutePath());
+                System.out.println("✓ 字体内部名称 Font internal name: " + internalName);
+                System.out.println();
+                System.out.println("⚠️  重要 IMPORTANT:");
+                System.out.println("   在配置时必须使用这个内部名称！");
+                System.out.println("   You MUST use this internal name in configuration!");
+                System.out.println();
+                System.out.println("   正确配置示例 Correct configuration example:");
+                System.out.println("   fontConfig.setDefaultFontFamily(\"" + internalName + ", sans-serif\");");
+                System.out.println();
             }
-            fontStream.close();
-            
-            System.out.println("✓ 字体提取成功 Font extracted successfully");
-            System.out.println("  临时文件 Temp file: " + tempFile.getAbsolutePath());
-            
-            // Extract font internal name
-            String internalName = FontNameExtractor.extractFontFamilyName(tempFile.getAbsolutePath());
-            System.out.println("✓ 字体内部名称 Font internal name: " + internalName);
-            System.out.println();
-            System.out.println("⚠️  重要 IMPORTANT:");
-            System.out.println("   在配置时必须使用这个内部名称！");
-            System.out.println("   You MUST use this internal name in configuration!");
-            System.out.println();
-            System.out.println("   正确配置示例 Correct configuration example:");
-            System.out.println("   fontConfig.setDefaultFontFamily(\"" + internalName + ", sans-serif\");");
-            System.out.println();
-            
         } catch (Exception e) {
             System.err.println("✗ 字体提取失败 Font extraction failed: " + e.getMessage());
             e.printStackTrace();
@@ -200,7 +202,7 @@ public class FontConfigDiagnostic {
             System.out.println();
             
             // Compare file sizes
-            if (pdf2.length > pdf1.length * 3) {
+            if (pdf2.length > pdf1.length * FONT_EMBED_SIZE_MULTIPLIER) {
                 System.out.println("✓ 文件大小对比通过 File size comparison passed");
                 System.out.println("  配置字体的PDF明显更大（包含字体数据）");
                 System.out.println("  PDF with font is significantly larger (contains font data)");
