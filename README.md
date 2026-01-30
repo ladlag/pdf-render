@@ -38,6 +38,19 @@ mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
 
 ---
 
+## 🎨 Chart Background Gray? Legend Issues?
+
+**v1.0.1+ Fixed chart background and legend customization:**
+
+- ✅ **Default white background** - Charts now match PDF white background perfectly
+- ✅ **Legend positioning** - Place legend top/bottom/left/right
+- ✅ **Transparent background support** - For special design needs
+- ✅ **Custom plot area background** - Fine-grained control
+
+**See:** [Chart Customization Guide - CHART_CUSTOMIZATION_GUIDE.md](CHART_CUSTOMIZATION_GUIDE.md)
+
+---
+
 ## Overview
 
 This library generates professional multi-section PDF reports with:
