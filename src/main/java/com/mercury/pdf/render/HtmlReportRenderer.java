@@ -439,6 +439,16 @@ public class HtmlReportRenderer {
      * regardless of system fonts. This is critical for JAR deployments.
      * 
      * Also validates that CSS font-family matches the registered font's internal name.
+     * 
+     * Logging format when SLF4J is configured (e.g., in Spring Boot):
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : Font extracted for PDF rendering: HarmonyOS_Sans_SC_Regular.ttf
+     *   ✓ Font registered with Flying Saucer: /tmp/pdf-render-font-xxx.ttf
+     *     Encoding: Identity-H | Embedded: true
+     *     Font family name (for CSS): HarmonyOS Sans SC
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : Font extracted for PDF rendering: HarmonyOS_Sans_SC_Bold.ttf
+     *   ✓ Bold font registered with Flying Saucer: /tmp/pdf-render-font-yyy.ttf
+     *     Font family name: HarmonyOS Sans SC
+     *   ✓ Total fonts registered for PDF: 2
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
@@ -542,6 +552,12 @@ public class HtmlReportRenderer {
      * For classpath resources, extracts them to a temporary file to ensure
      * compatibility when running from a JAR file. Uses caching to avoid
      * extracting the same font multiple times.
+     * 
+     * Logging behavior:
+     * - When SLF4J is available: Logs via logger.info() without checkmark
+     *   Example: "Font extracted for PDF rendering: HarmonyOS_Sans_SC_Regular.ttf"
+     * - When SLF4J is not available: Falls back to System.out with checkmark
+     *   Example: "✓ Font extracted for PDF rendering: HarmonyOS_Sans_SC_Regular.ttf"
      */
     private String resolveFontPath(String path) throws IOException {
         if (path.startsWith("classpath:")) {
