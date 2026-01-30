@@ -143,7 +143,7 @@ public class FontNameExtractor {
         }
         normalized = normalized.replace('_', ' ').replace('-', ' ');
         normalized = normalized.replaceAll("\\s+", " ");
-        normalized = normalized.replaceAll("(?i)(\\s*(regular|bolditalic|italicbold|bold|italic|oblique|medium|light|thin|black|book|semibold))+\\s*$", "");
+        normalized = normalized.replaceAll("(?i)(?:\\s+(?:regular|bolditalic|italicbold|bold|italic|oblique|medium|light|thin|black|book|semibold))+$", "");
         return normalized.trim();
     }
 
