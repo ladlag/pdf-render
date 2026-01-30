@@ -12,10 +12,12 @@
 1. 默认字体（DejaVu Sans、Arial）不包含中文字形
 2. 服务器环境可能没有安装中文系统字体
 3. Flying Saucer PDF渲染引擎需要显式注册字体才能正确嵌入
+4. **JFreeChart 图表引擎也需要中文字体才能正确渲染图表标签**
 
 ### 解决方案
 
 本项目支持通过 `FontConfig` 类配置自定义字体，确保中文正确显示。
+**v1.0.1+ 版本自动同步字体配置到图表引擎，一次配置，全局生效。**
 
 ### 快速开始
 
@@ -134,6 +136,12 @@ public class PdfReportService {
 2. 确认路径正确（使用 `classpath:/fonts/字体文件名.ttf`）
 3. 确认字体文件支持中文字符集
 4. 查看控制台是否有字体加载错误
+5. **检查控制台是否显示 "✓ Chart font loaded successfully"（v1.0.1+）**
+
+**如果图表中的中文显示为方框：**
+- 确保调用了 `setFontConfig()` 方法
+- v1.0.1+ 版本会自动配置图表字体
+- 控制台应显示："✓ Chart font loaded successfully: classpath:/fonts/xxx.ttf"
 
 #### Q2: 哪里可以下载免费的中文字体？
 
