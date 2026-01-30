@@ -1,0 +1,258 @@
+# ============================================
+# Kubernetes Deployment for PDF Rendering Service
+# ============================================
+#
+# This manifest deploys the PDF service to Kubernetes with:
+# - Chinese font support (fonts packaged in JAR)
+# - Health checks
+# - Resource limits
+# - Horizontal scaling ready
+#
+# Usage:
+#   kubectl apply -f kubernetes-deployment.yaml
+#   kubectl get pods
+#   kubectl logs <pod-name>
+#
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pdf-service-config
+  namespace: default
+data:
+  # Application configuration
+  application.yml: |
+    spring:
+      application:
+        name: pdf-service
+    
+    server:
+      port: 8080
+    
+    # PDF Rendering Configuration
+    pdf-render:
+      fonts:
+        # Fonts are packaged in JAR - extracted to /tmp
+        regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+        default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif
+      debug:
+        enabled: false
+        output-directory: /tmp/debug-html
+    
+    # Logging
+    logging:
+      level:
+        com.mercury.pdf.render: INFO
+    
+    # Management endpoints
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,metrics,info
+      health:
+        livenessState:
+          enabled: true
+        readinessState:
+          enabled: true
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pdf-service
+  namespace: default
+  labels:
+    app: pdf-service
+    version: v1
+spec:
+  replicas: 2  # Number of pods
+  selector:
+    matchLabels:
+      app: pdf-service
+  template:
+    metadata:
+      labels:
+        app: pdf-service
+        version: v1
+    spec:
+      containers:
+      - name: pdf-service
+        image: your-registry/pdf-service:latest  # Replace with your image
+        imagePullPolicy: Always
+        
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        
+        env:
+        # Spring Profile
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        
+        # JVM Options
+        - name: JAVA_OPTS
+          value: "-Xmx1g -Xms512m -Djava.io.tmpdir=/tmp"
+        
+        # PDF Render Configuration (alternative to ConfigMap)
+        - name: PDF_RENDER_FONTS_REGULAR_PATH
+          value: "classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf"
+        - name: PDF_RENDER_FONTS_DEFAULT_FAMILY
+          value: "HarmonyOS Sans SC, sans-serif"
+        
+        # Timezone
+        - name: TZ
+          value: "Asia/Shanghai"
+        
+        # Resource limits
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        
+        # Liveness probe - checks if container is alive
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        
+        # Readiness probe - checks if container is ready to serve traffic
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        # Volume mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+      
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 1Gi  # Limit temp storage
+      - name: config
+        configMap:
+          name: pdf-service-config
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      # Image pull secrets (if using private registry)
+      # imagePullSecrets:
+      # - name: registry-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pdf-service
+  namespace: default
+  labels:
+    app: pdf-service
+spec:
+  type: ClusterIP  # Change to LoadBalancer for external access
+  selector:
+    app: pdf-service
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 8080
+  sessionAffinity: None
+
+---
+# Optional: Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pdf-service-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pdf-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Optional: Ingress for external access
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: pdf-service-ingress
+#   namespace: default
+#   annotations:
+#     kubernetes.io/ingress.class: nginx
+#     cert-manager.io/cluster-issuer: letsencrypt-prod
+# spec:
+#   rules:
+#   - host: pdf.yourdomain.com
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: pdf-service
+#             port:
+#               number: 80
+#   tls:
+#   - hosts:
+#     - pdf.yourdomain.com
+#     secretName: pdf-service-tls

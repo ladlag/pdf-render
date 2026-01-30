@@ -11,8 +11,9 @@
 **或查看快速指南：**
 - **[3步快速开始 CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
 
-**Windows用户注意：**
-- **[Windows兼容性指南 WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+自动处理路径兼容性
+**特定环境指南：**
+- **[Windows兼容性 WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+自动处理路径兼容性
+- **[容器云部署 CONTAINER_DEPLOYMENT.md](CONTAINER_DEPLOYMENT.md)** - Docker/Kubernetes部署指南 🐳
 
 **运行诊断工具找出问题：**
 ```bash

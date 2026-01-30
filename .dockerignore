@@ -1,0 +1,60 @@
+# Docker build context ignore file
+# Speeds up Docker builds by excluding unnecessary files
+
+# Maven build artifacts
+target/
+!target/*.jar
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Test output
+test-output/
+debug-html/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Docker files (don't need these in the container)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Kubernetes
+kubernetes-deployment.yaml
+*.yaml
+*.yml
+!src/**/*.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Other
+node_modules/
