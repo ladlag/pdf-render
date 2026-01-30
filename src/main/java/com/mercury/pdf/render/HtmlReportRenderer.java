@@ -73,11 +73,17 @@ public class HtmlReportRenderer {
     /**
      * Sets the font configuration for custom fonts.
      * This allows specification of custom fonts for regular text, bold text, and CJK text.
+     * Also configures the chart renderer to use the same font for proper Chinese rendering.
      * 
      * @param fontConfig Font configuration object
      */
     public void setFontConfig(FontConfig fontConfig) {
         this.fontConfig = fontConfig;
+        
+        // Also configure chart renderer with the same font for consistent rendering
+        if (fontConfig != null && fontConfig.getRegularFontPath() != null) {
+            chartRenderer.setChartFont(fontConfig.getRegularFontPath());
+        }
     }
     
     /**
