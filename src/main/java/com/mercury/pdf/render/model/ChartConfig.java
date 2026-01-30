@@ -11,8 +11,11 @@ public class ChartConfig {
     private Integer height;
     private List<Color> colors;
     private Boolean showLegend;
+    private String legendPosition; // "top", "bottom", "left", "right"
     private Boolean show3D;
     private String backgroundColorHex;
+    private String plotBackgroundColorHex; // Background color for the plot area
+    private Boolean transparentBackground; // If true, makes background transparent
     private Boolean showGridLines;
     private String xAxisLabel;
     private String yAxisLabel;
@@ -53,6 +56,14 @@ public class ChartConfig {
         this.showLegend = showLegend;
     }
 
+    public String getLegendPosition() {
+        return legendPosition;
+    }
+
+    public void setLegendPosition(String legendPosition) {
+        this.legendPosition = legendPosition;
+    }
+
     public Boolean getShow3D() {
         return show3D;
     }
@@ -67,6 +78,22 @@ public class ChartConfig {
 
     public void setBackgroundColorHex(String backgroundColorHex) {
         this.backgroundColorHex = backgroundColorHex;
+    }
+
+    public String getPlotBackgroundColorHex() {
+        return plotBackgroundColorHex;
+    }
+
+    public void setPlotBackgroundColorHex(String plotBackgroundColorHex) {
+        this.plotBackgroundColorHex = plotBackgroundColorHex;
+    }
+
+    public Boolean getTransparentBackground() {
+        return transparentBackground;
+    }
+
+    public void setTransparentBackground(Boolean transparentBackground) {
+        this.transparentBackground = transparentBackground;
     }
 
     public Boolean getShowGridLines() {

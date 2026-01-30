@@ -8,6 +8,8 @@ import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.renderer.category.AreaRenderer;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
@@ -244,21 +246,55 @@ public class ChartRenderer {
      * Applies configuration settings to a chart
      */
     private void applyChartConfig(JFreeChart chart, ChartConfig config) {
-        if (config == null) {
-            return;
+        // Set default white background for chart if no config or transparent not requested
+        if (config == null || config.getTransparentBackground() == null || !config.getTransparentBackground()) {
+            // Default: white background for the chart
+            if (config == null || config.getBackgroundColorHex() == null) {
+                chart.setBackgroundPaint(Color.WHITE);
+            } else {
+                chart.setBackgroundPaint(Color.decode(config.getBackgroundColorHex()));
+            }
+        } else {
+            // Transparent background requested
+            chart.setBackgroundPaint(new Color(255, 255, 255, 0)); // Transparent white
         }
         
-        // Apply background color
-        if (config.getBackgroundColorHex() != null) {
-            chart.setBackgroundPaint(Color.decode(config.getBackgroundColorHex()));
+        // Set default white background for plot area if no config specified
+        Plot plot = chart.getPlot();
+        if (config == null || config.getPlotBackgroundColorHex() == null) {
+            plot.setBackgroundPaint(Color.WHITE);
+        } else {
+            plot.setBackgroundPaint(Color.decode(config.getPlotBackgroundColorHex()));
+        }
+        
+        if (config == null) {
+            return;
         }
         
         // Apply legend settings (default is to show legend)
         if (config.getShowLegend() != null && !config.getShowLegend()) {
             chart.removeLegend();
+        } else if (config.getLegendPosition() != null && chart.getLegend() != null) {
+            // Apply legend position if specified
+            LegendTitle legend = chart.getLegend();
+            switch (config.getLegendPosition().toLowerCase()) {
+                case "top":
+                    legend.setPosition(RectangleEdge.TOP);
+                    break;
+                case "bottom":
+                    legend.setPosition(RectangleEdge.BOTTOM);
+                    break;
+                case "left":
+                    legend.setPosition(RectangleEdge.LEFT);
+                    break;
+                case "right":
+                    legend.setPosition(RectangleEdge.RIGHT);
+                    break;
+                default:
+                    // Keep default position (bottom)
+                    break;
+            }
         }
-        
-        Plot plot = chart.getPlot();
         
         // Apply custom colors for category plots
         if (plot instanceof CategoryPlot && config.getColors() != null && !config.getColors().isEmpty()) {
