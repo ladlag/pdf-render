@@ -2,6 +2,21 @@
 
 一个基于Java的PDF报告生成库，使用HTML/CSS模板方式，结合Flying Saucer和OpenPDF实现可靠、稳定的表格分页。
 
+## 🔴 PDF中文显示为方框（□）？
+
+**如果您的PDF中文字符显示为方框，请立即查看：**
+
+👉 **[中文显示快速指南 CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)** 👈
+
+或者运行诊断工具检查问题：
+```bash
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontConfigDiagnostic"
+```
+
+**简单总结：必须配置FontConfig才能显示中文！** 详见快速指南。
+
+---
+
 ## ⚠️ 重要：Spring Boot 用户注意
 
 **如果您在使用 Spring Boot，请勿使用 `@PostConstruct` 手动配置！**
