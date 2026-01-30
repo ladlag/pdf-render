@@ -376,18 +376,46 @@ public class HtmlReportRenderer {
     }
     
     /**
-     * Resolves a font path, handling both classpath and file system paths
+     * Resolves a font path, handling both classpath and file system paths.
+     * For classpath resources, extracts them to a temporary file to ensure
+     * compatibility when running from a JAR file.
      */
     private String resolveFontPath(String path) throws IOException {
         if (path.startsWith("classpath:")) {
             // Load from classpath
             String resourcePath = path.substring("classpath:".length());
-            // Return the classpath URL - Flying Saucer can handle it
-            java.net.URL resource = getClass().getResource(resourcePath);
-            if (resource == null) {
+            
+            // Get resource as stream (works reliably from both filesystem and JAR)
+            java.io.InputStream fontStream = getClass().getResourceAsStream(resourcePath);
+            if (fontStream == null) {
                 throw new IOException("Font not found in classpath: " + resourcePath);
             }
-            return resource.toString();
+            
+            try {
+                // Extract font file name from path
+                String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+                
+                // Create temporary file with same extension
+                String extension = fileName.substring(fileName.lastIndexOf('.'));
+                java.io.File tempFile = java.io.File.createTempFile("pdf-render-font-", extension);
+                tempFile.deleteOnExit(); // Clean up on JVM exit
+                
+                // Copy font data to temporary file
+                try (java.io.FileOutputStream out = new java.io.FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = fontStream.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                }
+                
+                String resolvedPath = tempFile.getAbsolutePath();
+                System.out.println("✓ Font extracted for PDF rendering: " + fileName);
+                return resolvedPath;
+                
+            } finally {
+                fontStream.close();
+            }
         } else {
             // Direct file path
             return path;
