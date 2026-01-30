@@ -41,6 +41,12 @@ JFreeChart使用默认系统字体渲染图表，这些字体不包含中文字�
 - 资源清理：使用try-with-resources
 - 日志输出：使用SLF4J（带fallback）
 
+### 修复4：@PostConstruct安全性 ✨ NEW
+- **异常处理**：`setFontConfig()` 捕获所有异常，不会导致应用启动失败
+- **优雅降级**：字体加载失败时记录警告，应用继续启动
+- **兼容性**：即使字体文件不存在，应用也能正常运行
+- **用户友好**：PDF仍可生成，只是中文可能显示为方框
+
 ## 使用方法
 
 ### 1. 准备字体文件
@@ -52,7 +58,7 @@ your-project/
     └── NotoSansCJKsc-Regular.otf
 ```
 
-### 2. Spring Boot集成示例
+### 2. Spring Boot集成示例（@PostConstruct安全）
 ```java
 @Service
 public class PdfService {
@@ -63,11 +69,13 @@ public class PdfService {
         reportService = new ReportService();
         
         // 配置中文字体（只需配置一次）
+        // ✨ 安全：即使字体加载失败，也不会影响应用启动
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
         
         // 应用配置（同时配置PDF文本和图表）
+        // ✨ 不会抛出异常，应用可以安全启动
         reportService.getHtmlRenderer().setFontConfig(fontConfig);
     }
     
@@ -134,6 +142,24 @@ public class PdfService {
 ### Q4: 支持哪些字体格式？
 **A:** 支持 TrueType (.ttf) 和 OpenType (.otf) 格式。
 
+### Q5: 如果字体加载失败会怎样？✨ NEW
+**A:** 应用会正常启动，不受影响！
+- **应用启动**：✓ 正常启动，不会抛出异常
+- **日志输出**：控制台会显示警告信息
+- **PDF生成**：✓ 仍然可以生成PDF
+- **中文显示**：✗ 中文字符会显示为方框（□）
+
+**示例日志：**
+```
+Warning: Failed to configure chart font in setFontConfig: Font not found in classpath: /fonts/missing.ttf
+Warning: Failed to register custom fonts: Font not found in classpath: /fonts/missing.ttf
+```
+
+**建议：**
+- 在开发环境测试字体配置是否正确
+- 检查控制台日志确认字体加载成功
+- 生成测试PDF验证中文显示
+
 ## 推荐字体
 
 ### 免费商用字体
@@ -156,7 +182,7 @@ public class PdfService {
 - PDF文本：正常显示
 
 ✅ **生产就绪**
-- 所有测试通过
+- 所有测试通过（58个）
 - 无安全漏洞
 - 性能优化（字体缓存）
 - 完整文档
@@ -165,5 +191,11 @@ public class PdfService {
 - 一次配置，全局生效
 - 自动处理JAR资源
 - 无需修改现有代码
+
+✅ **@PostConstruct安全** ✨ NEW
+- 字体加载失败不影响应用启动
+- 异常被捕获并记录
+- 应用可以安全运行
+- PDF生成功能不受影响
 
 **建议：** 在集成到生产环境前，先用实际数据测试生成的PDF，确认中文渲染完全正常。

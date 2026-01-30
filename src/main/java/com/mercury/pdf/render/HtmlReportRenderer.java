@@ -78,14 +78,24 @@ public class HtmlReportRenderer {
      * This allows specification of custom fonts for regular text, bold text, and CJK text.
      * Also configures the chart renderer to use the same font for proper Chinese rendering.
      * 
+     * This method is safe to call from @PostConstruct - font loading failures will be logged
+     * but will not throw exceptions that could prevent application startup.
+     * 
      * @param fontConfig Font configuration object
      */
     public void setFontConfig(FontConfig fontConfig) {
         this.fontConfig = fontConfig;
         
         // Also configure chart renderer with the same font for consistent rendering
-        if (fontConfig != null && fontConfig.getRegularFontPath() != null) {
-            chartRenderer.setChartFont(fontConfig.getRegularFontPath());
+        // This is wrapped in try-catch to ensure @PostConstruct safety
+        try {
+            if (fontConfig != null && fontConfig.getRegularFontPath() != null) {
+                chartRenderer.setChartFont(fontConfig.getRegularFontPath());
+            }
+        } catch (Exception e) {
+            // Log warning but don't throw - allows application to start even if font loading fails
+            System.err.println("Warning: Failed to configure chart font in setFontConfig: " + e.getMessage());
+            // Continue - PDF generation will work but may not render Chinese characters correctly
         }
     }
     
