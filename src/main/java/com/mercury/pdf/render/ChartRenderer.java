@@ -59,11 +59,11 @@ public class ChartRenderer {
             // Create font with default size (12pt) and style
             this.chartFont = baseFont.deriveFont(12f);
             fontStream.close();
-            System.out.println("✓ Chart font loaded successfully: " + fontPath);
-            System.out.println("  Chart font family: " + baseFont.getFamily(Locale.ROOT));
-            System.out.println("  Chart font name: " + baseFont.getFontName(Locale.ROOT));
+            logInfo("✓ Chart font loaded successfully: " + fontPath);
+            logInfo("  Chart font family: " + baseFont.getFamily(Locale.ROOT));
+            logInfo("  Chart font name: " + baseFont.getFontName(Locale.ROOT));
         } catch (Exception e) {
-            System.err.println("Warning: Failed to load chart font from " + fontPath + ": " + e.getMessage());
+            logWarn("Warning: Failed to load chart font from " + fontPath + ": " + e.getMessage());
             this.chartFont = null; // Fall back to default
         }
     }
@@ -430,5 +430,23 @@ public class ChartRenderer {
 
     Font getChartFont() {
         return chartFont;
+    }
+
+    private void logInfo(String message) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ChartRenderer.class);
+            logger.info(message);
+        } catch (NoClassDefFoundError e) {
+            System.out.println(message);
+        }
+    }
+
+    private void logWarn(String message) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ChartRenderer.class);
+            logger.warn(message);
+        } catch (NoClassDefFoundError e) {
+            System.err.println(message);
+        }
     }
 }

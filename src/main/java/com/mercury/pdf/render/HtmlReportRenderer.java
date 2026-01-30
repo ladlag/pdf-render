@@ -77,7 +77,7 @@ public class HtmlReportRenderer {
             this.templateLocation = normalizeTemplateLocation(location);
         }
         this.templateEngine = createTemplateEngine();
-        System.out.println("✓ Template location set: " + templateLocation);
+        logInfo("✓ Template location set: " + templateLocation);
     }
 
     /**
@@ -93,7 +93,7 @@ public class HtmlReportRenderer {
     public void setCacheTemplates(boolean cacheTemplates) {
         this.cacheTemplates = cacheTemplates;
         this.templateEngine = createTemplateEngine();
-        System.out.println("✓ Template cache enabled: " + cacheTemplates);
+        logInfo("✓ Template cache enabled: " + cacheTemplates);
     }
     
     /**
@@ -114,7 +114,7 @@ public class HtmlReportRenderer {
         // This is wrapped in try-catch to ensure safe initialization
         try {
             if (fontProperties != null && fontProperties.getRegularPath() != null) {
-                System.out.println("✓ Configuring chart font from regular font: " + fontProperties.getRegularPath());
+                logInfo("✓ Configuring chart font from regular font: " + fontProperties.getRegularPath());
                 chartRenderer.setChartFont(fontProperties.getRegularPath());
             }
         } catch (Exception e) {
@@ -381,7 +381,7 @@ public class HtmlReportRenderer {
             
             String fontFamilyCss = fontFamily.toString();
             data.put("fontFamily", fontFamilyCss);
-            System.out.println("✓ PDF CSS font-family: " + fontFamilyCss);
+            logInfo("✓ PDF CSS font-family: " + fontFamilyCss);
             
             // Set CJK font family with actual font name
             StringBuilder cjkFamily = new StringBuilder();
@@ -415,13 +415,13 @@ public class HtmlReportRenderer {
             
             String cjkFamilyCss = cjkFamily.toString();
             data.put("cjkFontFamily", cjkFamilyCss);
-            System.out.println("✓ PDF CSS CJK font-family: " + cjkFamilyCss);
+            logInfo("✓ PDF CSS CJK font-family: " + cjkFamilyCss);
         } else {
             // Provide empty strings as defaults
             data.put("fontFaceDeclaration", "");
             data.put("fontFamily", "sans-serif");
             data.put("cjkFontFamily", "");
-            System.out.println("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
+            logWarn("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
         }
         
         return data;
@@ -675,21 +675,39 @@ public class HtmlReportRenderer {
 
     private void logFontProperties(String source, PdfRenderProperties.FontProperties props) {
         if (props == null) {
-            System.out.println("⚠️ Font configuration source " + source + " was null");
+            logWarn("⚠️ Font configuration source " + source + " was null");
             return;
         }
-        System.out.println("✓ Font configuration (" + source + "):");
-        System.out.println("  Regular path: " + props.getRegularPath());
-        System.out.println("  Bold path: " + props.getBoldPath());
-        System.out.println("  CJK path: " + props.getCjkPath());
-        System.out.println("  Default family: " + props.getDefaultFamily());
-        System.out.println("  CJK family: " + props.getCjkFamily());
+        logInfo("✓ Font configuration (" + source + "):");
+        logInfo("  Regular path: " + props.getRegularPath());
+        logInfo("  Bold path: " + props.getBoldPath());
+        logInfo("  CJK path: " + props.getCjkPath());
+        logInfo("  Default family: " + props.getDefaultFamily());
+        logInfo("  CJK family: " + props.getCjkFamily());
     }
 
     private void logRegisteredFont(String fontType, String fontPath, String fontFamilyName) {
-        System.out.println("✓ Font configuration (" + fontType + "):");
-        System.out.println("  Source path: " + fontPath);
-        System.out.println("  Resolved family: " + fontFamilyName);
+        logInfo("✓ Font configuration (" + fontType + "):");
+        logInfo("  Source path: " + fontPath);
+        logInfo("  Resolved family: " + fontFamilyName);
+    }
+
+    private void logInfo(String message) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+            logger.info(message);
+        } catch (NoClassDefFoundError e) {
+            System.out.println(message);
+        }
+    }
+
+    private void logWarn(String message) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+            logger.warn(message);
+        } catch (NoClassDefFoundError e) {
+            System.err.println(message);
+        }
     }
     
     /**
