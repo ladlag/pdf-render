@@ -108,7 +108,7 @@ public class HtmlReportRenderer {
      */
     public void setFontProperties(PdfRenderProperties.FontProperties fontProperties) {
         this.fontProperties = fontProperties;
-        logFontConfiguration("FontProperties", fontProperties);
+        logFontProperties("FontProperties", fontProperties);
         
         // Also configure chart renderer with the same font for consistent rendering
         // This is wrapped in try-catch to ensure safe initialization
@@ -500,7 +500,7 @@ public class HtmlReportRenderer {
                 System.out.println("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
                 System.out.println("  Font family name (for CSS): " + fontFamilyName);
                 validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "regular");
-                logFontConfiguration("regular", fontPath, fontFamilyName);
+                logRegisteredFont("regular", fontPath, fontFamilyName);
             }
             
             // Register bold font with Identity-H encoding
@@ -513,7 +513,7 @@ public class HtmlReportRenderer {
                 System.out.println("✓ Bold font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Font family name: " + fontFamilyName);
                 validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "bold");
-                logFontConfiguration("bold", fontPath, fontFamilyName);
+                logRegisteredFont("bold", fontPath, fontFamilyName);
             }
             
             // Register CJK font with Identity-H encoding (essential for CJK characters)
@@ -527,7 +527,7 @@ public class HtmlReportRenderer {
                 System.out.println("✓ CJK font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Font family name: " + fontFamilyName);
                 validateFontConfiguration(fontPath, fontProperties.getCjkFamily(), "cjk");
-                logFontConfiguration("cjk", fontPath, fontFamilyName);
+                logRegisteredFont("cjk", fontPath, fontFamilyName);
             }
             
             if (fontsRegistered > 0) {
@@ -673,7 +673,7 @@ public class HtmlReportRenderer {
         }
     }
 
-    private void logFontConfiguration(String source, PdfRenderProperties.FontProperties props) {
+    private void logFontProperties(String source, PdfRenderProperties.FontProperties props) {
         if (props == null) {
             System.out.println("⚠️ Font configuration source " + source + " was null");
             return;
@@ -686,7 +686,7 @@ public class HtmlReportRenderer {
         System.out.println("  CJK family: " + props.getCjkFamily());
     }
 
-    private void logFontConfiguration(String fontType, String fontPath, String fontFamilyName) {
+    private void logRegisteredFont(String fontType, String fontPath, String fontFamilyName) {
         System.out.println("✓ Font configuration (" + fontType + "):");
         System.out.println("  Source path: " + fontPath);
         System.out.println("  Resolved family: " + fontFamilyName);
