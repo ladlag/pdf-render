@@ -70,7 +70,7 @@ public class ChartRenderer {
             String resourcePath = path.substring("classpath:".length());
             return getClass().getResourceAsStream(resourcePath);
         } else {
-            return new java.io.FileInputStream(path);
+            return new java.io.FileInputStream(path.replace('\\', '/'));
         }
     }
     
