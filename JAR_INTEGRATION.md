@@ -107,6 +107,8 @@ public class SimplePdfDemo {
 
 **重要：** 如果PDF中需要显示中文、日文或韩文字符，必须配置字体，否则CJK文字会显示为方框（□）。
 
+**注意：** 本节内容适用于**普通Java项目（非Spring Boot）**。如果使用Spring Boot，请参考[Spring Boot集成](#spring-boot集成)章节。
+
 ### 1. 准备字体文件
 
 将字体文件放置在资源目录：
@@ -116,7 +118,7 @@ src/main/resources/fonts/
 └── NotoSansCJKsc-Regular.otf
 ```
 
-### 2. 配置字体
+### 2. 配置字体（普通Java项目）
 
 ```java
 import com.mercury.pdf.render.ReportService;
@@ -124,15 +126,15 @@ import com.mercury.pdf.render.config.PdfRenderProperties;
 
 public class ChinesePdfDemo {
     public static void main(String[] args) throws IOException {
+        // 创建服务
         ReportService service = new ReportService();
         
-        // 方式1: 使用PdfRenderProperties（推荐）
-        PdfRenderProperties properties = new PdfRenderProperties();
+        // 配置中文字体
         PdfRenderProperties.FontProperties fonts = new PdfRenderProperties.FontProperties();
         fonts.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fonts.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
-        properties.setFonts(fonts);
         
+        // 应用字体配置
         service.getHtmlRenderer().setFontProperties(fonts);
         
         // 构建包含中文的报告
@@ -256,7 +258,27 @@ public class ComplexReportDemo {
 </dependency>
 ```
 
-### 2. 配置application.yml
+### 2. 启用配置属性（必须）
+
+在Spring Boot应用主类上添加`@EnableConfigurationProperties`注解：
+
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import com.mercury.pdf.render.config.PdfRenderProperties;
+
+@SpringBootApplication
+@EnableConfigurationProperties(PdfRenderProperties.class)
+public class MyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}
+```
+
+### 3. 配置application.yml（推荐方式）
+
 ```yaml
 pdf-render:
   template:
@@ -269,13 +291,14 @@ pdf-render:
     enabled: false
 ```
 
-### 3. 注入使用
+### 4. 注入使用
+
 ```java
 @Service
 public class PdfService {
     private final ReportService reportService;
     
-    // Spring自动注入，无需手动配置
+    // Spring自动注入，ReportService已根据application.yml配置完成
     public PdfService(ReportService reportService) {
         this.reportService = reportService;
     }
@@ -285,6 +308,126 @@ public class PdfService {
     }
 }
 ```
+
+### 5. 配置方式的优先级说明
+
+**重要：** 如果你同时使用了YAML配置和代码配置，需要了解以下优先级规则：
+
+#### 方式A：仅使用YAML配置（推荐）
+
+✅ **推荐用于生产环境**
+
+```yaml
+# application.yml
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    default-family: HarmonyOS Sans SC, sans-serif
+```
+
+```java
+@Service
+public class PdfService {
+    private final ReportService reportService;
+    
+    // 直接注入，字体已自动配置
+    public PdfService(ReportService reportService) {
+        this.reportService = reportService;
+    }
+    
+    public byte[] generatePdf(ReportData data) throws IOException {
+        // 字体配置已生效，无需额外设置
+        return reportService.generatePdf(data);
+    }
+}
+```
+
+**优点：**
+- 配置集中管理在application.yml
+- 不同环境（开发/测试/生产）可以使用不同配置文件
+- 代码更简洁，无需手动配置
+
+#### 方式B：YAML + 代码配置（覆盖配置）
+
+⚠️ **代码配置会覆盖YAML配置**
+
+```java
+@Service
+public class PdfService {
+    private final ReportService reportService;
+    
+    public PdfService(ReportService reportService) {
+        this.reportService = reportService;
+        
+        // 程序化配置会覆盖application.yml中的配置
+        PdfRenderProperties.FontProperties fonts = new PdfRenderProperties.FontProperties();
+        fonts.setRegularPath("classpath:/fonts/Custom_Font.ttf");
+        fonts.setDefaultFamily("Custom Font, sans-serif");
+        
+        // 这会覆盖YAML配置
+        reportService.getHtmlRenderer().setFontProperties(fonts);
+    }
+    
+    public byte[] generatePdf(ReportData data) throws IOException {
+        // 使用的是代码中设置的字体，而不是YAML配置的字体
+        return reportService.generatePdf(data);
+    }
+}
+```
+
+**说明：**
+- 如果调用了`setFontProperties()`，YAML中的字体配置**不再生效**
+- 适用于需要动态切换字体的场景
+- 需要确保在生成PDF前调用
+
+#### 方式C：仅使用代码配置（适用于JAR集成）
+
+✅ **适用于非Spring Boot项目或动态配置**
+
+```java
+public class ChinesePdfDemo {
+    public static void main(String[] args) throws IOException {
+        ReportService service = new ReportService();
+        
+        // 纯代码配置（无需application.yml）
+        PdfRenderProperties.FontProperties fonts = new PdfRenderProperties.FontProperties();
+        fonts.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fonts.setDefaultFamily("HarmonyOS Sans SC, sans-serif");
+        
+        service.getHtmlRenderer().setFontProperties(fonts);
+        
+        // 生成PDF
+        byte[] pdfBytes = service.generatePdf(reportData);
+    }
+}
+```
+
+### 6. 配置优先级总结
+
+| 配置方式 | 是否需要@EnableConfigurationProperties | application.yml是否生效 | 适用场景 |
+|---------|--------------------------------------|----------------------|---------|
+| 仅YAML配置 | ✅ 必须 | ✅ 生效 | Spring Boot项目（推荐） |
+| YAML + 代码配置 | ✅ 必须 | ❌ 被覆盖 | 需要动态切换配置 |
+| 仅代码配置 | ❌ 不需要 | ❌ 不生效 | 非Spring Boot项目 |
+
+### 7. 常见问题
+
+**Q1: 我在application.yml配置了字体，为什么还需要在代码中再次设置？**
+
+A: **不需要！** 如果你使用Spring Boot，只需：
+1. 在Application类上添加`@EnableConfigurationProperties(PdfRenderProperties.class)`
+2. 在application.yml中配置字体
+3. 直接注入`ReportService`使用即可
+
+不要在代码中再次调用`setFontProperties()`，否则会覆盖YAML配置。
+
+**Q2: 我既配置了YAML，又在代码中调用了setFontProperties()，哪个会生效？**
+
+A: **代码配置优先级更高**。调用`setFontProperties()`会覆盖YAML配置。如果你希望使用YAML配置，请删除代码中的`setFontProperties()`调用。
+
+**Q3: 不使用@EnableConfigurationProperties注解会怎样？**
+
+A: **YAML配置不会生效**。Spring Boot无法识别`pdf-render`配置节点，字体配置将不会被应用到ReportService中。
 
 **详细的Spring Boot集成说明请参考：** [SPRING_BOOT_INTEGRATION_GUIDE.md](SPRING_BOOT_INTEGRATION_GUIDE.md)
 
