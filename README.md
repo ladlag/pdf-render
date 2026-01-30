@@ -2,6 +2,40 @@
 
 A Java-based PDF report generation library using clean HTML/CSS architecture with Flying Saucer and OpenPDF.
 
+## ⚠️ Important: Spring Boot Users
+
+**If you're using Spring Boot, DO NOT manually configure with `@PostConstruct`!**
+
+The library has built-in Spring Boot auto-configuration. Just configure `application.yml` and inject `ReportService`:
+
+```yaml
+# application.yml
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif
+```
+
+```java
+@Service
+public class PdfService {
+    private final ReportService reportService;
+    
+    // ✅ Just inject - no @PostConstruct needed!
+    public PdfService(ReportService reportService) {
+        this.reportService = reportService;
+    }
+    
+    public byte[] generatePdf(ReportData data) throws IOException, DocumentException {
+        return reportService.generatePdf(data);
+    }
+}
+```
+
+**📖 See [Spring Boot Usage Guide](SPRING_BOOT_USAGE.md) for complete documentation.**
+
+---
+
 ## Overview
 
 This project generates multi-section PDF reports with **unlimited dynamic sections**:

@@ -2,6 +2,40 @@
 
 一个基于Java的PDF报告生成库，使用HTML/CSS模板方式，结合Flying Saucer和OpenPDF实现可靠、稳定的表格分页。
 
+## ⚠️ 重要：Spring Boot 用户注意
+
+**如果您在使用 Spring Boot，请勿使用 `@PostConstruct` 手动配置！**
+
+本库内置了 Spring Boot 自动配置。只需配置 `application.yml`，然后注入 `ReportService` 即可：
+
+```yaml
+# application.yml
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif
+```
+
+```java
+@Service
+public class PdfService {
+    private final ReportService reportService;
+    
+    // ✅ 直接注入即可 - 不需要 @PostConstruct！
+    public PdfService(ReportService reportService) {
+        this.reportService = reportService;
+    }
+    
+    public byte[] generatePdf(ReportData data) throws IOException, DocumentException {
+        return reportService.generatePdf(data);
+    }
+}
+```
+
+**📖 完整文档请查看 [Spring Boot 使用指南](SPRING_BOOT_USAGE.md)**
+
+---
+
 ## 目录
 
 - [概述](#概述)
