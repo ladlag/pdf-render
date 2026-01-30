@@ -16,11 +16,6 @@ public class PostConstructSafetyTest {
 
     @Test
     public void testSetFontConfigWithInvalidPathDoesNotThrow() {
-        System.out.println("\n========================================");
-        System.out.println("测试：无效字体路径不会抛出异常");
-        System.out.println("Test: Invalid font path does not throw exception");
-        System.out.println("========================================\n");
-        
         ReportService service = new ReportService();
         
         // Simulate @PostConstruct initialization with invalid font path
@@ -32,18 +27,10 @@ public class PostConstructSafetyTest {
         assertDoesNotThrow(() -> {
             service.getHtmlRenderer().setFontConfig(fontConfig);
         }, "setFontConfig should not throw exception even with invalid font path");
-        
-        System.out.println("✓ Application can start even with invalid font path");
-        System.out.println("  Font loading failure was handled gracefully");
     }
     
     @Test
     public void testSetFontConfigWithNullPathDoesNotThrow() {
-        System.out.println("\n========================================");
-        System.out.println("测试：空字体路径不会抛出异常");
-        System.out.println("Test: Null font path does not throw exception");
-        System.out.println("========================================\n");
-        
         ReportService service = new ReportService();
         
         // Simulate @PostConstruct initialization with null paths
@@ -54,17 +41,10 @@ public class PostConstructSafetyTest {
         assertDoesNotThrow(() -> {
             service.getHtmlRenderer().setFontConfig(fontConfig);
         }, "setFontConfig should not throw exception with null font path");
-        
-        System.out.println("✓ Application can start with null font configuration");
     }
     
     @Test
     public void testSetFontConfigWithEmptyStringDoesNotThrow() {
-        System.out.println("\n========================================");
-        System.out.println("测试：空字符串字体路径不会抛出异常");
-        System.out.println("Test: Empty string font path does not throw exception");
-        System.out.println("========================================\n");
-        
         ReportService service = new ReportService();
         
         // Simulate @PostConstruct initialization with empty string
@@ -75,17 +55,10 @@ public class PostConstructSafetyTest {
         assertDoesNotThrow(() -> {
             service.getHtmlRenderer().setFontConfig(fontConfig);
         }, "setFontConfig should not throw exception with empty string font path");
-        
-        System.out.println("✓ Application can start with empty font path");
     }
     
     @Test
     public void testSetFontConfigWithInvalidClasspathPrefix() {
-        System.out.println("\n========================================");
-        System.out.println("测试：无效classpath前缀不会抛出异常");
-        System.out.println("Test: Invalid classpath prefix does not throw exception");
-        System.out.println("========================================\n");
-        
         ReportService service = new ReportService();
         
         // Simulate @PostConstruct with malformed classpath
@@ -96,17 +69,10 @@ public class PostConstructSafetyTest {
         assertDoesNotThrow(() -> {
             service.getHtmlRenderer().setFontConfig(fontConfig);
         }, "setFontConfig should not throw exception with invalid classpath format");
-        
-        System.out.println("✓ Application can start with malformed classpath");
     }
     
     @Test
-    public void testMultipleSetFontConfigCallsAreIdempotent() {
-        System.out.println("\n========================================");
-        System.out.println("测试：多次调用setFontConfig是安全的");
-        System.out.println("Test: Multiple setFontConfig calls are safe");
-        System.out.println("========================================\n");
-        
+    public void testMultipleSetFontConfigCallsAreSafe() {
         ReportService service = new ReportService();
         
         // First call with invalid font
@@ -131,9 +97,6 @@ public class PostConstructSafetyTest {
         assertDoesNotThrow(() -> {
             service.getHtmlRenderer().setFontConfig(null);
         });
-        
-        System.out.println("✓ Multiple setFontConfig calls work without issues");
-        System.out.println("  Application remains stable after multiple configuration attempts");
     }
     
     @Test
@@ -179,8 +142,46 @@ public class PostConstructSafetyTest {
         
         System.out.println("✓ Spring Boot application can start successfully");
         System.out.println("  @PostConstruct completed without throwing exceptions");
-        System.out.println("  Application is ready to serve requests");
         System.out.println("\n注意：PDF生成仍然可以工作，只是中文可能显示为方框");
         System.out.println("Note: PDF generation will still work, Chinese may show as boxes");
+    }
+    
+    @Test
+    public void testPdfGenerationWorksAfterFontLoadingFailure() throws Exception {
+        System.out.println("\n========================================");
+        System.out.println("测试：字体加载失败后PDF生成仍然正常");
+        System.out.println("Test: PDF generation works after font loading failure");
+        System.out.println("========================================\n");
+        
+        ReportService service = new ReportService();
+        
+        // Configure with invalid font path (simulating font loading failure)
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/nonexistent-font.ttf");
+        fontConfig.setDefaultFontFamily("NonExistent Font, DejaVu Sans, sans-serif");
+        
+        // This should not throw - application can start
+        service.getHtmlRenderer().setFontConfig(fontConfig);
+        
+        // Now try to generate a PDF - this should still work!
+        com.mercury.pdf.render.model.ReportData reportData = 
+            com.mercury.pdf.render.model.ReportDataBuilder.create()
+                .title("Test Report")
+                .subtitle("Verifying graceful degradation")
+                .addSection(new com.mercury.pdf.render.model.Section("Test Section")
+                    .addParagraph("This is a test. Chinese: 测试"))
+                .build();
+        
+        // PDF generation should work even without fonts
+        byte[] pdfBytes = assertDoesNotThrow(() -> {
+            return service.generatePdf(reportData, "flexible");
+        }, "PDF generation should work even when fonts fail to load");
+        
+        assertNotNull(pdfBytes, "PDF should be generated");
+        assertTrue(pdfBytes.length > 0, "PDF should have content");
+        
+        System.out.println("✓ PDF generated successfully: " + pdfBytes.length + " bytes");
+        System.out.println("  Font loading failure did not prevent PDF generation");
+        System.out.println("  Application is fully functional (Chinese may show as boxes)");
     }
 }

@@ -95,6 +95,7 @@ public class HtmlReportRenderer {
         } catch (Exception e) {
             // Log warning but don't throw - allows application to start even if font loading fails
             System.err.println("Warning: Failed to configure chart font in setFontConfig: " + e.getMessage());
+            e.printStackTrace(); // Include stack trace for debugging
             // Continue - PDF generation will work but may not render Chinese characters correctly
         }
     }
