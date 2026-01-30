@@ -29,6 +29,9 @@ public class HtmlReportRenderer {
     private String defaultTemplateName = "report"; // Default template name
     private FontConfig fontConfig; // Optional font configuration
     
+    // Font cache to avoid extracting same font multiple times
+    private final java.util.Map<String, String> fontPathCache = new java.util.concurrent.ConcurrentHashMap<>();
+    
     // Debug HTML configuration
     private boolean debugHtmlEnabled = false; // Whether to save intermediate HTML
     private String debugHtmlOutputDirectory = "debug-html"; // Directory for debug HTML files
@@ -378,12 +381,25 @@ public class HtmlReportRenderer {
     /**
      * Resolves a font path, handling both classpath and file system paths.
      * For classpath resources, extracts them to a temporary file to ensure
-     * compatibility when running from a JAR file.
+     * compatibility when running from a JAR file. Uses caching to avoid
+     * extracting the same font multiple times.
      */
     private String resolveFontPath(String path) throws IOException {
         if (path.startsWith("classpath:")) {
+            // Check cache first
+            String cachedPath = fontPathCache.get(path);
+            if (cachedPath != null && new java.io.File(cachedPath).exists()) {
+                return cachedPath;
+            }
+            
             // Load from classpath
             String resourcePath = path.substring("classpath:".length());
+            
+            // Validate resource path
+            if (resourcePath.isEmpty() || !resourcePath.startsWith("/")) {
+                throw new IOException("Invalid classpath resource path: " + resourcePath + 
+                    " (must start with /)");
+            }
             
             // Get resource as stream (works reliably from both filesystem and JAR)
             java.io.InputStream fontStream = getClass().getResourceAsStream(resourcePath);
@@ -393,10 +409,18 @@ public class HtmlReportRenderer {
             
             try {
                 // Extract font file name from path
-                String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+                int lastSlash = resourcePath.lastIndexOf('/');
+                String fileName = resourcePath.substring(lastSlash + 1);
+                
+                // Validate fileName contains an extension
+                int lastDot = fileName.lastIndexOf('.');
+                if (lastDot <= 0 || lastDot == fileName.length() - 1) {
+                    throw new IOException("Font file must have a valid extension: " + fileName);
+                }
+                
+                String extension = fileName.substring(lastDot);
                 
                 // Create temporary file with same extension
-                String extension = fileName.substring(fileName.lastIndexOf('.'));
                 java.io.File tempFile = java.io.File.createTempFile("pdf-render-font-", extension);
                 tempFile.deleteOnExit(); // Clean up on JVM exit
                 
@@ -410,7 +434,19 @@ public class HtmlReportRenderer {
                 }
                 
                 String resolvedPath = tempFile.getAbsolutePath();
-                System.out.println("✓ Font extracted for PDF rendering: " + fileName);
+                
+                // Cache the resolved path
+                fontPathCache.put(path, resolvedPath);
+                
+                // Use SLF4J if available, otherwise fall back to System.out
+                try {
+                    org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+                    logger.info("Font extracted for PDF rendering: {}", fileName);
+                } catch (NoClassDefFoundError e) {
+                    // SLF4J not available, use System.out
+                    System.out.println("✓ Font extracted for PDF rendering: " + fileName);
+                }
+                
                 return resolvedPath;
                 
             } finally {

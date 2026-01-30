@@ -38,16 +38,16 @@ public class JarResourceLoadingTest {
         System.out.println("   ✓ getResource() 成功: " + fontUrl);
         
         System.out.println("\n2. 测试 getClass().getResourceAsStream() [ChartRenderer使用]:");
-        InputStream fontStream = getClass().getResourceAsStream(fontPath);
-        assertNotNull(fontStream, "Font should be loadable via getResourceAsStream()");
-        System.out.println("   ✓ getResourceAsStream() 成功");
-        
-        // Read some bytes to verify stream is valid
-        byte[] buffer = new byte[4];
-        int bytesRead = fontStream.read(buffer);
-        assertEquals(4, bytesRead, "Should be able to read from font stream");
-        fontStream.close();
-        System.out.println("   ✓ 可以从流中读取数据");
+        try (InputStream fontStream = getClass().getResourceAsStream(fontPath)) {
+            assertNotNull(fontStream, "Font should be loadable via getResourceAsStream()");
+            System.out.println("   ✓ getResourceAsStream() 成功");
+            
+            // Read some bytes to verify stream is valid
+            byte[] buffer = new byte[4];
+            int bytesRead = fontStream.read(buffer);
+            assertEquals(4, bytesRead, "Should be able to read from font stream");
+            System.out.println("   ✓ 可以从流中读取数据");
+        }
         
         System.out.println("\n3. 测试 Flying Saucer URL.toString() 格式:");
         String urlString = fontUrl.toString();
