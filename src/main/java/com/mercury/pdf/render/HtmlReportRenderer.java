@@ -470,13 +470,15 @@ public class HtmlReportRenderer {
      * 
      * Logging format when SLF4J is configured (e.g., in Spring Boot):
      *   INFO c.mercury.pdf.render.HtmlReportRenderer : Font extracted for PDF rendering: HarmonyOS_Sans_SC_Regular.ttf
-     *   ✓ Font registered with Flying Saucer: /tmp/pdf-render-font-xxx.ttf
-     *     Encoding: Identity-H | Embedded: true
-     *     Font family name (for CSS): HarmonyOS Sans SC
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : Resolved font temp path: /tmp/pdf-render-font-xxx.ttf
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : ✓ Font registered with Flying Saucer: /tmp/pdf-render-font-xxx.ttf
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer :   Encoding: Identity-H | Embedded: true
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer :   Font family name (for CSS): HarmonyOS Sans SC
      *   INFO c.mercury.pdf.render.HtmlReportRenderer : Font extracted for PDF rendering: HarmonyOS_Sans_SC_Bold.ttf
-     *   ✓ Bold font registered with Flying Saucer: /tmp/pdf-render-font-yyy.ttf
-     *     Font family name: HarmonyOS Sans SC
-     *   ✓ Total fonts registered for PDF: 2
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : Resolved font temp path: /tmp/pdf-render-font-yyy.ttf
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : ✓ Bold font registered with Flying Saucer: /tmp/pdf-render-font-yyy.ttf
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer :   Font family name: HarmonyOS Sans SC
+     *   INFO c.mercury.pdf.render.HtmlReportRenderer : ✓ Total fonts registered for PDF: 2
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
@@ -496,9 +498,9 @@ public class HtmlReportRenderer {
                 // ALIAS: Use font's internal name for reliable CSS matching
                 renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
                 fontsRegistered++;
-                System.out.println("✓ Font registered with Flying Saucer: " + fontPath);
-                System.out.println("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
-                System.out.println("  Font family name (for CSS): " + fontFamilyName);
+                logInfo("✓ Font registered with Flying Saucer: " + fontPath);
+                logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
+                logInfo("  Font family name (for CSS): " + fontFamilyName);
                 validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "regular");
                 logRegisteredFont("regular", fontPath, fontFamilyName);
             }
@@ -510,8 +512,8 @@ public class HtmlReportRenderer {
                 String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
                 renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
                 fontsRegistered++;
-                System.out.println("✓ Bold font registered with Flying Saucer: " + fontPath);
-                System.out.println("  Font family name: " + fontFamilyName);
+                logInfo("✓ Bold font registered with Flying Saucer: " + fontPath);
+                logInfo("  Font family name: " + fontFamilyName);
                 validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "bold");
                 logRegisteredFont("bold", fontPath, fontFamilyName);
             }
@@ -524,18 +526,18 @@ public class HtmlReportRenderer {
                 
                 renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
                 fontsRegistered++;
-                System.out.println("✓ CJK font registered with Flying Saucer: " + fontPath);
-                System.out.println("  Font family name: " + fontFamilyName);
+                logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
+                logInfo("  Font family name: " + fontFamilyName);
                 validateFontConfiguration(fontPath, fontProperties.getCjkFamily(), "cjk");
                 logRegisteredFont("cjk", fontPath, fontFamilyName);
             }
             
             if (fontsRegistered > 0) {
-                System.out.println("✓ Total fonts registered for PDF: " + fontsRegistered);
+                logInfo("✓ Total fonts registered for PDF: " + fontsRegistered);
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
-            System.err.println("✗ Warning: Failed to register custom fonts: " + e.getMessage());
+            logWarn("✗ Warning: Failed to register custom fonts: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -557,27 +559,27 @@ public class HtmlReportRenderer {
             String internalName = FontNameExtractor.extractFontFamilyName(fontPath);
             
             if (!cssFontFamily.contains(internalName)) {
-                System.err.println("╔════════════════════════════════════════════════════════════════╗");
-                System.err.println("║  ⚠️  WARNING: Font Configuration Mismatch Detected!          ║");
-                System.err.println("╚════════════════════════════════════════════════════════════════╝");
-                System.err.println();
-                System.err.println("Font type: " + fontType);
-                System.err.println("Font file: " + fontPath);
-                System.err.println();
-                System.err.println("  CSS font-family:        " + cssFontFamily);
-                System.err.println("  Font's internal name:   " + internalName);
-                System.err.println();
-                System.err.println("⚠️  CSS references a font name that doesn't match the file!");
-                System.err.println("⚠️  This will cause Chinese/CJK characters to show as boxes (□)");
-                System.err.println();
-                System.err.println("To fix, update your FontConfig:");
-                System.err.println("  fontConfig.setDefaultFontFamily(\"" + internalName + ", DejaVu Sans, sans-serif\");");
-                System.err.println();
-                System.err.println("════════════════════════════════════════════════════════════════");
+                logWarn("╔════════════════════════════════════════════════════════════════╗");
+                logWarn("║  ⚠️  WARNING: Font Configuration Mismatch Detected!          ║");
+                logWarn("╚════════════════════════════════════════════════════════════════╝");
+                logWarn("");
+                logWarn("Font type: " + fontType);
+                logWarn("Font file: " + fontPath);
+                logWarn("");
+                logWarn("  CSS font-family:        " + cssFontFamily);
+                logWarn("  Font's internal name:   " + internalName);
+                logWarn("");
+                logWarn("⚠️  CSS references a font name that doesn't match the file!");
+                logWarn("⚠️  This will cause Chinese/CJK characters to show as boxes (□)");
+                logWarn("");
+                logWarn("To fix, update your FontConfig:");
+                logWarn("  fontConfig.setDefaultFontFamily(\"" + internalName + ", DejaVu Sans, sans-serif\");");
+                logWarn("");
+                logWarn("════════════════════════════════════════════════════════════════");
             }
         } catch (Exception e) {
             // If validation fails, just log it - don't block PDF generation
-            System.err.println("Warning: Could not validate " + fontType + " font configuration: " + e.getMessage());
+            logWarn("Warning: Could not validate " + fontType + " font configuration: " + e.getMessage());
         }
     }
     
@@ -679,11 +681,11 @@ public class HtmlReportRenderer {
             return;
         }
         logInfo("✓ Font configuration (" + source + "):");
-        logInfo("  Regular path: " + props.getRegularPath());
-        logInfo("  Bold path: " + props.getBoldPath());
-        logInfo("  CJK path: " + props.getCjkPath());
-        logInfo("  Default family: " + props.getDefaultFamily());
-        logInfo("  CJK family: " + props.getCjkFamily());
+        logInfo("  Regular path: " + (props.getRegularPath() != null ? props.getRegularPath() : "(not configured)"));
+        logInfo("  Bold path: " + (props.getBoldPath() != null ? props.getBoldPath() : "(not configured)"));
+        logInfo("  CJK path: " + (props.getCjkPath() != null ? props.getCjkPath() : "(not configured)"));
+        logInfo("  Default family: " + (props.getDefaultFamily() != null ? props.getDefaultFamily() : "(not configured)"));
+        logInfo("  CJK family: " + (props.getCjkFamily() != null ? props.getCjkFamily() : "(not configured)"));
     }
 
     private void logRegisteredFont(String fontType, String fontPath, String fontFamilyName) {
