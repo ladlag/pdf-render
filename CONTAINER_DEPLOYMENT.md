@@ -323,7 +323,46 @@ spec:
   type: ClusterIP
 ```
 
-## 常见问题排查 / Troubleshooting
+## 故障排除 / Troubleshooting
+
+### 快速诊断工具 / Quick Diagnostic Tool
+
+**在容器内运行诊断脚本 Run diagnostic script in container:**
+
+```bash
+# 复制诊断脚本到容器
+# Copy diagnostic script to container
+docker cp container-font-check.sh <container-name>:/tmp/
+
+# 运行诊断
+# Run diagnostic
+docker exec <container-name> sh /tmp/container-font-check.sh
+
+# 或通过标准输入
+# Or via stdin
+docker exec -i <container-name> sh < container-font-check.sh
+```
+
+**Kubernetes:**
+```bash
+# 复制脚本到Pod
+kubectl cp container-font-check.sh <pod-name>:/tmp/
+
+# 运行诊断
+kubectl exec <pod-name> -- sh /tmp/container-font-check.sh
+```
+
+**诊断脚本会检查 The diagnostic script checks:**
+- ✓ JAR文件位置和字体内容
+- ✓ 临时目录权限
+- ✓ 已提取的字体文件
+- ✓ 环境变量配置
+- ✓ Java系统属性
+- ✓ 字体文件完整性
+
+详细的诊断步骤和解决方案，请参考：
+For detailed diagnostic steps and solutions, see:
+👉 **[CONTAINER_FONT_DIAGNOSTIC.md](CONTAINER_FONT_DIAGNOSTIC.md)**
 
 ### 问题1：字体文件未找到
 
