@@ -29,6 +29,7 @@ public class HtmlReportRenderer {
     private final ChartRenderer chartRenderer;
     private boolean cacheTemplates = true; // Enable caching by default for production
     private String defaultTemplateName = "report"; // Default template name
+    private String templateLocation = "/templates/"; // Template location prefix
     private PdfRenderProperties.FontProperties fontProperties; // Optional font configuration
     
     // Font cache to avoid extracting same font multiple times
@@ -60,6 +61,30 @@ public class HtmlReportRenderer {
      */
     public String getDefaultTemplateName() {
         return defaultTemplateName;
+    }
+
+    /**
+     * Sets the template location prefix. Supports classpath: prefix.
+     *
+     * @param location Template location (e.g., "classpath:/templates/")
+     */
+    public void setTemplateLocation(String location) {
+        if (location == null || location.trim().isEmpty()) {
+            return;
+        }
+        this.templateLocation = normalizeTemplateLocation(location);
+        this.templateEngine.getTemplateResolvers().forEach(resolver -> {
+            if (resolver instanceof ClassLoaderTemplateResolver) {
+                ((ClassLoaderTemplateResolver) resolver).setPrefix(templateLocation);
+            }
+        });
+    }
+
+    /**
+     * Gets the current template location prefix.
+     */
+    public String getTemplateLocation() {
+        return templateLocation;
     }
     
     /**
@@ -678,7 +703,7 @@ public class HtmlReportRenderer {
      */
     private TemplateEngine createTemplateEngine() {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setPrefix("/templates/");
+        templateResolver.setPrefix(templateLocation);
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode("HTML");
         templateResolver.setCharacterEncoding("UTF-8");
@@ -688,5 +713,19 @@ public class HtmlReportRenderer {
         engine.setTemplateResolver(templateResolver);
         
         return engine;
+    }
+
+    private String normalizeTemplateLocation(String location) {
+        String normalized = location.trim();
+        if (normalized.startsWith("classpath:")) {
+            normalized = normalized.substring("classpath:".length());
+        }
+        if (!normalized.startsWith("/")) {
+            normalized = "/" + normalized;
+        }
+        if (!normalized.endsWith("/")) {
+            normalized = normalized + "/";
+        }
+        return normalized;
     }
 }

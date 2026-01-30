@@ -116,6 +116,7 @@ public class SpringBootAutoConfigTest {
         
         // Template settings
         properties.getTemplate().setDefaultName("flexible");
+        properties.getTemplate().setLocation("classpath:/templates/");
         properties.getTemplate().setCacheEnabled(false);
         
         // Font settings (including CJK)
@@ -139,6 +140,7 @@ public class SpringBootAutoConfigTest {
         
         // Check template settings
         assertEquals("flexible", service.getHtmlRenderer().getDefaultTemplateName());
+        assertEquals("/templates/", service.getHtmlRenderer().getTemplateLocation());
         
         // Check font settings
         FontConfig fontConfig = service.getHtmlRenderer().getFontConfig();
