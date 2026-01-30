@@ -631,8 +631,9 @@ public class HtmlReportRenderer {
                 fontStream.close();
             }
         } else {
-            // Direct file path
-            return path;
+            // Direct file path - normalize for cross-platform compatibility
+            // On Windows, file paths may contain backslashes which should be converted
+            return path.replace('\\', '/');
         }
     }
     
