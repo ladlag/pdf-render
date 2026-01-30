@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class HtmlReportRenderer {
     
-    private final TemplateEngine templateEngine;
+    private TemplateEngine templateEngine;
     private final ChartRenderer chartRenderer;
     private boolean cacheTemplates = true; // Enable caching by default for production
     private String defaultTemplateName = "report"; // Default template name
@@ -48,7 +48,8 @@ public class HtmlReportRenderer {
     
     /**
      * Sets the default template name to use when no template is specified.
-     * Template files should be placed in src/main/resources/templates/ with .html extension.
+     * Template files should be placed in the configured template location
+     * (default: src/main/resources/templates/) with .html extension.
      * 
      * @param templateName Template name without the .html extension (e.g., "report", "invoice")
      */
@@ -66,18 +67,16 @@ public class HtmlReportRenderer {
     /**
      * Sets the template location prefix. Supports classpath: prefix.
      *
-     * @param location Template location (e.g., "classpath:/templates/")
+     * @param location Template location (e.g., "classpath:/templates/").
+     *                 If null or empty, resets to default location.
      */
     public void setTemplateLocation(String location) {
         if (location == null || location.trim().isEmpty()) {
-            return;
+            this.templateLocation = "/templates/";
+        } else {
+            this.templateLocation = normalizeTemplateLocation(location);
         }
-        this.templateLocation = normalizeTemplateLocation(location);
-        this.templateEngine.getTemplateResolvers().forEach(resolver -> {
-            if (resolver instanceof ClassLoaderTemplateResolver) {
-                ((ClassLoaderTemplateResolver) resolver).setPrefix(templateLocation);
-            }
-        });
+        this.templateEngine = createTemplateEngine();
     }
 
     /**
@@ -92,12 +91,7 @@ public class HtmlReportRenderer {
      */
     public void setCacheTemplates(boolean cacheTemplates) {
         this.cacheTemplates = cacheTemplates;
-        // Recreate template engine with new cache setting
-        this.templateEngine.getTemplateResolvers().forEach(resolver -> {
-            if (resolver instanceof ClassLoaderTemplateResolver) {
-                ((ClassLoaderTemplateResolver) resolver).setCacheable(cacheTemplates);
-            }
-        });
+        this.templateEngine = createTemplateEngine();
     }
     
     /**
@@ -719,6 +713,9 @@ public class HtmlReportRenderer {
         String normalized = location.trim();
         if (normalized.startsWith("classpath:")) {
             normalized = normalized.substring("classpath:".length());
+        }
+        if (normalized.isEmpty()) {
+            return "/templates/";
         }
         if (!normalized.startsWith("/")) {
             normalized = "/" + normalized;
