@@ -10,12 +10,24 @@ A Java PDF report generation library using clean HTML/CSS architecture with Flyi
 
 **If Chinese characters appear as boxes in your PDF, check this immediately:**
 
-👉 **[Chinese Character Quick Start Guide - CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)** 👈
+👉 **[Complete Solution - CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)** 👈
 
-Or run the diagnostic tool to find the issue:
+**Or see quick guide:**
+- **[3-Step Quick Start - CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
+
+**Run diagnostic tools to find the issue:**
 ```bash
-mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontConfigDiagnostic"
+# Verify font files and get correct configuration
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontFileVerifier"
+
+# Test if font configuration is correct
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
 ```
+
+**Common Issue Diagnostic Docs:**
+- [No Font Registration Logs](NO_FONT_LOGS_TROUBLESHOOTING.md)
+- [Logs Show But Still Boxes](FONT_REGISTERED_BUT_BOXES.md)
+- [Font File Size Issue](FONT_SIZE_ISSUE.md)
 
 **TL;DR: You MUST configure FontConfig to display Chinese!** See quick guide for details.
 

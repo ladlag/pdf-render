@@ -6,12 +6,24 @@
 
 **如果您的PDF中文字符显示为方框，请立即查看：**
 
-👉 **[中文显示快速指南 CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)** 👈
+👉 **[完整解决方案 CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)** 👈
 
-或者运行诊断工具检查问题：
+**或查看快速指南：**
+- **[3步快速开始 CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
+
+**运行诊断工具找出问题：**
 ```bash
-mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontConfigDiagnostic"
+# 验证字体文件和获取正确配置
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontFileVerifier"
+
+# 测试字体配置是否正确
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
 ```
+
+**常见问题诊断文档：**
+- [没有看到字体注册日志](NO_FONT_LOGS_TROUBLESHOOTING.md)
+- [有日志但仍显示方框](FONT_REGISTERED_BUT_BOXES.md)  
+- [字体文件大小问题](FONT_SIZE_ISSUE.md)
 
 **简单总结：必须配置FontConfig才能显示中文！** 详见快速指南。
 
