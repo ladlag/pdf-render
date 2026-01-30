@@ -32,7 +32,7 @@ example-spring-boot-app/
 2. **通过构造函数注入 ReportService** - 使用 Spring 管理的 bean
 3. **所有配置在 application.yml** - 集中管理，易于维护
 
-###❌ 错误的做法 (Wrong Way)
+### ❌ 错误的做法 (Wrong Way)
 
 1. **使用 @PostConstruct 手动配置** - 覆盖 application.yml
 2. **手动创建 `new ReportService()`** - 跳过 Spring 配置
