@@ -3,6 +3,7 @@ package com.mercury.pdf.render.util;
 import java.awt.Font;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Locale;
 
 /**
  * Utility class to extract font family name from font files.
@@ -39,9 +40,19 @@ public class FontNameExtractor {
             // Load font and extract family name
             // Font.TRUETYPE_FONT works for both TrueType (.ttf) and OpenType (.otf) fonts
             Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            String familyName = font.getFamily();
+            String familyName = normalizeFamilyName(font.getFamily(Locale.ROOT));
+            String fontName = normalizeFamilyName(font.getFontName(Locale.ROOT));
+            String resolvedName = familyName;
             
-            return familyName;
+            if (resolvedName.isEmpty() || isGenericFamilyName(resolvedName)) {
+                resolvedName = fontName;
+            }
+            
+            if (resolvedName.isEmpty()) {
+                resolvedName = familyName;
+            }
+            
+            return resolvedName;
             
         } finally {
             if (fontStream != null) {
@@ -120,5 +131,31 @@ public class FontNameExtractor {
         
         String fontPath = args[0];
         printFontInfo(fontPath);
+    }
+
+    private static String normalizeFamilyName(String familyName) {
+        if (familyName == null) {
+            return "";
+        }
+        String normalized = familyName.trim();
+        if (normalized.isEmpty()) {
+            return "";
+        }
+        normalized = normalized.replace('_', ' ').replace('-', ' ');
+        normalized = normalized.replaceAll("\\s+", " ");
+        normalized = normalized.replaceAll("(?i)(?:\\s+(?:regular|bolditalic|italicbold|bold|italic|oblique|medium|light|thin|black|book|semibold))+$", "");
+        return normalized.trim();
+    }
+
+    private static boolean isGenericFamilyName(String familyName) {
+        if (familyName == null || familyName.trim().isEmpty()) {
+            return true;
+        }
+        String normalized = familyName.trim().toLowerCase(Locale.ROOT);
+        return "dialog".equals(normalized)
+            || "dialoginput".equals(normalized)
+            || "sansserif".equals(normalized)
+            || "serif".equals(normalized)
+            || "monospaced".equals(normalized);
     }
 }

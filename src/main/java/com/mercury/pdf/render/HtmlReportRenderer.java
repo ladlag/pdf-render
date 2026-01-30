@@ -25,10 +25,11 @@ import java.util.Map;
  */
 public class HtmlReportRenderer {
     
-    private final TemplateEngine templateEngine;
+    private TemplateEngine templateEngine;
     private final ChartRenderer chartRenderer;
     private boolean cacheTemplates = true; // Enable caching by default for production
     private String defaultTemplateName = "report"; // Default template name
+    private String templateLocation = "/templates/"; // Template location prefix
     private PdfRenderProperties.FontProperties fontProperties; // Optional font configuration
     
     // Font cache to avoid extracting same font multiple times
@@ -47,7 +48,8 @@ public class HtmlReportRenderer {
     
     /**
      * Sets the default template name to use when no template is specified.
-     * Template files should be placed in src/main/resources/templates/ with .html extension.
+     * Template files should be placed in the configured template location
+     * (default: src/main/resources/templates/) with .html extension.
      * 
      * @param templateName Template name without the .html extension (e.g., "report", "invoice")
      */
@@ -61,18 +63,37 @@ public class HtmlReportRenderer {
     public String getDefaultTemplateName() {
         return defaultTemplateName;
     }
+
+    /**
+     * Sets the template location prefix. Supports classpath: prefix.
+     *
+     * @param location Template location (e.g., "classpath:/templates/").
+     *                 If null or empty, resets to default location.
+     */
+    public void setTemplateLocation(String location) {
+        if (location == null || location.trim().isEmpty()) {
+            this.templateLocation = "/templates/";
+        } else {
+            this.templateLocation = normalizeTemplateLocation(location);
+        }
+        this.templateEngine = createTemplateEngine();
+        logInfo("✓ Template location set: " + templateLocation);
+    }
+
+    /**
+     * Gets the current template location prefix.
+     */
+    public String getTemplateLocation() {
+        return templateLocation;
+    }
     
     /**
      * Sets whether to cache templates. Disable for development, enable for production.
      */
     public void setCacheTemplates(boolean cacheTemplates) {
         this.cacheTemplates = cacheTemplates;
-        // Recreate template engine with new cache setting
-        this.templateEngine.getTemplateResolvers().forEach(resolver -> {
-            if (resolver instanceof ClassLoaderTemplateResolver) {
-                ((ClassLoaderTemplateResolver) resolver).setCacheable(cacheTemplates);
-            }
-        });
+        this.templateEngine = createTemplateEngine();
+        logInfo("✓ Template cache enabled: " + cacheTemplates);
     }
     
     /**
@@ -87,11 +108,13 @@ public class HtmlReportRenderer {
      */
     public void setFontProperties(PdfRenderProperties.FontProperties fontProperties) {
         this.fontProperties = fontProperties;
+        logFontProperties("FontProperties", fontProperties);
         
         // Also configure chart renderer with the same font for consistent rendering
         // This is wrapped in try-catch to ensure safe initialization
         try {
             if (fontProperties != null && fontProperties.getRegularPath() != null) {
+                logInfo("✓ Configuring chart font from regular font: " + fontProperties.getRegularPath());
                 chartRenderer.setChartFont(fontProperties.getRegularPath());
             }
         } catch (Exception e) {
@@ -356,7 +379,9 @@ public class HtmlReportRenderer {
                 fontFamily.append("sans-serif");
             }
             
-            data.put("fontFamily", fontFamily.toString());
+            String fontFamilyCss = fontFamily.toString();
+            data.put("fontFamily", fontFamilyCss);
+            logInfo("✓ PDF CSS font-family: " + fontFamilyCss);
             
             // Set CJK font family with actual font name
             StringBuilder cjkFamily = new StringBuilder();
@@ -388,12 +413,15 @@ public class HtmlReportRenderer {
                 cjkFamily.append("sans-serif");
             }
             
-            data.put("cjkFontFamily", cjkFamily.toString());
+            String cjkFamilyCss = cjkFamily.toString();
+            data.put("cjkFontFamily", cjkFamilyCss);
+            logInfo("✓ PDF CSS CJK font-family: " + cjkFamilyCss);
         } else {
             // Provide empty strings as defaults
             data.put("fontFaceDeclaration", "");
             data.put("fontFamily", "sans-serif");
             data.put("cjkFontFamily", "");
+            logWarn("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
         }
         
         return data;
@@ -471,6 +499,8 @@ public class HtmlReportRenderer {
                 System.out.println("✓ Font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
                 System.out.println("  Font family name (for CSS): " + fontFamilyName);
+                validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "regular");
+                logRegisteredFont("regular", fontPath, fontFamilyName);
             }
             
             // Register bold font with Identity-H encoding
@@ -482,6 +512,8 @@ public class HtmlReportRenderer {
                 fontsRegistered++;
                 System.out.println("✓ Bold font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Font family name: " + fontFamilyName);
+                validateFontConfiguration(fontPath, fontProperties.getDefaultFamily(), "bold");
+                logRegisteredFont("bold", fontPath, fontFamilyName);
             }
             
             // Register CJK font with Identity-H encoding (essential for CJK characters)
@@ -494,6 +526,8 @@ public class HtmlReportRenderer {
                 fontsRegistered++;
                 System.out.println("✓ CJK font registered with Flying Saucer: " + fontPath);
                 System.out.println("  Font family name: " + fontFamilyName);
+                validateFontConfiguration(fontPath, fontProperties.getCjkFamily(), "cjk");
+                logRegisteredFont("cjk", fontPath, fontFamilyName);
             }
             
             if (fontsRegistered > 0) {
@@ -620,9 +654,11 @@ public class HtmlReportRenderer {
                 try {
                     org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
                     logger.info("Font extracted for PDF rendering: {}", fileName);
+                    logger.info("Resolved font temp path: {}", resolvedPath);
                 } catch (NoClassDefFoundError e) {
                     // SLF4J not available, use System.out
                     System.out.println("✓ Font extracted for PDF rendering: " + fileName);
+                    System.out.println("  Resolved font temp path: " + resolvedPath);
                 }
                 
                 return resolvedPath;
@@ -634,6 +670,43 @@ public class HtmlReportRenderer {
             // Direct file path - normalize for cross-platform compatibility
             // On Windows, file paths may contain backslashes which should be converted
             return path.replace('\\', '/');
+        }
+    }
+
+    private void logFontProperties(String source, PdfRenderProperties.FontProperties props) {
+        if (props == null) {
+            logWarn("⚠️ Font configuration source " + source + " was null");
+            return;
+        }
+        logInfo("✓ Font configuration (" + source + "):");
+        logInfo("  Regular path: " + props.getRegularPath());
+        logInfo("  Bold path: " + props.getBoldPath());
+        logInfo("  CJK path: " + props.getCjkPath());
+        logInfo("  Default family: " + props.getDefaultFamily());
+        logInfo("  CJK family: " + props.getCjkFamily());
+    }
+
+    private void logRegisteredFont(String fontType, String fontPath, String fontFamilyName) {
+        logInfo("✓ Font configuration (" + fontType + "):");
+        logInfo("  Source path: " + fontPath);
+        logInfo("  Resolved family: " + fontFamilyName);
+    }
+
+    private void logInfo(String message) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+            logger.info(message);
+        } catch (NoClassDefFoundError e) {
+            System.out.println(message);
+        }
+    }
+
+    private void logWarn(String message) {
+        try {
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
+            logger.warn(message);
+        } catch (NoClassDefFoundError e) {
+            System.err.println(message);
         }
     }
     
@@ -678,7 +751,7 @@ public class HtmlReportRenderer {
      */
     private TemplateEngine createTemplateEngine() {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setPrefix("/templates/");
+        templateResolver.setPrefix(templateLocation);
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode("HTML");
         templateResolver.setCharacterEncoding("UTF-8");
@@ -688,5 +761,22 @@ public class HtmlReportRenderer {
         engine.setTemplateResolver(templateResolver);
         
         return engine;
+    }
+
+    private String normalizeTemplateLocation(String location) {
+        String normalized = location.trim();
+        if (normalized.startsWith("classpath:")) {
+            normalized = normalized.substring("classpath:".length());
+        }
+        if (normalized.isEmpty()) {
+            return "/templates/";
+        }
+        if (!normalized.startsWith("/")) {
+            normalized = "/" + normalized;
+        }
+        if (!normalized.endsWith("/")) {
+            normalized = normalized + "/";
+        }
+        return normalized;
     }
 }

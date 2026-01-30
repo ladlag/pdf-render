@@ -116,6 +116,7 @@ public class SpringBootAutoConfigTest {
         
         // Template settings
         properties.getTemplate().setDefaultName("flexible");
+        properties.getTemplate().setLocation("classpath:/templates");
         properties.getTemplate().setCacheEnabled(false);
         
         // Font settings (including CJK)
@@ -139,6 +140,7 @@ public class SpringBootAutoConfigTest {
         
         // Check template settings
         assertEquals("flexible", service.getHtmlRenderer().getDefaultTemplateName());
+        assertEquals("/templates/", service.getHtmlRenderer().getTemplateLocation());
         
         // Check font settings
         FontConfig fontConfig = service.getHtmlRenderer().getFontConfig();
@@ -163,6 +165,24 @@ public class SpringBootAutoConfigTest {
         System.out.println("  - Template: " + service.getHtmlRenderer().getDefaultTemplateName());
         System.out.println("  - Fonts configured: Regular, Bold, CJK");
         System.out.println("  - Debug enabled with timestamp");
+    }
+
+    @Test
+    public void testTemplateLocationNormalization() {
+        ReportService service = new ReportService();
+
+        HtmlReportRenderer renderer = service.getHtmlRenderer();
+        renderer.setTemplateLocation("templates");
+        assertEquals("/templates/", renderer.getTemplateLocation());
+
+        renderer.setTemplateLocation("/custom/path");
+        assertEquals("/custom/path/", renderer.getTemplateLocation());
+
+        renderer.setTemplateLocation("classpath:/custom/path/");
+        assertEquals("/custom/path/", renderer.getTemplateLocation());
+
+        renderer.setTemplateLocation("   ");
+        assertEquals("/templates/", renderer.getTemplateLocation());
     }
 
     @Test

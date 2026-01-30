@@ -61,6 +61,7 @@ public class PdfRenderAutoConfiguration {
             // Configure template settings
             htmlRenderer.setDefaultTemplateName(properties.getTemplate().getDefaultName());
             htmlRenderer.setCacheTemplates(properties.getTemplate().isCacheEnabled());
+            htmlRenderer.setTemplateLocation(properties.getTemplate().getLocation());
             
             // Configure font settings for Chinese character support
             configureFonts(htmlRenderer);
