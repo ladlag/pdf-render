@@ -2,6 +2,38 @@
 
 一个基于Java的PDF报告生成库，使用HTML/CSS模板方式，结合Flying Saucer和OpenPDF实现可靠、稳定的表格分页。
 
+## 🔴 PDF中文显示为方框（□）？
+
+**如果您的PDF中文字符显示为方框，请立即查看：**
+
+👉 **[完整解决方案 CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)** 👈
+
+**或查看快速指南：**
+- **[3步快速开始 CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
+
+**特定环境指南：**
+- **[Windows兼容性 WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+自动处理路径兼容性
+- **[容器云部署 CONTAINER_DEPLOYMENT.md](CONTAINER_DEPLOYMENT.md)** - Docker/Kubernetes部署指南 🐳
+- **[OpenJDK 8 配置 JDK8_CUSTOM_TEMPDIR.md](JDK8_CUSTOM_TEMPDIR.md)** - JDK 8 和自定义临时目录 ☕
+
+**运行诊断工具找出问题：**
+```bash
+# 验证字体文件和获取正确配置
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontFileVerifier"
+
+# 测试字体配置是否正确
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
+```
+
+**常见问题诊断文档：**
+- [没有看到字体注册日志](NO_FONT_LOGS_TROUBLESHOOTING.md)
+- [有日志但仍显示方框](FONT_REGISTERED_BUT_BOXES.md)  
+- [字体文件大小问题](FONT_SIZE_ISSUE.md)
+
+**简单总结：必须配置FontConfig才能显示中文！** 详见快速指南。
+
+---
+
 ## ⚠️ 重要：Spring Boot 用户注意
 
 **如果您在使用 Spring Boot，请勿使用 `@PostConstruct` 手动配置！**
@@ -33,6 +65,19 @@ public class PdfService {
 ```
 
 **📖 完整文档请查看 [Spring Boot 使用指南](SPRING_BOOT_USAGE.md)**
+
+---
+
+## 🎨 图表背景灰色？图例无法自定义？
+
+**v1.0.1+ 已修复图表背景和图例自定义问题：**
+
+- ✅ **默认白色背景** - 图表现在与PDF白色背景完美匹配
+- ✅ **图例位置自定义** - 支持上/下/左/右位置
+- ✅ **透明背景支持** - 满足特殊设计需求
+- ✅ **自定义绘图区背景** - 精细化控制
+
+**详见：**[图表自定义指南 - CHART_CUSTOMIZATION_GUIDE.md](CHART_CUSTOMIZATION_GUIDE.md)
 
 ---
 

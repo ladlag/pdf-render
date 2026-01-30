@@ -1,0 +1,93 @@
+# ============================================
+# Multi-stage Dockerfile for PDF Rendering Service (OpenJDK 8)
+# ============================================
+# 
+# This Dockerfile builds a Spring Boot application with Chinese font support
+# Optimized for OpenJDK 8 environments
+# Fonts are packaged in the JAR file for reliable container deployment
+#
+# Usage:
+#   docker build -f Dockerfile.jdk8 -t pdf-service:jdk8 .
+#   docker run -p 8080:8080 pdf-service:jdk8
+#
+
+# ============================================
+# Stage 1: Build
+# ============================================
+FROM maven:3.6-jdk-8-slim AS builder
+
+# Set working directory
+WORKDIR /build
+
+# Copy pom.xml first for better layer caching
+COPY pom.xml .
+
+# Download dependencies (cached if pom.xml hasn't changed)
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build application (fonts in src/main/resources/fonts will be packaged in JAR)
+RUN mvn clean package -DskipTests
+
+# Verify fonts are in the JAR
+RUN jar tf target/*.jar | grep fonts || echo "Warning: No fonts found in JAR"
+
+# ============================================
+# Stage 2: Runtime
+# ============================================
+FROM openjdk:8-jre-slim
+
+# Maintainer information
+LABEL maintainer="your-email@example.com"
+LABEL description="PDF Rendering Service with Chinese Font Support (OpenJDK 8)"
+LABEL java.version="8"
+
+# Set environment variables for UTF-8 support
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=Asia/Shanghai
+
+# JVM options for OpenJDK 8
+# - Xmx512m: Maximum heap size (adjust based on your needs)
+# - java.io.tmpdir: Temporary directory for font extraction
+# - Default to /app/data if available, fallback to /tmp
+ENV JAVA_OPTS="-Xmx512m -Xms256m -Djava.io.tmpdir=/app/data"
+
+# Create non-root user for security
+RUN useradd -m -u 1000 -s /bin/bash appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy JAR from builder stage
+COPY --from=builder /build/target/*.jar app.jar
+
+# Create and set permissions for directories
+# Primary: /app/data for font extraction (user specified)
+# Fallback: /tmp for compatibility
+RUN mkdir -p /app/data /tmp && \
+    chmod 777 /app/data /tmp && \
+    chown -R appuser:appuser /app/data /tmp
+
+# Create directory for debug HTML output (optional)
+RUN mkdir -p /app/debug-html && \
+    chown appuser:appuser /app/debug-html
+
+# Switch to non-root user
+USER appuser
+
+# Health check (Spring Boot Actuator)
+# Note: curl might not be available in slim images, install if needed
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD test -f /app/app.jar || exit 1
+
+# Expose port
+EXPOSE 8080
+
+# Run application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+
+# Alternative with explicit temp directory:
+# ENTRYPOINT ["sh", "-c", "java -Xmx512m -Xms256m -Djava.io.tmpdir=/app/data -jar app.jar"]

@@ -6,6 +6,51 @@ A Java PDF report generation library using clean HTML/CSS architecture with Flyi
 
 ---
 
+## 🔴 Chinese Characters Display as Boxes (□)?
+
+**If Chinese characters appear as boxes in your PDF, check this immediately:**
+
+👉 **[Complete Solution - CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)** 👈
+
+**Or see quick guide:**
+- **[3-Step Quick Start - CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
+
+**Environment-Specific Guides:**
+- **[Windows Compatibility - WINDOWS_COMPATIBILITY.md](WINDOWS_COMPATIBILITY.md)** - v1.0.1+ auto-handles path compatibility
+- **[Container Deployment - CONTAINER_DEPLOYMENT.md](CONTAINER_DEPLOYMENT.md)** - Docker/Kubernetes deployment guide 🐳
+- **[OpenJDK 8 Configuration - JDK8_CUSTOM_TEMPDIR.md](JDK8_CUSTOM_TEMPDIR.md)** - JDK 8 and custom temp directory ☕
+
+**Run diagnostic tools to find the issue:**
+```bash
+# Verify font files and get correct configuration
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontFileVerifier"
+
+# Test if font configuration is correct
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
+```
+
+**Common Issue Diagnostic Docs:**
+- [No Font Registration Logs](NO_FONT_LOGS_TROUBLESHOOTING.md)
+- [Logs Show But Still Boxes](FONT_REGISTERED_BUT_BOXES.md)
+- [Font File Size Issue](FONT_SIZE_ISSUE.md)
+
+**TL;DR: You MUST configure FontConfig to display Chinese!** See quick guide for details.
+
+---
+
+## 🎨 Chart Background Gray? Legend Issues?
+
+**v1.0.1+ Fixed chart background and legend customization:**
+
+- ✅ **Default white background** - Charts now match PDF white background perfectly
+- ✅ **Legend positioning** - Place legend top/bottom/left/right
+- ✅ **Transparent background support** - For special design needs
+- ✅ **Custom plot area background** - Fine-grained control
+
+**See:** [Chart Customization Guide - CHART_CUSTOMIZATION_GUIDE.md](CHART_CUSTOMIZATION_GUIDE.md)
+
+---
+
 ## Overview
 
 This library generates professional multi-section PDF reports with:
