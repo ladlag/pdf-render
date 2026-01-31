@@ -61,5 +61,13 @@ public class FontConsistencyTest {
             "Already single-quoted names should remain unchanged");
         assertEquals("HarmonyOS-2", renderer.formatFontFamilyName("HarmonyOS-2"),
             "Names with numbers should remain unchanged");
+        assertEquals("\"HarmonyOS Sans\"", renderer.formatFontFamilyName("  HarmonyOS Sans  "),
+            "Leading/trailing spaces should be trimmed before quoting");
+        assertEquals("\"HarmonyOS   Sans\"", renderer.formatFontFamilyName("HarmonyOS   Sans"),
+            "Multiple internal spaces should be preserved when quoted");
+        assertEquals("\"\"HarmonyOS Sans'\"", renderer.formatFontFamilyName("\"HarmonyOS Sans'"),
+            "Mismatched quotes should be treated as part of the name and quoted");
+        assertEquals("HarmonyOS_Sans", renderer.formatFontFamilyName("HarmonyOS_Sans"),
+            "Underscore names should remain unchanged");
     }
 }
