@@ -156,7 +156,8 @@ public class HtmlReportRenderer {
                 }
             } catch (Exception e) {
                 logWarn("Warning: Could not extract font names during configuration: " + e.getMessage());
-                // Continue - fonts will still be registered, but auto-correction may not work
+                logWarn("Please verify the font file path is correct and the file is a valid TrueType/OpenType font.");
+                // Continue - fonts will still be registered, but without auto-correction
             }
         }
         
