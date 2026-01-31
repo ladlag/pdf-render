@@ -491,43 +491,74 @@ public class HtmlReportRenderer {
     /**
      * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
      * 
-     * Uses Identity-H encoding for proper Unicode/CJK character support.
-     * Fonts are explicitly embedded in the PDF for cross-platform compatibility.
+     * <p><b>Implementation follows official OpenPDF/Flying Saucer community guidelines for Chinese font support:</b>
      * 
-     * Uses the font's internal family name as the alias to ensure reliable font matching
-     * regardless of system fonts. This is critical for JAR deployments.
+     * <p><b>1. Font Registration Method (5-parameter addFont):</b>
+     * <pre>
+     * renderer.getFontResolver().addFont(
+     *     fontPath,              // Path to font file
+     *     fontFamilyName,        // Font family name override for CSS matching
+     *     BaseFont.IDENTITY_H,   // REQUIRED for Chinese/Japanese/Korean characters
+     *     BaseFont.EMBEDDED,     // true - embeds font in PDF
+     *     null                   // pathToPFB - only for Type 1 fonts
+     * );
+     * </pre>
      * 
-     * Also validates that CSS font-family matches the registered font's internal name.
+     * <p><b>2. BaseFont.IDENTITY_H Encoding:</b> This is the REQUIRED encoding for CJK (Chinese/Japanese/Korean) 
+     * character support. Without this encoding, Chinese characters will display as boxes (□).
+     * This is documented in the official Flying Saucer community and widely used in production systems.
      * 
-     * Logging format when SLF4J is configured (e.g., in Spring Boot):
+     * <p><b>3. Font Embedding (embedded=true):</b> Embeds the font file directly in the PDF for cross-platform 
+     * compatibility. This ensures the PDF displays correctly regardless of whether the font is installed 
+     * on the viewer's system.
+     * 
+     * <p><b>4. Font Family Name Override:</b> Uses the font's internal family name (extracted from the font file)
+     * as the override. This ensures CSS font-family declarations match the registered font reliably,
+     * which is critical for JAR deployments where system fonts are not available.
+     * 
+     * <p><b>Official References:</b>
+     * <ul>
+     * <li>Flying Saucer User's Guide: https://flyingsaucerproject.github.io/flyingsaucer/r8/guide/users-guide-R8.html
+     * <li>ITextFontResolver API: https://javadoc.io/doc/org.xhtmlrenderer/flying-saucer-pdf-openpdf/latest
+     * <li>OpenPDF (backend): https://github.com/LibrePDF/OpenPDF
+     * <li>Community Best Practices (Chinese):
+     *   <ul>
+     *   <li>https://blog.csdn.net/zhong_jianyu/article/details/96147949
+     *   <li>https://blog.51cto.com/u_16175450/6642806
+     *   <li>https://stackoverflow.com/questions/7525403/how-to-embed-font-in-pdf-created-from-html-with-itext-and-flying-saucer
+     *   </ul>
+     * </ul>
+     * 
+     * <p><b>Expected log output when fonts are successfully registered:</b>
+     * <pre>
      *   INFO c.mercury.pdf.render.HtmlReportRenderer : Font extracted for PDF rendering: HarmonyOS_Sans_SC_Regular.ttf
      *   INFO c.mercury.pdf.render.HtmlReportRenderer : Resolved font temp path: /tmp/pdf-render-font-xxx.ttf
      *   INFO c.mercury.pdf.render.HtmlReportRenderer : ✓ Font registered with Flying Saucer: /tmp/pdf-render-font-xxx.ttf
      *   INFO c.mercury.pdf.render.HtmlReportRenderer :   Encoding: Identity-H | Embedded: true
      *   INFO c.mercury.pdf.render.HtmlReportRenderer :   Font family name (for CSS): HarmonyOS Sans SC
-     *   INFO c.mercury.pdf.render.HtmlReportRenderer : Font extracted for PDF rendering: HarmonyOS_Sans_SC_Bold.ttf
-     *   INFO c.mercury.pdf.render.HtmlReportRenderer : Resolved font temp path: /tmp/pdf-render-font-yyy.ttf
-     *   INFO c.mercury.pdf.render.HtmlReportRenderer : ✓ Bold font registered with Flying Saucer: /tmp/pdf-render-font-yyy.ttf
-     *   INFO c.mercury.pdf.render.HtmlReportRenderer :   Font family name: HarmonyOS Sans SC
      *   INFO c.mercury.pdf.render.HtmlReportRenderer : ✓ Total fonts registered for PDF: 2
+     * </pre>
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
             int fontsRegistered = 0;
             
             // Register regular font with Identity-H encoding for Unicode support
-            // Use font's internal name as alias for reliable CSS matching
+            // Following official OpenPDF/Flying Saucer pattern for CJK fonts
             if (fontProperties.getRegularPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getRegularPath());
                 
                 // Extract the font's actual internal family name
                 String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
                 
-                // Use BaseFont constants for explicit encoding and embedding
-                // IDENTITY_H: Unicode encoding for CJK character support
-                // EMBEDDED: Embeds font in PDF for cross-platform compatibility
-                // ALIAS: Use font's internal name for reliable CSS matching
-                // Signature: addFont(String path, String fontFamilyNameOverride, String encoding, boolean embedded, String pathToPFB)
+                // Official 5-parameter addFont() method signature:
+                // addFont(String path, String fontFamilyNameOverride, String encoding, boolean embedded, String pathToPFB)
+                // 
+                // Key parameters for Chinese font support (per official guidelines):
+                // - encoding: BaseFont.IDENTITY_H is REQUIRED for CJK characters
+                // - embedded: BaseFont.EMBEDDED (true) for cross-platform compatibility  
+                // - fontFamilyNameOverride: Use font's internal name for reliable CSS matching
+                // - pathToPFB: null for TrueType/OpenType fonts (only needed for Type 1 fonts)
                 renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, null);
                 fontsRegistered++;
                 logInfo("✓ Font registered with Flying Saucer: " + fontPath);
@@ -538,10 +569,11 @@ public class HtmlReportRenderer {
             }
             
             // Register bold font with Identity-H encoding
-            // Use font's internal name as alias
+            // Same official pattern as regular font - required for CJK support
             if (fontProperties.getBoldPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getBoldPath());
                 String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
+                // Using official 5-parameter addFont() with IDENTITY_H encoding and embedded=true
                 renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, null);
                 fontsRegistered++;
                 logInfo("✓ Bold font registered with Flying Saucer: " + fontPath);
@@ -550,12 +582,14 @@ public class HtmlReportRenderer {
                 logRegisteredFont("bold", fontPath, fontFamilyName);
             }
             
-            // Register CJK font with Identity-H encoding (essential for CJK characters)
-            // Use font's internal name as alias
+            // Register CJK font with Identity-H encoding (ESSENTIAL for CJK characters per official docs)
+            // This is the most critical font registration for Chinese character display
             if (fontProperties.getCjkPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getCjkPath());
                 String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
                 
+                // BaseFont.IDENTITY_H is THE standard encoding for CJK in PDFs (per OpenPDF/Flying Saucer docs)
+                // Without this specific encoding, Chinese characters will appear as boxes (□)
                 renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, null);
                 fontsRegistered++;
                 logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
