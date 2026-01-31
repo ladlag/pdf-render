@@ -10,9 +10,10 @@ A Java PDF report generation library using clean HTML/CSS architecture with Flyi
 
 **If Chinese characters appear as boxes in your PDF, check this immediately:**
 
-👉 **[Complete Solution - CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)** 👈
+👉 **[Official Font Registration Guide - CHINESE_FONT_OFFICIAL_GUIDE.md](CHINESE_FONT_OFFICIAL_GUIDE.md)** 👈 **⭐ NEW! Follows OpenPDF/Flying Saucer Official Documentation**
 
-**Or see quick guide:**
+**Additional Solution Docs:**
+- **[Complete Solution - CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)**
 - **[3-Step Quick Start - CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
 
 **Environment-Specific Guides:**

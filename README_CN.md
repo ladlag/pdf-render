@@ -6,9 +6,10 @@
 
 **如果您的PDF中文字符显示为方框，请立即查看：**
 
-👉 **[完整解决方案 CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)** 👈
+👉 **[官方字体注册指南 CHINESE_FONT_OFFICIAL_GUIDE.md](CHINESE_FONT_OFFICIAL_GUIDE.md)** 👈 **⭐ 新增！遵循 OpenPDF/Flying Saucer 官方文档**
 
-**或查看快速指南：**
+**其他解决方案文档：**
+- **[完整解决方案 CHINESE_DISPLAY_COMPLETE_SOLUTION.md](CHINESE_DISPLAY_COMPLETE_SOLUTION.md)**
 - **[3步快速开始 CHINESE_QUICKSTART.md](CHINESE_QUICKSTART.md)**
 
 **特定环境指南：**
