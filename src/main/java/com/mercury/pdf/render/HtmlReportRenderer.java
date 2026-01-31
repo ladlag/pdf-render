@@ -435,9 +435,6 @@ public class HtmlReportRenderer {
         if (trimmed.isEmpty()) {
             return trimmed;
         }
-        if (trimmed.length() == 1 && (trimmed.charAt(0) == '"' || trimmed.charAt(0) == '\'')) {
-            return "\"" + trimmed + "\"";
-        }
         char firstChar = trimmed.charAt(0);
         char lastChar = trimmed.charAt(trimmed.length() - 1);
         if (trimmed.length() >= 2

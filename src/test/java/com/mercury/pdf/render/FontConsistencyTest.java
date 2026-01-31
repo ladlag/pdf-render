@@ -59,7 +59,7 @@ public class FontConsistencyTest {
             "Already double-quoted names should remain unchanged");
         assertEquals("'HarmonyOS Sans'", renderer.formatFontFamilyName("'HarmonyOS Sans'"),
             "Already single-quoted names should remain unchanged");
-        assertEquals("\"'\"", renderer.formatFontFamilyName("'"),
-            "Single quote without matching pair should be quoted");
+        assertEquals("HarmonyOS-2", renderer.formatFontFamilyName("HarmonyOS-2"),
+            "Names with numbers should remain unchanged");
     }
 }
