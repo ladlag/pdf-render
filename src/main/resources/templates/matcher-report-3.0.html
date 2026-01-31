@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <title th:text="${title}">需求预审报告</title>
 
-  <style>
+  <style th:inline="text">
     /* =========================
        Flying Saucer (CSS2.1) friendly styles
        ========================= */
@@ -35,8 +35,7 @@
     }
 
     body {
-      font-family: "HarmonyOS Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC",
-                   "DejaVu Sans", Arial, sans-serif;
+      font-family: [(${fontFamily})];
       font-size: 11pt;
       line-height: 1.55;
       color: #222;
