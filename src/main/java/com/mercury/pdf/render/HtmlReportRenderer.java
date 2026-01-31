@@ -352,7 +352,7 @@ public class HtmlReportRenderer {
                 if (fontProperties.getRegularPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getRegularPath());
                     String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                    fontFamily.append(familyName);
+                    fontFamily.append(formatFontFamilyName(familyName));
                 }
                 
                 // Add CJK font's internal family name if configured
@@ -362,7 +362,7 @@ public class HtmlReportRenderer {
                     if (fontFamily.length() > 0) {
                         fontFamily.append(", ");
                     }
-                    fontFamily.append(familyName);
+                    fontFamily.append(formatFontFamilyName(familyName));
                 }
             } catch (Exception e) {
                 System.err.println("Warning: Failed to extract font family names: " + e.getMessage());
@@ -389,7 +389,7 @@ public class HtmlReportRenderer {
                 if (fontProperties.getCjkPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getCjkPath());
                     String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                    cjkFamily.append(familyName);
+                    cjkFamily.append(formatFontFamilyName(familyName));
                 }
                 if (fontProperties.getRegularPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getRegularPath());
@@ -397,7 +397,7 @@ public class HtmlReportRenderer {
                     if (cjkFamily.length() > 0) {
                         cjkFamily.append(", ");
                     }
-                    cjkFamily.append(familyName);
+                    cjkFamily.append(formatFontFamilyName(familyName));
                 }
             } catch (Exception e) {
                 System.err.println("Warning: Failed to extract CJK font family names: " + e.getMessage());
@@ -425,6 +425,24 @@ public class HtmlReportRenderer {
         }
         
         return data;
+    }
+
+    private String formatFontFamilyName(String familyName) {
+        if (familyName == null) {
+            return "";
+        }
+        String trimmed = familyName.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+        if ((trimmed.startsWith("\"") && trimmed.endsWith("\""))
+            || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+            return trimmed;
+        }
+        if (trimmed.matches(".*[\\s,].*")) {
+            return "\"" + trimmed + "\"";
+        }
+        return trimmed;
     }
     
     /**
