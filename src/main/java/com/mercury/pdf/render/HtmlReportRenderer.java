@@ -16,8 +16,10 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service for rendering PDF reports using HTML/CSS templates and Flying Saucer.
@@ -345,31 +347,45 @@ public class HtmlReportRenderer {
             
             // Use actual font family names for reliable CSS matching in JAR deployments
             // Extract the font's internal family name to match what's registered
-            StringBuilder fontFamily = new StringBuilder();
+            // Use LinkedHashSet to preserve order and avoid duplicates
+            Set<String> fontFamilyNames = new LinkedHashSet<>();
             
             try {
                 // Primary font: use font's internal family name
                 if (fontProperties.getRegularPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getRegularPath());
                     String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                    fontFamily.append(familyName);
+                    fontFamilyNames.add(familyName);
                 }
                 
                 // Add CJK font's internal family name if configured
                 if (fontProperties.getCjkPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getCjkPath());
                     String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                    if (fontFamily.length() > 0) {
-                        fontFamily.append(", ");
-                    }
-                    fontFamily.append(familyName);
+                    fontFamilyNames.add(familyName);
                 }
             } catch (Exception e) {
                 System.err.println("Warning: Failed to extract font family names: " + e.getMessage());
                 // Fall back to configured family names if extraction fails
                 if (fontProperties.getDefaultFamily() != null && !fontProperties.getDefaultFamily().isEmpty()) {
-                    fontFamily.append(fontProperties.getDefaultFamily());
+                    // Parse configured family string and add each font name
+                    String[] configuredFonts = fontProperties.getDefaultFamily().split(",");
+                    for (String font : configuredFonts) {
+                        String trimmed = font.trim();
+                        if (!trimmed.isEmpty() && !isGenericFontFamily(trimmed)) {
+                            fontFamilyNames.add(trimmed);
+                        }
+                    }
                 }
+            }
+            
+            // Build CSS font-family string from the set (automatically deduplicated)
+            StringBuilder fontFamily = new StringBuilder();
+            for (String familyName : fontFamilyNames) {
+                if (fontFamily.length() > 0) {
+                    fontFamily.append(", ");
+                }
+                fontFamily.append(familyName);
             }
             
             // Fallback to sans-serif (standard CSS fallback)
@@ -384,29 +400,44 @@ public class HtmlReportRenderer {
             logInfo("✓ PDF CSS font-family: " + fontFamilyCss);
             
             // Set CJK font family with actual font name
-            StringBuilder cjkFamily = new StringBuilder();
+            // Use LinkedHashSet to preserve order and avoid duplicates
+            Set<String> cjkFamilyNames = new LinkedHashSet<>();
             try {
                 if (fontProperties.getCjkPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getCjkPath());
                     String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                    cjkFamily.append(familyName);
+                    cjkFamilyNames.add(familyName);
                 }
                 if (fontProperties.getRegularPath() != null) {
                     String fontPath = resolveFontPath(fontProperties.getRegularPath());
                     String familyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                    if (cjkFamily.length() > 0) {
-                        cjkFamily.append(", ");
-                    }
-                    cjkFamily.append(familyName);
+                    cjkFamilyNames.add(familyName);
                 }
             } catch (Exception e) {
                 System.err.println("Warning: Failed to extract CJK font family names: " + e.getMessage());
                 // Fall back to configured family names if extraction fails
                 if (fontProperties.getCjkFamily() != null && !fontProperties.getCjkFamily().isEmpty()) {
-                    cjkFamily.append(fontProperties.getCjkFamily());
+                    // Parse configured family string and add each font name
+                    String[] configuredFonts = fontProperties.getCjkFamily().split(",");
+                    for (String font : configuredFonts) {
+                        String trimmed = font.trim();
+                        if (!trimmed.isEmpty() && !isGenericFontFamily(trimmed)) {
+                            cjkFamilyNames.add(trimmed);
+                        }
+                    }
                 }
             }
             
+            // Build CSS font-family string from the set (automatically deduplicated)
+            StringBuilder cjkFamily = new StringBuilder();
+            for (String familyName : cjkFamilyNames) {
+                if (cjkFamily.length() > 0) {
+                    cjkFamily.append(", ");
+                }
+                cjkFamily.append(familyName);
+            }
+            
+            // Add fallback
             if (cjkFamily.length() > 0) {
                 cjkFamily.append(", sans-serif");
             } else {
@@ -756,6 +787,25 @@ public class HtmlReportRenderer {
             System.err.println("Warning: Could not save debug HTML: " + e.getMessage());
             // Don't fail PDF generation if debug save fails
         }
+    }
+    
+    /**
+     * Checks if a font name is a generic CSS font family.
+     * Generic families should not be deduplicated as they serve as fallbacks.
+     * 
+     * @param fontName The font name to check
+     * @return true if the font is a generic family (sans-serif, serif, monospace, etc.)
+     */
+    private boolean isGenericFontFamily(String fontName) {
+        if (fontName == null || fontName.isEmpty()) {
+            return false;
+        }
+        String normalized = fontName.trim().toLowerCase();
+        return normalized.equals("sans-serif") || 
+               normalized.equals("serif") || 
+               normalized.equals("monospace") ||
+               normalized.equals("cursive") ||
+               normalized.equals("fantasy");
     }
     
     /**
