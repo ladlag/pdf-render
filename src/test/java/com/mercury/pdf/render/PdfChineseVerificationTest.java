@@ -41,7 +41,7 @@ public class PdfChineseVerificationTest {
         // 配置中文字体
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
         
         service.getHtmlRenderer().setFontConfig(fontConfig);
         

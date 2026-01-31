@@ -51,7 +51,7 @@ public class FontEmbeddingDiagnostic {
         
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontProps.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontProps.setDefaultFamily("CJK_MAIN");
         
         System.out.println("配置详情 / Configuration:");
         System.out.println("  Regular Path: " + fontProps.getRegularPath());
@@ -74,7 +74,7 @@ public class FontEmbeddingDiagnostic {
                 .addParagraph("测试字符：汉字、中文、PDF、渲染、Flying Saucer"))
             .addSection(new Section("常见问题排查 Troubleshooting")
                 .addParagraph("问题1：如果看到方框（□），检查控制台是否有字体验证警告")
-                .addParagraph("问题2：确认 CSS font-family 与字体内部名称匹配")
+                .addParagraph("问题2：确认 CSS font-family 与字体别名一致")
                 .addParagraph("问题3：使用 PDF 工具查看文档属性中的嵌入字体列表"))
             .build();
         
@@ -136,8 +136,7 @@ public class FontEmbeddingDiagnostic {
         System.out.println();
         System.out.println("4️⃣  应该看到嵌入的字体");
         System.out.println("   Should see embedded fonts:");
-        System.out.println("   ✓ 'HarmonyOS Sans SC' (Embedded Subset)");
-        System.out.println("   或 'Noto Sans CJK SC' (Embedded Subset)");
+        System.out.println("   ✓ 'CJK_MAIN' (Embedded Subset)");
         System.out.println();
         System.out.println("5️⃣  如果看到的是系统字体（非嵌入）");
         System.out.println("   If you see system fonts (not embedded):");
@@ -159,8 +158,8 @@ public class FontEmbeddingDiagnostic {
         System.out.println("     Check if font file is in JAR");
         System.out.println("  2. 检查 classpath 路径是否正确（必须以 / 开头）");
         System.out.println("     Check classpath path is correct (must start with /)");
-        System.out.println("  3. 检查 CSS font-family 是否与字体内部名称匹配");
-        System.out.println("     Check CSS font-family matches font's internal name");
+        System.out.println("  3. 检查 CSS font-family 是否与字体别名一致");
+        System.out.println("     Check CSS font-family matches the alias");
         System.out.println();
     }
 }

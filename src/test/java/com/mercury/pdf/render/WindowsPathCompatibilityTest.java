@@ -30,7 +30,7 @@ public class WindowsPathCompatibilityTest {
         // Setup properties
         PdfRenderProperties properties = new PdfRenderProperties();
         properties.getFonts().setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setDefaultFamily("HarmonyOS Sans SC, sans-serif");
+        properties.getFonts().setDefaultFamily("CJK_MAIN");
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
@@ -70,7 +70,7 @@ public class WindowsPathCompatibilityTest {
         
         PdfRenderProperties properties = new PdfRenderProperties();
         properties.getFonts().setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setDefaultFamily("HarmonyOS Sans SC, sans-serif");
+        properties.getFonts().setDefaultFamily("CJK_MAIN");
         
         // Enable debug with a Windows-style path (though on Linux it will be converted)
         String debugDir = TEST_OUTPUT_DIR + File.separator + "windows-debug";
@@ -115,7 +115,7 @@ public class WindowsPathCompatibilityTest {
         PdfRenderProperties properties = new PdfRenderProperties();
         properties.getFonts().setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         properties.getFonts().setBoldPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setDefaultFamily("HarmonyOS Sans SC, sans-serif");
+        properties.getFonts().setDefaultFamily("CJK_MAIN");
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);

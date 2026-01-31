@@ -31,9 +31,9 @@ public class SpringBootAutoConfigTest {
         
         // Configure fonts (simulating application.yml settings)
         properties.getFonts().setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        properties.getFonts().setDefaultFamily("CJK_MAIN");
         properties.getFonts().setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setCjkFamily("HarmonyOS Sans SC, SimSun, sans-serif");
+        properties.getFonts().setCjkFamily("CJK_MAIN");
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
@@ -49,8 +49,8 @@ public class SpringBootAutoConfigTest {
         assertEquals("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf", fontConfig.getCjkFontPath());
         
         // Verify font families are set
-        assertTrue(fontConfig.getDefaultFontFamily().contains("HarmonyOS Sans SC"));
-        assertTrue(fontConfig.getCjkFontFamily().contains("HarmonyOS Sans SC"));
+        assertTrue(fontConfig.getDefaultFontFamily().contains("CJK_MAIN"));
+        assertTrue(fontConfig.getCjkFontFamily().contains("CJK_MAIN"));
         
         // Test PDF generation with Chinese text
         ReportData reportData = createChineseReportData();
@@ -80,7 +80,7 @@ public class SpringBootAutoConfigTest {
         
         // Configure minimal font to avoid warnings
         properties.getFonts().setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        properties.getFonts().setDefaultFamily("CJK_MAIN");
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
@@ -123,8 +123,8 @@ public class SpringBootAutoConfigTest {
         properties.getFonts().setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         properties.getFonts().setBoldPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         properties.getFonts().setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        properties.getFonts().setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
-        properties.getFonts().setCjkFamily("HarmonyOS Sans SC, Noto Sans CJK, SimSun, sans-serif");
+        properties.getFonts().setDefaultFamily("CJK_MAIN");
+        properties.getFonts().setCjkFamily("CJK_MAIN");
         
         // Debug settings
         properties.getDebug().setEnabled(true);

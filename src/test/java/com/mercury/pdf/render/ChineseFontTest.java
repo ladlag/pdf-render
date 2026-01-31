@@ -62,7 +62,7 @@ public class ChineseFontTest {
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         // Set the font family to match the font's internal name
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
 
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
@@ -78,7 +78,7 @@ public class ChineseFontTest {
             Path outputPath = Paths.get(TEST_OUTPUT_DIR, "chinese_text_custom_fonts.pdf");
             Files.write(outputPath, pdfBytes);
             System.out.println("✓ Chinese text PDF (custom fonts) generated: " + outputPath.toAbsolutePath());
-            System.out.println("  Chinese characters rendered with HarmonyOS Sans SC font!");
+            System.out.println("  Chinese characters rendered with CJK_MAIN alias!");
         } catch (Exception e) {
             System.err.println("⚠ Failed to generate PDF with custom fonts");
             System.err.println("  Error: " + e.getMessage());
@@ -94,7 +94,7 @@ public class ChineseFontTest {
         // Configure HarmonyOS Sans SC font for Chinese
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
 
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
@@ -110,7 +110,7 @@ public class ChineseFontTest {
             Path outputPath = Paths.get(TEST_OUTPUT_DIR, "matcher_report_chinese_fonts.pdf");
             Files.write(outputPath, pdfBytes);
             System.out.println("✓ Matcher report with Chinese fonts generated: " + outputPath.toAbsolutePath());
-            System.out.println("  Chinese characters rendered with HarmonyOS Sans SC font!");
+            System.out.println("  Chinese characters rendered with CJK_MAIN alias!");
         } catch (Exception e) {
             System.err.println("⚠ Failed to generate matcher report with Chinese fonts");
             System.err.println("  Error: " + e.getMessage());

@@ -38,7 +38,7 @@ public class MatcherReportTest {
         // Configure HarmonyOS Sans SC font for Chinese text display
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
         ReportData reportData = createMatcherReportData();
@@ -52,7 +52,7 @@ public class MatcherReportTest {
         Path outputPath = Paths.get(TEST_OUTPUT_DIR, "matcher_report_complete.pdf");
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Matcher Report PDF generated: " + outputPath.toAbsolutePath());
-        System.out.println("  Chinese characters rendered with HarmonyOS Sans SC font");
+        System.out.println("  Chinese characters rendered with CJK_MAIN alias");
     }
 
     /**

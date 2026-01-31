@@ -45,7 +45,7 @@ public class ChartSectionTitleTest {
         // Configure font
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
         // Create report with charts in a section with custom title

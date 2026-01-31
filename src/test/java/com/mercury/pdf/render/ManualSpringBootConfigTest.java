@@ -59,7 +59,7 @@ public class ManualSpringBootConfigTest {
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontProps.setBoldPath("classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf");
-        fontProps.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontProps.setDefaultFamily("CJK_MAIN");
         fontProps.setCjkFamily("Noto Sans CJK, SimSun, sans-serif");
         properties.setFonts(fontProps);
         

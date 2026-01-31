@@ -71,7 +71,7 @@ public class JarResourceLoadingTest {
         // Configure font using classpath: prefix (as users would do)
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
         
         System.out.println("配置字体路径: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         

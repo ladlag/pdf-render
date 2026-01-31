@@ -55,10 +55,10 @@ ReportService service = new ReportService();
 fontConfig.
 
         setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
-// 重要：font family 必须匹配字体文件的内部名称
+// 重要：默认使用固定别名 CJK_MAIN 绑定注册字体
 fontConfig.
 
-        setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+        setDefaultFontFamily("CJK_MAIN");
 
 // 应用字体配置
 service.
@@ -73,10 +73,8 @@ service.
 ```
 
 **重要提示：**
-- `defaultFontFamily` 必须设置为字体文件的内部字体名称（不是文件名）
-- Noto Sans CJK SC 的内部名称是 "Noto Sans CJK SC"
-- HarmonyOS Sans SC 的内部名称是 "HarmonyOS Sans SC"
-- 思源黑体的内部名称是 "Source Han Sans SC"
+- `defaultFontFamily` 建议设置为固定别名 `CJK_MAIN`
+- 字体文件仍会按内部名称注册到字体解析器，但模板只需要使用别名
 
 #### 3. Spring Boot 配置方式
 
@@ -90,7 +88,7 @@ pdf-render:
     # 粗体路径
     bold-path: classpath:/fonts/HarmonyOS_SansSC_Bold.ttf
     # 默认字体族（CSS font-family）
-    default-family: HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif
+    default-family: CJK_MAIN
 ```
 
 在 Service 中使用：
@@ -170,7 +168,7 @@ public class PdfService {
         // 配置字体（只需配置一次）
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
         reportService.getHtmlRenderer().setFontConfig(fontConfig);
     }
     
@@ -223,7 +221,7 @@ public class PdfService {
    - `"Identity-H"`: Unicode 编码方式，对 CJK 字符支持至关重要
    - `true`: 将字体嵌入到 PDF 文件中
 
-2. **CSS 字体引用**：模板中使用 `font-family` 引用字体的内部名称
+2. **CSS 字体引用**：模板中使用 `font-family` 引用固定别名（默认 `CJK_MAIN`）
    - 不需要 `@font-face` CSS 声明（Flying Saucer 不支持 classpath: URLs）
    - 字体通过 addFont() 注册后自动可用
    
@@ -293,10 +291,10 @@ ReportService service = new ReportService();
 fontConfig.
 
         setRegularFontPath("classpath:/fonts/NotoSansCJKsc-Regular.otf");
-// IMPORTANT: defaultFontFamily must match the font's internal name
+// IMPORTANT: defaultFontFamily should use the stable alias CJK_MAIN
 fontConfig.
 
-        setDefaultFontFamily("Noto Sans CJK SC, DejaVu Sans, sans-serif");
+        setDefaultFontFamily("CJK_MAIN");
 
 // Apply font configuration
 service.
@@ -305,16 +303,9 @@ service.
 
         setFontConfig(fontConfig);
 
-        // Generate PDF
-        ReportData reportData = createYourReportData();  // With Chinese content
-        byte[] pdfBytes = service.generatePdf(reportData);
-```
-
 **Important Notes:**
-- `defaultFontFamily` must be set to the font file's internal font name (not the filename)
-- Noto Sans CJK SC internal name is "Noto Sans CJK SC"
-- HarmonyOS Sans SC internal name is "HarmonyOS Sans SC"  
-- Source Han Sans internal name is "Source Han Sans SC"
+- `defaultFontFamily` should be set to the stable alias `CJK_MAIN`
+- Fonts are still registered internally by name, but templates should use the alias
 
 // Generate PDF
 ReportData reportData = createYourReportData();  // With Chinese content
@@ -333,7 +324,7 @@ pdf-render:
     # Bold font path
     bold-path: classpath:/fonts/HarmonyOS_SansSC_Bold.ttf
     # Default font family (CSS font-family)
-    default-family: HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif
+    default-family: CJK_MAIN
 ```
 
 Use in Service:
@@ -379,11 +370,11 @@ public class PdfReportService {
 **Checklist:**
 1. Verify font files exist in `src/main/resources/fonts/`
 2. Verify path is correct (use `classpath:/fonts/font-file.otf`)
-3. Verify `defaultFontFamily` matches the font's internal name (e.g., "Noto Sans CJK SC")
+3. Verify `defaultFontFamily` uses the alias `CJK_MAIN`
 4. Ensure the font file supports Chinese character set
 5. Check console for font loading errors
 
-**Common issue:** If `defaultFontFamily` doesn't match the font's internal name, Chinese characters will be filtered out during PDF generation.
+**Common issue:** If `defaultFontFamily` is not `CJK_MAIN`, the alias binding may not be used during layout.
 
 #### Q2: Where to download free Chinese fonts?
 
@@ -417,12 +408,13 @@ Yes. Use fonts that support Traditional Chinese, such as:
 
 #### Font Embedding Process
 
-1. **Flying Saucer Font Registration**: Uses `ITextRenderer.getFontResolver().addFont(fontPath, "Identity-H", true)` to register fonts
+1. **Flying Saucer Font Registration**: Uses `ITextRenderer.getFontResolver().addFont(fontPath, "Identity-H", true, "CJK_MAIN")` to register fonts with an alias
    - `fontPath`: Font file path (supports classpath: and file system paths)
    - `"Identity-H"`: Unicode encoding, crucial for CJK character support
    - `true`: Embed the font in the PDF file
+   - `"CJK_MAIN"`: Stable alias used by templates for CSS font-family
 
-2. **CSS Font Reference**: Templates reference fonts by their internal name using `font-family`
+2. **CSS Font Reference**: Templates reference fonts by the stable alias `CJK_MAIN` using `font-family`
    - No `@font-face` CSS declarations needed (Flying Saucer doesn't support classpath: URLs)
    - Fonts registered via addFont() are automatically available
 

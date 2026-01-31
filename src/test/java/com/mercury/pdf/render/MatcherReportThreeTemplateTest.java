@@ -37,7 +37,7 @@ public class MatcherReportThreeTemplateTest {
 
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontConfig.setDefaultFontFamily("CJK_MAIN");
         service.getHtmlRenderer().setFontConfig(fontConfig);
 
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -55,7 +55,7 @@ public class MatcherReportThreeTemplateTest {
         assertTrue(Files.exists(htmlPath), "Debug HTML for matcher-report-3.0 should be created");
 
         String htmlContent = new String(Files.readAllBytes(htmlPath));
-        assertTrue(htmlContent.contains("font-family: HarmonyOS Sans SC"),
+        assertTrue(htmlContent.contains("font-family: CJK_MAIN"),
             "Rendered HTML should use configured font-family");
         assertFalse(htmlContent.contains("[(${fontFamily})]"),
             "fontFamily placeholder should be resolved in matcher-report-3.0 template");

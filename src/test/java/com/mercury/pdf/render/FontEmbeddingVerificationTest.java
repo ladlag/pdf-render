@@ -35,7 +35,7 @@ public class FontEmbeddingVerificationTest {
         // Configure fonts using PdfRenderProperties (same as Spring Boot auto-config)
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontProps.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontProps.setDefaultFamily("CJK_MAIN");
         
         renderer.setFontProperties(fontProps);
         
@@ -83,12 +83,12 @@ public class FontEmbeddingVerificationTest {
         System.out.println("1. 打开生成的 PDF 文件");
         System.out.println("2. 检查中文是否正确显示（不应该是方框）");
         System.out.println("3. 使用 PDF 工具查看文档属性 → 字体");
-        System.out.println("4. 应该能看到 'HarmonyOS Sans SC' 或 'Noto Sans' (Embedded Subset)");
+        System.out.println("4. 应该能看到 'CJK_MAIN' (Embedded Subset)");
         System.out.println("\nVerification Steps:");
         System.out.println("1. Open the generated PDF file");
         System.out.println("2. Check that Chinese characters display correctly (not boxes)");
         System.out.println("3. Use PDF tool to view Document Properties → Fonts");
-        System.out.println("4. Should see 'HarmonyOS Sans SC' or 'Noto Sans' (Embedded Subset)");
+        System.out.println("4. Should see 'CJK_MAIN' (Embedded Subset)");
         
         System.out.println("\n========================================");
     }
@@ -106,7 +106,7 @@ public class FontEmbeddingVerificationTest {
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontProps.setBoldPath("classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf");
-        fontProps.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontProps.setDefaultFamily("CJK_MAIN");
         
         renderer.setFontProperties(fontProps);
         
@@ -146,7 +146,7 @@ public class FontEmbeddingVerificationTest {
         // This internally calls resolveFontPath which extracts from classpath
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontProps.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
+        fontProps.setDefaultFamily("CJK_MAIN");
         
         // This should work without throwing exceptions
         assertDoesNotThrow(() -> {
