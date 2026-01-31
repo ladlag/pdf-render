@@ -427,7 +427,7 @@ public class HtmlReportRenderer {
         return data;
     }
 
-    private String formatFontFamilyName(String familyName) {
+    String formatFontFamilyName(String familyName) {
         if (familyName == null) {
             return "";
         }
@@ -435,9 +435,14 @@ public class HtmlReportRenderer {
         if (trimmed.isEmpty()) {
             return trimmed;
         }
-        if (trimmed.length() > 1
-            && ((trimmed.startsWith("\"") && trimmed.endsWith("\""))
-            || (trimmed.startsWith("'") && trimmed.endsWith("'")))) {
+        if (trimmed.length() == 1 && (trimmed.charAt(0) == '"' || trimmed.charAt(0) == '\'')) {
+            return "\"" + trimmed + "\"";
+        }
+        char firstChar = trimmed.charAt(0);
+        char lastChar = trimmed.charAt(trimmed.length() - 1);
+        if (trimmed.length() > 2
+            && (firstChar == '"' || firstChar == '\'')
+            && firstChar == lastChar) {
             return trimmed;
         }
         if (trimmed.indexOf(' ') >= 0 || trimmed.indexOf(',') >= 0) {

@@ -47,19 +47,19 @@ public class FontConsistencyTest {
     @Test
     public void testFormatFontFamilyName() throws Exception {
         HtmlReportRenderer renderer = new HtmlReportRenderer();
-        java.lang.reflect.Method method = HtmlReportRenderer.class.getDeclaredMethod("formatFontFamilyName", String.class);
-        method.setAccessible(true);
 
-        assertEquals("", method.invoke(renderer, new Object[] { null }), "Null input should return empty string");
-        assertEquals("", method.invoke(renderer, ""), "Empty string should remain empty");
-        assertEquals("HarmonyOS", method.invoke(renderer, "HarmonyOS"), "Unquoted single word should remain unchanged");
-        assertEquals("\"HarmonyOS Sans\"", method.invoke(renderer, "HarmonyOS Sans"),
+        assertEquals("", renderer.formatFontFamilyName(null), "Null input should return empty string");
+        assertEquals("", renderer.formatFontFamilyName(""), "Empty string should remain empty");
+        assertEquals("HarmonyOS", renderer.formatFontFamilyName("HarmonyOS"), "Unquoted single word should remain unchanged");
+        assertEquals("\"HarmonyOS Sans\"", renderer.formatFontFamilyName("HarmonyOS Sans"),
             "Names with spaces should be quoted");
-        assertEquals("\"HarmonyOS, Sans\"", method.invoke(renderer, "HarmonyOS, Sans"),
+        assertEquals("\"HarmonyOS, Sans\"", renderer.formatFontFamilyName("HarmonyOS, Sans"),
             "Names with commas should be quoted");
-        assertEquals("\"HarmonyOS Sans\"", method.invoke(renderer, "\"HarmonyOS Sans\""),
+        assertEquals("\"HarmonyOS Sans\"", renderer.formatFontFamilyName("\"HarmonyOS Sans\""),
             "Already double-quoted names should remain unchanged");
-        assertEquals("'HarmonyOS Sans'", method.invoke(renderer, "'HarmonyOS Sans'"),
+        assertEquals("'HarmonyOS Sans'", renderer.formatFontFamilyName("'HarmonyOS Sans'"),
             "Already single-quoted names should remain unchanged");
+        assertEquals("\"'\"", renderer.formatFontFamilyName("'"),
+            "Single quote without matching pair should be quoted");
     }
 }
