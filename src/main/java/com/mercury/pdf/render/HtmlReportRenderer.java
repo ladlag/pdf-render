@@ -437,7 +437,7 @@ public class HtmlReportRenderer {
         }
         char firstChar = trimmed.charAt(0);
         char lastChar = trimmed.charAt(trimmed.length() - 1);
-        if (trimmed.length() >= 2
+        if (trimmed.length() > 2
             && (firstChar == '"' || firstChar == '\'')
             && firstChar == lastChar) {
             return trimmed;

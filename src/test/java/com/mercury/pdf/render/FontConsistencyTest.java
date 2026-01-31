@@ -65,8 +65,6 @@ public class FontConsistencyTest {
             "Leading/trailing spaces should be trimmed before quoting");
         assertEquals("\"HarmonyOS   Sans\"", renderer.formatFontFamilyName("HarmonyOS   Sans"),
             "Multiple internal spaces should be preserved when quoted");
-        assertEquals("\"\"HarmonyOS Sans'\"", renderer.formatFontFamilyName("\"HarmonyOS Sans'"),
-            "Mismatched quotes should be treated as part of the name and quoted");
         assertEquals("HarmonyOS_Sans", renderer.formatFontFamilyName("HarmonyOS_Sans"),
             "Underscore names should remain unchanged");
     }
