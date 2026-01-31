@@ -11,9 +11,9 @@
 
 ## 根本原因 / Root Cause
 
-字体已经注册，但**CSS中的font-family名称与字体内部名称不匹配**！
+字体已经注册，但**CSS中的font-family名称与注册时使用的名称不匹配**！
 
-Flying Saucer在渲染时，会尝试找到CSS指定的字体。如果CSS中的font-family与注册的字体名称不匹配，就会回退到默认字体（不包含中文字符），导致中文显示为方框。
+Flying Saucer在渲染时，会尝试找到CSS指定的字体。如果CSS中的font-family与注册字体时使用的名称不匹配，就会回退到默认字体（不包含中文字符），导致中文显示为方框。
 
 ---
 
@@ -33,112 +33,190 @@ fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 service.getHtmlRenderer().setFontConfig(fontConfig);
 ```
 
-**结果：** 字体会被注册，但CSS使用的是默认字体名，无法匹配。
+**结果：** 字体会被注册为默认别名 "PDFFont"，但你可能期望使用字体的实际名称。
 
 **解决方法：**
 
 ```java
-// ✅ 正确 - 必须同时设置路径和字体族
+// ✅ 正确 - 设置字体族以使用字体的实际名称
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif"); // 必须设置！
+fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif"); // 推荐设置！
 
 service.getHtmlRenderer().setFontConfig(fontConfig);
 ```
 
----
-
-### 步骤2：检查字体族名称是否匹配字体内部名称
-
-**问题：** defaultFontFamily设置的名称与字体文件的内部名称不一致
-
-字体文件有内部名称（Font Family Name），CSS必须使用这个**确切的名称**才能匹配。
-
-**错误示例：**
+**或者使用默认别名（也能正常工作）：**
 
 ```java
-// ❌ 错误 - 名称不完整或不正确
+// ✅ 也正确 - 不设置 defaultFontFamily 会使用默认别名 "PDFFont"
+FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+// 不设置 defaultFontFamily - 将使用 "PDFFont" 别名
 
-// 这些都是错误的：
-fontConfig.setDefaultFontFamily("HarmonyOS Sans");        // 缺少 "SC"
-fontConfig.setDefaultFontFamily("HarmonyOS_Sans_SC");     // 用了下划线
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC Regular"); // 多了 "Regular"
-fontConfig.setDefaultFontFamily("harmonyos sans sc");     // 大小写错误
+service.getHtmlRenderer().setFontConfig(fontConfig);
+// 字体会被注册为 "PDFFont"，CSS也会自动使用 "PDFFont"
 ```
 
-**正确的内部名称：**
+---
 
-| 字体文件 | 正确的内部名称 |
-|---------|--------------|
+### 步骤2：理解字体名称的工作原理
+
+**重要概念：** 系统使用你配置的 defaultFontFamily 的**第一个字体名称**来注册所有字体。
+
+**工作原理：**
+
+1. 如果你设置了 `defaultFontFamily = "HarmonyOS Sans SC, sans-serif"`
+   - 系统提取第一个名称："HarmonyOS Sans SC"
+   - 所有字体（regular, bold, CJK）都注册为 "HarmonyOS Sans SC"
+   - CSS使用你完整的 defaultFontFamily: "HarmonyOS Sans SC, sans-serif"
+
+2. 如果你**没有**设置 `defaultFontFamily`
+   - 系统使用默认别名："PDFFont"
+   - 所有字体注册为 "PDFFont"
+   - CSS使用 "PDFFont, sans-serif"
+
+**关键点：** 字体注册名称**不需要**匹配字体文件的内部名称！系统会**覆盖**内部名称。
+
+**重要提示（CSS 引号问题）：** 
+
+Flying Saucer 的 CSS 解析器会拆分带空格的字体名称（如果没有引号）：
+- ❌ 错误：`font-family: HarmonyOS Sans SC, sans-serif` → 被拆分为 "HarmonyOS / Sans / SC"
+- ✅ 正确：`font-family: "HarmonyOS Sans SC", sans-serif` → 保持为一个字体名称
+
+系统会**自动添加引号**，但为了更稳定，推荐：
+
+**最佳实践：使用不带空格的别名**
+
+```java
+// ✅ 推荐 - 使用默认别名 "PDFFont"（不带空格，无需引号）
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+// 不设置 defaultFontFamily - 使用 "PDFFont"（100%兼容）
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+这种方式：
+- ✅ 不需要引号（字体名称无空格）
+- ✅ 避免 CSS 解析器问题
+- ✅ 在所有情况下都稳定工作
+- ✅ Regular/Bold/CJK 使用相同别名，bold 样式正常工作
+
+---
+
+### 步骤3：推荐的字体配置
+
+**选项A：使用默认别名（最推荐 - 最稳定）**
+
+```java
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+// 不设置 defaultFontFamily - 自动使用 "PDFFont" 别名
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+**优点：**
+- ✅ 别名无空格，无需引号，避免 CSS 解析问题
+- ✅ 100% 兼容所有场景
+- ✅ Regular/Bold/CJK 统一使用同一别名
+- ✅ Bold 样式自动正确匹配
+- ✅ 简单配置
+
+**选项B：使用字体的实际名称（如果你需要）**
+
+```java
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+**注意事项：**
+- ⚠️ 字体名称有空格，系统会自动添加引号到 CSS
+- ⚠️ 确保所有字体（regular/bold/CJK）使用相同名称
+- ✅ PDF 属性中显示实际字体名称（更易理解）
+
+**选项C：完全自定义（高级用户）**
+
+如果你想要完全控制，可以使用自己的别名：
+
+```java
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+// 使用自定义无空格别名（推荐）
+fontConfig.setDefaultFontFamily("CJK_MAIN, sans-serif");
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+**关键：所有字体必须使用同一族名**
+
+```java
+// ✅ 正确 - Regular 和 Bold 都注册为同一族名
+fontConfig.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.setBoldPath("classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf");
+fontConfig.setDefaultFontFamily("CJK_MAIN, sans-serif");
+// 两个字体都会注册为 "CJK_MAIN"，bold 样式正常工作
+
+// ❌ 错误 - 不要为 regular 和 CJK 设置不同的族名
+// 这会导致字体匹配混乱
+```
+
+---
+
+### 步骤4：Spring Boot配置
+
+**推荐配置（使用默认别名）：**
+
+```yaml
+# ✅ 最简单最稳定 - 使用默认别名 "PDFFont"
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    # 不配置 default-family，将使用 "PDFFont"
+```
+
+**使用字体实际名称：**
+
+```yaml
+# ✅ 也可以 - 使用字体的实际名称（系统会自动处理引号）
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    default-family: HarmonyOS Sans SC, sans-serif
+```
+
+---
+
+## 常见字体的内部名称参考 / Common Font Internal Names Reference
+
+虽然系统会覆盖字体内部名称，但如果你想使用字体的实际名称，这里是常用字体的内部名称：
+
+| 字体文件 | 内部名称 |
+|---------|---------|
 | HarmonyOS_Sans_SC_Regular.ttf | `HarmonyOS Sans SC` |
 | NotoSansCJKsc-Regular.otf | `Noto Sans CJK SC` |
 | SourceHanSansSC-Regular.otf | `Source Han Sans SC` |
-
-**正确示例：**
-
-```java
-// ✅ 正确 - 使用精确的内部名称
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
-```
+| SimSun.ttf | `SimSun` |
+| Microsoft YaHei.ttf | `Microsoft YaHei` |
 
 ---
 
-### 步骤3：如何获取字体的内部名称
+## 验证配置 / Verify Configuration
 
-运行这个命令获取字体的真实内部名称：
+运行最小化测试验证配置：
 
 ```bash
-mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontConfigDiagnostic"
+mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
 ```
 
-输出会显示：
-
-```
-✓ 字体内部名称 Font internal name: HarmonyOS Sans SC
-
-⚠️  重要 IMPORTANT:
-   在配置时必须使用这个内部名称！
-   You MUST use this internal name in configuration!
-
-   正确配置示例 Correct configuration example:
-   fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
-```
-
-**使用这个输出的名称进行配置！**
+应该看到：
+- ✅ PDF文件大小 > 50KB（字体已嵌入）
+- ✅ 日志显示字体注册成功
+- ✅ 打开PDF可以看到中文字符
 
 ---
 
-### 步骤4：Spring Boot配置检查
-
-如果使用Spring Boot，检查 application.yml：
-
-**错误配置：**
-
-```yaml
-# ❌ 错误 - 只配置了路径，没有配置字体族
-pdf-render:
-  fonts:
-    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
-    # 缺少 default-family!
-```
-
-**正确配置：**
-
-```yaml
-# ✅ 正确 - 必须同时配置路径和字体族
-pdf-render:
-  fonts:
-    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
-    default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif  # 必须配置！
-```
-
----
-
-## 完整的测试代码 / Complete Test Code
-
-创建这个测试文件来验证配置：
+## 完整示例代码 / Complete Example Code
 
 ```java
 package com.example;
@@ -151,222 +229,83 @@ import com.mercury.pdf.render.model.Section;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class FontFamilyTest {
-    public static void main(String[] args) {
-        try {
-            System.out.println("========================================");
-            System.out.println("字体族名称验证测试");
-            System.out.println("Font Family Name Verification Test");
-            System.out.println("========================================\n");
-            
-            ReportService service = new ReportService();
-            
-            FontConfig fontConfig = new FontConfig();
-            
-            // 设置字体路径
-            String fontPath = "classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf";
-            fontConfig.setRegularFontPath(fontPath);
-            System.out.println("✓ 字体路径 Font path: " + fontPath);
-            
-            // 设置字体族 - 必须与字体内部名称完全一致！
-            String fontFamily = "HarmonyOS Sans SC, DejaVu Sans, sans-serif";
-            fontConfig.setDefaultFontFamily(fontFamily);
-            System.out.println("✓ 字体族 Font family: " + fontFamily);
-            
-            service.getHtmlRenderer().setFontConfig(fontConfig);
-            
-            // 验证配置
-            FontConfig retrieved = service.getHtmlRenderer().getFontConfig();
-            System.out.println("\n配置验证 Configuration Verification:");
-            System.out.println("  regularFontPath: " + retrieved.getRegularFontPath());
-            System.out.println("  defaultFontFamily: " + retrieved.getDefaultFontFamily());
-            
-            if (retrieved.getDefaultFontFamily() == null || 
-                retrieved.getDefaultFontFamily().isEmpty()) {
-                System.err.println("\n✗ 错误：defaultFontFamily 未设置！");
-                System.err.println("✗ ERROR: defaultFontFamily not set!");
-                System.err.println("这就是中文显示为方框的原因！");
-                System.err.println("This is why Chinese shows as boxes!");
-                return;
-            }
-            
-            System.out.println("\n========================================");
-            System.out.println("生成PDF...");
-            System.out.println("Generating PDF...");
-            System.out.println("========================================\n");
-            
-            // 创建测试数据
-            ReportData data = new ReportData();
-            data.setTitle("字体族测试 Font Family Test");
-            data.setSubtitle("验证font-family配置 Verify font-family configuration");
-            
-            Section section = new Section("测试章节");
-            section.addParagraph("如果能看到这段中文，说明字体族配置正确。");
-            section.addParagraph("If you can see this Chinese text, font-family is configured correctly.");
-            section.addParagraph("测试常用汉字：的一是在不了有和人这中大为上个国我以要他时来用们生到作地");
-            
-            data.getSections().add(section);
-            
-            // 生成PDF
-            byte[] pdf = service.generatePdf(data, "flexible");
-            
-            System.out.println("\n========================================");
-            System.out.println("PDF生成完成！");
-            System.out.println("PDF Generated!");
-            System.out.println("========================================\n");
-            
-            // 保存文件
-            Files.createDirectories(Paths.get("test-output"));
-            String outputPath = "test-output/font_family_test.pdf";
-            Files.write(Paths.get(outputPath), pdf);
-            
-            System.out.println("文件信息 File Info:");
-            System.out.println("  路径 Path: " + outputPath);
-            System.out.println("  大小 Size: " + (pdf.length / 1024) + " KB");
-            
-            if (pdf.length > 50000) {
-                System.out.println("\n✓✓✓ 成功！字体已嵌入，中文应该能正常显示");
-                System.out.println("✓✓✓ SUCCESS! Font embedded, Chinese should display correctly");
-            } else {
-                System.err.println("\n✗✗✗ 警告！文件过小，字体可能未嵌入");
-                System.err.println("✗✗✗ WARNING! File too small, font may not be embedded");
-            }
-            
-            System.out.println("\n请打开PDF文件验证：");
-            System.out.println("Please open PDF to verify:");
-            System.out.println("  " + outputPath);
-            
-        } catch (Exception e) {
-            System.err.println("\n错误 Error: " + e.getMessage());
-            e.printStackTrace();
-        }
+public class ChineseFontExample {
+    public static void main(String[] args) throws Exception {
+        // 创建服务
+        ReportService service = new ReportService();
+        
+        // 配置字体
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
+        
+        service.getHtmlRenderer().setFontConfig(fontConfig);
+        
+        // 创建测试数据
+        ReportData data = new ReportData();
+        data.setTitle("中文测试报告");
+        
+        Section section = new Section("测试章节");
+        section.addParagraph("这是中文测试文本。如果能看到这些汉字，说明配置成功！");
+        data.getSections().add(section);
+        
+        // 生成PDF
+        byte[] pdf = service.generatePdf(data, "flexible");
+        
+        // 保存文件
+        Files.createDirectories(Paths.get("output"));
+        Files.write(Paths.get("output/chinese_test.pdf"), pdf);
+        
+        System.out.println("PDF生成成功！文件大小: " + (pdf.length / 1024) + " KB");
+        System.out.println("如果文件 > 50KB，说明字体已正确嵌入。");
     }
 }
 ```
 
 ---
 
-## 诊断工具输出分析 / Diagnostic Tool Output Analysis
+## 故障排除 / Troubleshooting
 
-### 正常输出（配置正确）
+如果中文仍然显示为方框：
 
-```
-✓ Font registered with Flying Saucer: C:\Users\xxx\TEMP\PDF-RENDER-FONT-XXX.TTF
-  Encoding: Identity-H | Embedded: true
-  Font family name (for CSS): HarmonyOS Sans SC
-✓ Total fonts registered for PDF: 1
-```
+1. **检查字体文件是否存在**
+   - 确认 `src/main/resources/fonts/` 目录下有字体文件
 
-**关键信息：**
-- `Font family name (for CSS): HarmonyOS Sans SC` - 这是字体的内部名称
-- 你的 `defaultFontFamily` **必须包含** 这个名称
+2. **检查PDF文件大小**
+   - 如果 < 10KB，字体未嵌入
+   - 如果 > 50KB，字体已嵌入，可能是其他问题
 
-### 配置对比
+3. **检查日志**
+   - 应该看到 "Font registered with Flying Saucer" 日志
+   - 应该看到 "Font family name for CSS" 日志
 
-**错误配置：**
-```java
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-// defaultFontFamily 未设置或不匹配
-fontConfig.setDefaultFontFamily("Arial, sans-serif");  // 不包含 "HarmonyOS Sans SC"
-```
+4. **尝试不设置 defaultFontFamily**
+   - 这会使用默认的 "PDFFont" 别名
+   - 如果这样能工作，说明是字体名称配置问题
 
-**正确配置：**
-```java
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
-// 包含了日志中显示的 "HarmonyOS Sans SC"
-```
-
----
-
-## 快速修复 / Quick Fix
-
-### 纯Java项目
-
-```java
-ReportService service = new ReportService();
-
-FontConfig fontConfig = new FontConfig();
-fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-
-// ⚠️ 关键：这一行必须设置，且名称必须正确
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
-
-service.getHtmlRenderer().setFontConfig(fontConfig);
-
-// 现在生成PDF，中文应该正常显示
-byte[] pdf = service.generatePdf(data);
-```
-
-### Spring Boot项目
-
-**application.yml:**
-```yaml
-pdf-render:
-  fonts:
-    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
-    # ⚠️ 关键：这一行必须配置，且名称必须正确
-    default-family: HarmonyOS Sans SC, DejaVu Sans, sans-serif
-```
-
----
-
-## 验证修复是否成功 / Verify the Fix
-
-修复后，PDF文件应该有以下特征：
-
-1. **文件大小增加：**
-   - 修复前：2-5 KB（没有字体数据）
-   - 修复后：50-200 KB（包含字体数据）
-
-2. **中文正常显示：**
-   - 打开PDF，所有中文字符清晰显示
-   - 不再是方框□
-
-3. **PDF属性中能看到嵌入的字体：**
-   - 文件 → 属性 → 字体
-   - 应该看到 "HarmonyOS Sans SC (Embedded Subset)"
-
----
-
-## 运行验证工具 / Run Verification Tool
-
-运行这个工具获取你的字体的正确内部名称：
-
-```bash
-mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontConfigDiagnostic"
-```
-
-或运行最小化测试：
-
-```bash
-mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
-```
+5. **查看其他诊断文档**
+   - `NO_FONT_LOGS_TROUBLESHOOTING.md` - 如果看不到字体注册日志
+   - `CHINESE_QUICKSTART.md` - 快速开始指南
 
 ---
 
 ## 总结 / Summary
 
-**问题：** 看到字体注册日志，但中文仍显示为方框
+**关键要点：**
 
-**原因：** `defaultFontFamily` 未设置或名称不匹配
+1. ✅ 设置 `defaultFontFamily` 是**推荐的**，但不是必须的
+2. ✅ 系统会使用你配置的第一个字体名称来注册所有字体
+3. ✅ 不设置 `defaultFontFamily` 会使用默认别名 "PDFFont"（也能正常工作）
+4. ✅ 字体注册名称**不需要**匹配字体文件的内部名称
+5. ✅ 所有方法都能正确显示中文，选择你喜欢的即可
 
-**解决方法：**
+**最简单的配置：**
 
-1. ✅ 运行诊断工具获取字体内部名称
-2. ✅ 设置 `defaultFontFamily` 为该内部名称
-3. ✅ 重新生成PDF验证
-
-**关键代码：**
 ```java
+FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif"); // 必须设置！
+fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
+service.getHtmlRenderer().setFontConfig(fontConfig);
 ```
 
-**Spring Boot配置：**
-```yaml
-pdf-render:
-  fonts:
-    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
-    default-family: HarmonyOS Sans SC, sans-serif  # 必须配置！
-```
+这样配置后，中文应该能正常显示！

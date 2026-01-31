@@ -435,7 +435,12 @@ public class ChartRenderer {
     private void logInfo(String message) {
         try {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ChartRenderer.class);
-            logger.info(message);
+            // Always print to stdout if SLF4J is NOP
+            if (!logger.isInfoEnabled()) {
+                System.out.println(message);
+            } else {
+                logger.info(message);
+            }
         } catch (NoClassDefFoundError e) {
             System.out.println(message);
         }
@@ -444,7 +449,11 @@ public class ChartRenderer {
     private void logWarn(String message) {
         try {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ChartRenderer.class);
-            logger.warn(message);
+            if (!logger.isWarnEnabled()) {
+                System.err.println(message);
+            } else {
+                logger.warn(message);
+            }
         } catch (NoClassDefFoundError e) {
             System.err.println(message);
         }
