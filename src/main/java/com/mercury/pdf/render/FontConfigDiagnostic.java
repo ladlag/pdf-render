@@ -146,12 +146,15 @@ public class FontConfigDiagnostic {
                 String internalName = FontNameExtractor.extractFontFamilyName(tempFile.getAbsolutePath());
                 System.out.println("✓ 字体内部名称 Font internal name: " + internalName);
                 System.out.println();
-                System.out.println("⚠️  重要 IMPORTANT:");
-                System.out.println("   在配置时必须使用这个内部名称！");
-                System.out.println("   You MUST use this internal name in configuration!");
+                System.out.println("⚠️  配置建议 CONFIGURATION RECOMMENDATION:");
+                System.out.println("   推荐在配置中使用这个内部名称！");
+                System.out.println("   Recommended to use this internal name in configuration!");
                 System.out.println();
-                System.out.println("   正确配置示例 Correct configuration example:");
+                System.out.println("   推荐配置示例 Recommended configuration:");
                 System.out.println("   fontConfig.setDefaultFontFamily(\"" + internalName + ", sans-serif\");");
+                System.out.println();
+                System.out.println("   或者不设置 defaultFontFamily（将使用默认别名 'PDFFont'）");
+                System.out.println("   Or don't set defaultFontFamily (will use default alias 'PDFFont')");
                 System.out.println();
             }
         } catch (Exception e) {
