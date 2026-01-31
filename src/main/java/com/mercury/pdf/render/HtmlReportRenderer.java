@@ -802,8 +802,15 @@ public class HtmlReportRenderer {
     private void logInfo(String message) {
         try {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
-            logger.info(message);
+            // Always print to stdout if SLF4J is NOP or if we want to ensure visibility
+            if (!logger.isInfoEnabled()) {
+                // SLF4J logger exists but is NOP - fall back to System.out
+                System.out.println(message);
+            } else {
+                logger.info(message);
+            }
         } catch (NoClassDefFoundError e) {
+            // SLF4J not available at all
             System.out.println(message);
         }
     }
@@ -811,8 +818,14 @@ public class HtmlReportRenderer {
     private void logWarn(String message) {
         try {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HtmlReportRenderer.class);
-            logger.warn(message);
+            if (!logger.isWarnEnabled()) {
+                // SLF4J logger exists but is NOP - fall back to System.err
+                System.err.println(message);
+            } else {
+                logger.warn(message);
+            }
         } catch (NoClassDefFoundError e) {
+            // SLF4J not available at all
             System.err.println(message);
         }
     }
