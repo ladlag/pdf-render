@@ -160,14 +160,20 @@ public class PdfRenderProperties {
         private String cjkPath;
         
         /**
-         * Default font family CSS (default: DejaVu Sans, Arial, sans-serif)
+         * Default font family CSS
+         * NOTE: This will be auto-configured to match the registered font's internal name.
+         * If you set this manually, ensure it matches the actual font file's family name.
+         * Set to empty/null to let the system auto-configure from the font file.
          */
-        private String defaultFamily = "DejaVu Sans, Arial, sans-serif";
+        private String defaultFamily = "";
         
         /**
-         * CJK font family CSS (default: Noto Sans CJK, SimSun, sans-serif)
+         * CJK font family CSS
+         * NOTE: This will be auto-configured to match the registered CJK font's internal name.
+         * If you set this manually, ensure it matches the actual CJK font file's family name.
+         * Set to empty/null to let the system auto-configure from the font file.
          */
-        private String cjkFamily = "Noto Sans CJK, SimSun, sans-serif";
+        private String cjkFamily = "";
         
         public String getRegularPath() {
             return regularPath;
