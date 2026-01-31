@@ -78,11 +78,51 @@ service.getHtmlRenderer().setFontConfig(fontConfig);
 
 **关键点：** 字体注册名称**不需要**匹配字体文件的内部名称！系统会**覆盖**内部名称。
 
+**重要提示（CSS 引号问题）：** 
+
+Flying Saucer 的 CSS 解析器会拆分带空格的字体名称（如果没有引号）：
+- ❌ 错误：`font-family: HarmonyOS Sans SC, sans-serif` → 被拆分为 "HarmonyOS / Sans / SC"
+- ✅ 正确：`font-family: "HarmonyOS Sans SC", sans-serif` → 保持为一个字体名称
+
+系统会**自动添加引号**，但为了更稳定，推荐：
+
+**最佳实践：使用不带空格的别名**
+
+```java
+// ✅ 推荐 - 使用默认别名 "PDFFont"（不带空格，无需引号）
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+// 不设置 defaultFontFamily - 使用 "PDFFont"（100%兼容）
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+这种方式：
+- ✅ 不需要引号（字体名称无空格）
+- ✅ 避免 CSS 解析器问题
+- ✅ 在所有情况下都稳定工作
+- ✅ Regular/Bold/CJK 使用相同别名，bold 样式正常工作
+
 ---
 
 ### 步骤3：推荐的字体配置
 
-**选项A：使用字体的内部名称（推荐用于单一字体）**
+**选项A：使用默认别名（最推荐 - 最稳定）**
+
+```java
+FontConfig fontConfig = new FontConfig();
+fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+// 不设置 defaultFontFamily - 自动使用 "PDFFont" 别名
+service.getHtmlRenderer().setFontConfig(fontConfig);
+```
+
+**优点：**
+- ✅ 别名无空格，无需引号，避免 CSS 解析问题
+- ✅ 100% 兼容所有场景
+- ✅ Regular/Bold/CJK 统一使用同一别名
+- ✅ Bold 样式自动正确匹配
+- ✅ 简单配置
+
+**选项B：使用字体的实际名称（如果你需要）**
 
 ```java
 FontConfig fontConfig = new FontConfig();
@@ -91,47 +131,58 @@ fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
 service.getHtmlRenderer().setFontConfig(fontConfig);
 ```
 
-**好处：**
-- PDF属性中显示实际字体名称
-- 更容易理解和调试
-- 符合大多数用户的期望
+**注意事项：**
+- ⚠️ 字体名称有空格，系统会自动添加引号到 CSS
+- ⚠️ 确保所有字体（regular/bold/CJK）使用相同名称
+- ✅ PDF 属性中显示实际字体名称（更易理解）
 
-**选项B：使用默认别名（向后兼容）**
+**选项C：完全自定义（高级用户）**
+
+如果你想要完全控制，可以使用自己的别名：
 
 ```java
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-// 不设置 defaultFontFamily
+// 使用自定义无空格别名（推荐）
+fontConfig.setDefaultFontFamily("CJK_MAIN, sans-serif");
 service.getHtmlRenderer().setFontConfig(fontConfig);
 ```
 
-**好处：**
-- 简单配置
-- 避免字体名称中的空格问题
-- 与旧版本完全兼容
+**关键：所有字体必须使用同一族名**
+
+```java
+// ✅ 正确 - Regular 和 Bold 都注册为同一族名
+fontConfig.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+fontConfig.setBoldPath("classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf");
+fontConfig.setDefaultFontFamily("CJK_MAIN, sans-serif");
+// 两个字体都会注册为 "CJK_MAIN"，bold 样式正常工作
+
+// ❌ 错误 - 不要为 regular 和 CJK 设置不同的族名
+// 这会导致字体匹配混乱
+```
 
 ---
 
 ### 步骤4：Spring Boot配置
 
-**推荐配置（使用字体实际名称）：**
+**推荐配置（使用默认别名）：**
 
 ```yaml
-# ✅ 推荐 - 使用字体的实际名称
-pdf-render:
-  fonts:
-    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
-    default-family: HarmonyOS Sans SC, sans-serif
-```
-
-**简化配置（使用默认别名）：**
-
-```yaml
-# ✅ 也可以 - 使用默认别名 "PDFFont"
+# ✅ 最简单最稳定 - 使用默认别名 "PDFFont"
 pdf-render:
   fonts:
     regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
     # 不配置 default-family，将使用 "PDFFont"
+```
+
+**使用字体实际名称：**
+
+```yaml
+# ✅ 也可以 - 使用字体的实际名称（系统会自动处理引号）
+pdf-render:
+  fonts:
+    regular-path: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
+    default-family: HarmonyOS Sans SC, sans-serif
 ```
 
 ---
