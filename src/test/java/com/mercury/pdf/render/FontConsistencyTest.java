@@ -67,5 +67,9 @@ public class FontConsistencyTest {
             "Multiple internal spaces should be preserved when quoted");
         assertEquals("HarmonyOS_Sans", renderer.formatFontFamilyName("HarmonyOS_Sans"),
             "Underscore names should remain unchanged");
+        assertEquals("HarmonyOS\\\"Bold\\\"", renderer.formatFontFamilyName("HarmonyOS\"Bold\""),
+            "Double quotes should be escaped even without spaces");
+        assertEquals("\"Font \\\"Bold\\\"\"", renderer.formatFontFamilyName("Font \"Bold\""),
+            "Names with quotes and spaces should be escaped and quoted");
     }
 }

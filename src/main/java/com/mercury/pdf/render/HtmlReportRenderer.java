@@ -441,15 +441,14 @@ public class HtmlReportRenderer {
         }
         char firstChar = trimmed.charAt(0);
         char lastChar = trimmed.charAt(trimmed.length() - 1);
-        if (trimmed.length() >= 2
-            && (firstChar == '"' || firstChar == '\'')
-            && firstChar == lastChar) {
+        if (trimmed.length() >= 2 && firstChar == lastChar && (firstChar == '"' || firstChar == '\'')) {
             return trimmed;
         }
-        if (trimmed.indexOf(' ') >= 0 || trimmed.indexOf(',') >= 0) {
-            return "\"" + trimmed + "\"";
+        String escaped = trimmed.replace("\"", "\\\"");
+        if (escaped.indexOf(' ') >= 0 || escaped.indexOf(',') >= 0) {
+            return "\"" + escaped + "\"";
         }
-        return trimmed;
+        return escaped;
     }
     
     /**
