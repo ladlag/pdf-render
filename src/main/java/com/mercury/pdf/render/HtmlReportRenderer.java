@@ -38,13 +38,15 @@ public class HtmlReportRenderer {
     private final java.util.Map<String, String> fontPathCache = new java.util.concurrent.ConcurrentHashMap<>();
     
     /**
-     * Unified font family alias for PDF rendering.
+     * Default font family alias for PDF rendering when no custom family is configured.
      * Using a space-free alias prevents CSS parser issues in Flying Saucer where
      * font names with spaces (e.g., "HarmonyOS Sans SC") can be incorrectly split.
      * All fonts (regular, bold, CJK) are registered with this same family name to
      * ensure proper font matching, especially for bold text.
+     * 
+     * Note: This can be overridden by setting defaultFamily in FontProperties.
      */
-    private static final String PDF_FONT_FAMILY_ALIAS = "PDFFont";
+    private static final String DEFAULT_PDF_FONT_FAMILY_ALIAS = "PDFFont";
     
     // Debug HTML configuration
     private boolean debugHtmlEnabled = false; // Whether to save intermediate HTML
@@ -354,15 +356,22 @@ public class HtmlReportRenderer {
         if (fontProperties != null) {
             data.put("fontFaceDeclaration", ""); // No @font-face needed with Identity-H encoding
             
-            // Use unified font family alias to avoid CSS parsing issues with spaces
-            // All fonts are registered with the same alias (PDFFont) to ensure proper matching
-            // Font names with spaces require quotes in CSS to prevent being split by the parser
-            String fontFamilyCss = "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
+            // Get the effective font family name (user-configured or default alias)
+            String effectiveFontFamily = getEffectiveFontFamilyName();
+            
+            // Build CSS font-family with proper quoting for names containing spaces
+            // This matches what was registered via addFont() with the family name override
+            String fontFamilyCss = buildCssFontFamily(effectiveFontFamily, fontProperties.getDefaultFamily());
             data.put("fontFamily", fontFamilyCss);
             logInfo("✓ PDF CSS font-family: " + fontFamilyCss);
             
-            // CJK font family uses the same alias
-            String cjkFamilyCss = "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
+            // CJK font family - use CJK-specific family if configured, otherwise same as default
+            String cjkFamilyCss;
+            if (fontProperties.getCjkFamily() != null && !fontProperties.getCjkFamily().isEmpty()) {
+                cjkFamilyCss = fontProperties.getCjkFamily();
+            } else {
+                cjkFamilyCss = fontFamilyCss;
+            }
             data.put("cjkFontFamily", cjkFamilyCss);
             logInfo("✓ PDF CSS CJK font-family: " + cjkFamilyCss);
         } else {
@@ -467,52 +476,56 @@ public class HtmlReportRenderer {
         try {
             int fontsRegistered = 0;
             
-            // Register CJK font first (if configured) with unified family alias
+            // Get the effective font family name (user-configured or default)
+            // All fonts will be registered with this same family name for consistency
+            String fontFamilyName = getEffectiveFontFamilyName();
+            
+            // Register CJK font first (if configured) with the effective family name
             // This is the most critical font registration for Chinese character display
             if (fontProperties.getCjkPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getCjkPath());
                 
                 // BaseFont.IDENTITY_H is THE standard encoding for CJK in PDFs (per OpenPDF/Flying Saucer docs)
                 // Without this specific encoding, Chinese characters will appear as boxes (□)
-                // Using unified alias prevents CSS parser from splitting font names with spaces
-                renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
+                // Using the effective family name (user-configured or "PDFFont") for CSS matching
+                renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, true, null);
                 fontsRegistered++;
                 logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
                 logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
-                logInfo("  Unified family alias: " + PDF_FONT_FAMILY_ALIAS);
+                logInfo("  Font family name for CSS: " + fontFamilyName);
             }
             
             // Register regular font with Identity-H encoding for Unicode support
-            // Using the SAME family alias as CJK font ensures consistent font matching
+            // Using the SAME family name as CJK font ensures consistent font matching
             if (fontProperties.getRegularPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getRegularPath());
                 
-                // Official 5-parameter addFont() method with unified alias
-                // Key: All fonts use the same alias to ensure bold/italic matching works correctly
-                renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
+                // Official 5-parameter addFont() method with effective family name
+                // Key: All fonts use the same family name to ensure bold/italic matching works correctly
+                renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, true, null);
                 fontsRegistered++;
                 logInfo("✓ Regular font registered with Flying Saucer: " + fontPath);
                 logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
-                logInfo("  Unified family alias: " + PDF_FONT_FAMILY_ALIAS);
+                logInfo("  Font family name for CSS: " + fontFamilyName);
             }
             
             // Register bold font with Identity-H encoding
-            // CRITICAL: Using the same alias ensures bold text correctly uses this font
+            // CRITICAL: Using the same family name ensures bold text correctly uses this font
             if (fontProperties.getBoldPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getBoldPath());
                 
                 // Using official 5-parameter addFont() with IDENTITY_H encoding and embedded=true
-                // Same family alias as regular and CJK fonts for proper font family matching
-                renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
+                // Same family name as regular and CJK fonts for proper font family matching
+                renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, true, null);
                 fontsRegistered++;
                 logInfo("✓ Bold font registered with Flying Saucer: " + fontPath);
                 logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
-                logInfo("  Unified family alias: " + PDF_FONT_FAMILY_ALIAS);
+                logInfo("  Font family name for CSS: " + fontFamilyName);
             }
             
             if (fontsRegistered > 0) {
                 logInfo("✓ Total fonts registered for PDF: " + fontsRegistered);
-                logInfo("  All fonts registered with unified family: \"" + PDF_FONT_FAMILY_ALIAS + "\"");
+                logInfo("  All fonts registered with family name: \"" + fontFamilyName + "\"");
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
@@ -560,6 +573,49 @@ public class HtmlReportRenderer {
             // If validation fails, just log it - don't block PDF generation
             logWarn("Warning: Could not validate " + fontType + " font configuration: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Gets the effective font family name to use for font registration and CSS.
+     * Returns the user-configured defaultFamily if set, otherwise the default alias.
+     * 
+     * @return Font family name to use (e.g., "HarmonyOS Sans SC" or "PDFFont")
+     */
+    private String getEffectiveFontFamilyName() {
+        if (fontProperties != null && fontProperties.getDefaultFamily() != null 
+            && !fontProperties.getDefaultFamily().trim().isEmpty()) {
+            // Extract just the first font name from the family list (before first comma)
+            String familyList = fontProperties.getDefaultFamily().trim();
+            int commaIndex = familyList.indexOf(',');
+            if (commaIndex > 0) {
+                return familyList.substring(0, commaIndex).trim();
+            }
+            return familyList;
+        }
+        // Fall back to default alias if no custom family configured
+        return DEFAULT_PDF_FONT_FAMILY_ALIAS;
+    }
+    
+    /**
+     * Builds the CSS font-family value with proper fallbacks.
+     * Handles quoting for font names with spaces and adds standard fallbacks.
+     * 
+     * @param primaryFont The primary font family name (from registration)
+     * @param userFamilyList Optional user-provided full family list (may include fallbacks)
+     * @return Complete CSS font-family value
+     */
+    private String buildCssFontFamily(String primaryFont, String userFamilyList) {
+        // If user provided a complete family list, use it as-is (they know what they want)
+        if (userFamilyList != null && !userFamilyList.trim().isEmpty()) {
+            return userFamilyList;
+        }
+        
+        // Otherwise build a sensible default with the primary font plus standard fallbacks
+        // Quote font names that contain spaces to prevent CSS parser issues
+        String quotedPrimary = primaryFont.contains(" ") 
+            ? "\"" + primaryFont + "\"" 
+            : primaryFont;
+        return quotedPrimary + ", sans-serif";
     }
     
     /**
