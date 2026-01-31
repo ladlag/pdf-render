@@ -156,7 +156,7 @@ public class HtmlReportRenderer {
                 }
             } catch (Exception e) {
                 logWarn("Warning: Could not extract font names during configuration: " + e.getMessage());
-                // Continue - will try again during font registration
+                // Continue - fonts will still be registered, but auto-correction may not work
             }
         }
         

@@ -124,7 +124,8 @@ fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-ser
 ```
 
 **Result:** Works correctly (no auto-correction needed)
-- HTML generated with: `font-family: "HarmonyOS Sans SC", "DejaVu Sans", Arial, sans-serif, "PDFFont";`
+- HTML generated with CSS: `font-family: "HarmonyOS Sans SC", "DejaVu Sans", Arial, sans-serif, "PDFFont";`
+  - Note: The quotes in the CSS are added automatically for font names with spaces
 - Font registered as: "HarmonyOS Sans SC"
 - ✓ Font names match → Chinese characters render correctly
 
@@ -139,7 +140,8 @@ fontConfig.setDefaultFontFamily("WrongFontName, DejaVu Sans, Arial, sans-serif")
 **Result:** Auto-corrected in `setFontProperties()`
 - Initial config: "WrongFontName, DejaVu Sans, Arial, sans-serif"
 - After setFontProperties: "HarmonyOS Sans SC, sans-serif"
-- HTML generated with: `font-family: "HarmonyOS Sans SC", sans-serif, "PDFFont";`
+- HTML generated with CSS: `font-family: "HarmonyOS Sans SC", sans-serif, "PDFFont";`
+  - Note: Font names with spaces are automatically quoted in CSS
 - Font registered as: "HarmonyOS Sans SC"
 - ✓ Font names match → Chinese characters render correctly
 
@@ -154,7 +156,8 @@ fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 **Result:** Auto-configured in `setFontProperties()`
 - Initial config: null
 - After setFontProperties: "HarmonyOS Sans SC, sans-serif"
-- HTML generated with: `font-family: "HarmonyOS Sans SC", sans-serif, "PDFFont";`
+- HTML generated with CSS: `font-family: "HarmonyOS Sans SC", sans-serif, "PDFFont";`
+  - Note: Font names with spaces are automatically quoted in CSS
 - Font registered as: "HarmonyOS Sans SC"
 - ✓ Font names match → Chinese characters render correctly
 
