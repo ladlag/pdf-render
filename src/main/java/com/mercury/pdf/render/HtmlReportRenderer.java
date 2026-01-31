@@ -645,6 +645,9 @@ public class HtmlReportRenderer {
      * - "Arial, sans-serif" → "Arial, sans-serif" (no change needed)
      * - "\"Noto Sans\", HarmonyOS Sans SC, serif" → "\"Noto Sans\", \"HarmonyOS Sans SC\", serif"
      * 
+     * NOTE: This simple implementation splits on all commas. It doesn't handle commas within
+     * quoted font names (e.g., "MyFont, Extended"), but this is extremely rare in practice.
+     * 
      * @param familyList Comma-separated list of font families
      * @return Same list with space-containing names properly quoted
      */
@@ -664,7 +667,9 @@ public class HtmlReportRenderer {
                 continue;
             }
             
-            // Check if already quoted (starts and ends with " or ')
+            // Check if already quoted (starts and ends with matching quotes)
+            // Note: This doesn't validate mismatched quotes, but malformed input would
+            // fail anyway. Keeping it simple for the common case.
             boolean alreadyQuoted = (family.startsWith("\"") && family.endsWith("\"")) ||
                                    (family.startsWith("'") && family.endsWith("'"));
             

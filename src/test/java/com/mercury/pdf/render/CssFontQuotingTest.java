@@ -163,8 +163,13 @@ public class CssFontQuotingTest {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
         
-        // Check debug HTML
-        File debugHtmlFile = new File(TEST_OUTPUT_DIR + "/debug-html/flexible.html");
+        // Check debug HTML - use same pattern as first test
+        File debugHtmlFile = new File(TEST_OUTPUT_DIR + "/debug-html/report.html");
+        if (!debugHtmlFile.exists()) {
+            // Try flexible template as fallback
+            debugHtmlFile = new File(TEST_OUTPUT_DIR + "/debug-html/flexible.html");
+        }
+        
         if (debugHtmlFile.exists()) {
             String htmlContent = new String(Files.readAllBytes(debugHtmlFile.toPath()));
             
