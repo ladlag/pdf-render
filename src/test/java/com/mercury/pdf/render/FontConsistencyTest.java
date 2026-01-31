@@ -43,4 +43,33 @@ public class FontConsistencyTest {
         renderer.setChartFont(unixStylePath);
         assertNotNull(renderer.getChartFont(), "Chart font should be loaded from normalized paths");
     }
+
+    @Test
+    public void testFormatFontFamilyName() throws Exception {
+        HtmlReportRenderer renderer = new HtmlReportRenderer();
+
+        assertEquals("", renderer.formatFontFamilyName(null), "Null input should return empty string");
+        assertEquals("", renderer.formatFontFamilyName(""), "Empty string should remain empty");
+        assertEquals("HarmonyOS", renderer.formatFontFamilyName("HarmonyOS"), "Unquoted single word should remain unchanged");
+        assertEquals("\"HarmonyOS Sans\"", renderer.formatFontFamilyName("HarmonyOS Sans"),
+            "Names with spaces should be quoted");
+        assertEquals("\"HarmonyOS, Sans\"", renderer.formatFontFamilyName("HarmonyOS, Sans"),
+            "Names with commas should be quoted");
+        assertEquals("\"HarmonyOS Sans\"", renderer.formatFontFamilyName("\"HarmonyOS Sans\""),
+            "Already double-quoted names should remain unchanged");
+        assertEquals("'HarmonyOS Sans'", renderer.formatFontFamilyName("'HarmonyOS Sans'"),
+            "Already single-quoted names should remain unchanged");
+        assertEquals("HarmonyOS-2", renderer.formatFontFamilyName("HarmonyOS-2"),
+            "Names with numbers should remain unchanged");
+        assertEquals("\"HarmonyOS Sans\"", renderer.formatFontFamilyName("  HarmonyOS Sans  "),
+            "Leading/trailing spaces should be trimmed before quoting");
+        assertEquals("\"HarmonyOS   Sans\"", renderer.formatFontFamilyName("HarmonyOS   Sans"),
+            "Multiple internal spaces should be preserved when quoted");
+        assertEquals("HarmonyOS_Sans", renderer.formatFontFamilyName("HarmonyOS_Sans"),
+            "Underscore names should remain unchanged");
+        assertEquals("\"HarmonyOS\\\"Bold\\\"\"", renderer.formatFontFamilyName("HarmonyOS\"Bold\""),
+            "Names with quotes should be escaped and quoted");
+        assertEquals("\"Font \\\"Bold\\\"\"", renderer.formatFontFamilyName("Font \"Bold\""),
+            "Names with quotes and spaces should be escaped and quoted");
+    }
 }
