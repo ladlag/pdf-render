@@ -579,6 +579,8 @@ public class HtmlReportRenderer {
      * Gets the effective font family name to use for font registration and CSS.
      * Returns the user-configured defaultFamily if set, otherwise the default alias.
      * 
+     * NOTE: Extracts the UNQUOTED name for font registration. Quotes are only for CSS.
+     * 
      * @return Font family name to use (e.g., "HarmonyOS Sans SC" or "PDFFont")
      */
     private String getEffectiveFontFamilyName() {
@@ -587,10 +589,19 @@ public class HtmlReportRenderer {
             // Extract just the first font name from the family list (before first comma)
             String familyList = fontProperties.getDefaultFamily().trim();
             int commaIndex = familyList.indexOf(',');
-            if (commaIndex > 0) {
-                return familyList.substring(0, commaIndex).trim();
+            String firstName = commaIndex > 0 
+                ? familyList.substring(0, commaIndex).trim()
+                : familyList.trim();
+            
+            // Remove quotes if present - font registration needs the unquoted name
+            // User might have provided: "HarmonyOS Sans SC", sans-serif
+            // We need to extract: HarmonyOS Sans SC (without quotes)
+            if ((firstName.startsWith("\"") && firstName.endsWith("\"")) ||
+                (firstName.startsWith("'") && firstName.endsWith("'"))) {
+                firstName = firstName.substring(1, firstName.length() - 1);
             }
-            return familyList;
+            
+            return firstName;
         }
         // Fall back to default alias if no custom family configured
         return DEFAULT_PDF_FONT_FAMILY_ALIAS;
@@ -600,22 +611,76 @@ public class HtmlReportRenderer {
      * Builds the CSS font-family value with proper fallbacks.
      * Handles quoting for font names with spaces and adds standard fallbacks.
      * 
+     * CRITICAL: Flying Saucer's CSS parser will split font names with spaces unless they're quoted.
+     * For example, "HarmonyOS Sans SC" without quotes will be parsed as "HarmonyOS / Sans / SC",
+     * causing font matching to fail and falling back to Times-Roman.
+     * 
      * @param primaryFont The primary font family name (from registration)
      * @param userFamilyList Optional user-provided full family list (may include fallbacks)
-     * @return Complete CSS font-family value
+     * @return Complete CSS font-family value with proper quoting
      */
     private String buildCssFontFamily(String primaryFont, String userFamilyList) {
-        // If user provided a complete family list, use it as-is (they know what they want)
-        if (userFamilyList != null && !userFamilyList.trim().isEmpty()) {
-            return userFamilyList;
+        String familyList = userFamilyList;
+        
+        // If user didn't provide a complete list, build one with the primary font
+        if (familyList == null || familyList.trim().isEmpty()) {
+            // Quote font names that contain spaces to prevent CSS parser issues
+            String quotedPrimary = primaryFont.contains(" ") 
+                ? "\"" + primaryFont + "\"" 
+                : primaryFont;
+            familyList = quotedPrimary + ", sans-serif";
         }
         
-        // Otherwise build a sensible default with the primary font plus standard fallbacks
-        // Quote font names that contain spaces to prevent CSS parser issues
-        String quotedPrimary = primaryFont.contains(" ") 
-            ? "\"" + primaryFont + "\"" 
-            : primaryFont;
-        return quotedPrimary + ", sans-serif";
+        // CRITICAL FIX: Even if user provided a list, we must ensure font names with spaces are quoted
+        // This prevents Flying Saucer's CSS parser from splitting them
+        return ensureFontNamesQuoted(familyList);
+    }
+    
+    /**
+     * Ensures all font family names containing spaces are properly quoted in a CSS font-family list.
+     * This is critical for Flying Saucer which will split unquoted names with spaces.
+     * 
+     * Examples:
+     * - "HarmonyOS Sans SC, sans-serif" → "\"HarmonyOS Sans SC\", sans-serif"
+     * - "Arial, sans-serif" → "Arial, sans-serif" (no change needed)
+     * - "\"Noto Sans\", HarmonyOS Sans SC, serif" → "\"Noto Sans\", \"HarmonyOS Sans SC\", serif"
+     * 
+     * @param familyList Comma-separated list of font families
+     * @return Same list with space-containing names properly quoted
+     */
+    private String ensureFontNamesQuoted(String familyList) {
+        if (familyList == null || familyList.trim().isEmpty()) {
+            return familyList;
+        }
+        
+        StringBuilder result = new StringBuilder();
+        String[] families = familyList.split(",");
+        
+        for (int i = 0; i < families.length; i++) {
+            String family = families[i].trim();
+            
+            // Skip empty entries
+            if (family.isEmpty()) {
+                continue;
+            }
+            
+            // Check if already quoted (starts and ends with " or ')
+            boolean alreadyQuoted = (family.startsWith("\"") && family.endsWith("\"")) ||
+                                   (family.startsWith("'") && family.endsWith("'"));
+            
+            // If not quoted and contains space, add quotes
+            if (!alreadyQuoted && family.contains(" ")) {
+                family = "\"" + family + "\"";
+            }
+            
+            // Add to result with comma separator
+            if (result.length() > 0) {
+                result.append(", ");
+            }
+            result.append(family);
+        }
+        
+        return result.toString();
     }
     
     /**
