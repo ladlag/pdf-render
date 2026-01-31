@@ -368,17 +368,9 @@ public class HtmlReportRenderer {
             // Font names with spaces are properly quoted to prevent CSS parser issues
             String fontFamilyCss;
             if (fontProperties.getDefaultFamily() != null && !fontProperties.getDefaultFamily().isEmpty()) {
-                // User has configured a custom font family - use it!
-                // Add quotes around font names with spaces
+                // User has configured a custom font family - use it with proper quoting and fallbacks
                 fontFamilyCss = quoteFontFamilyIfNeeded(fontProperties.getDefaultFamily());
-                // Add unified alias as fallback (if not already present)
-                if (!fontFamilyCss.contains(PDF_FONT_FAMILY_ALIAS)) {
-                    fontFamilyCss = fontFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
-                }
-                // Ensure sans-serif is at the end (if not already present)
-                if (!fontFamilyCss.toLowerCase().contains("sans-serif")) {
-                    fontFamilyCss = fontFamilyCss + ", sans-serif";
-                }
+                fontFamilyCss = ensureFallbacks(fontFamilyCss);
             } else {
                 // No user configuration - use unified alias only
                 fontFamilyCss = "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
@@ -389,27 +381,13 @@ public class HtmlReportRenderer {
             // CJK font family configuration
             String cjkFamilyCss;
             if (fontProperties.getCjkFamily() != null && !fontProperties.getCjkFamily().isEmpty()) {
-                // User has configured a custom CJK font family - use it!
+                // User has configured a custom CJK font family - use it with proper quoting and fallbacks
                 cjkFamilyCss = quoteFontFamilyIfNeeded(fontProperties.getCjkFamily());
-                // Add unified alias as fallback (if not already present)
-                if (!cjkFamilyCss.contains(PDF_FONT_FAMILY_ALIAS)) {
-                    cjkFamilyCss = cjkFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
-                }
-                // Ensure sans-serif is at the end (if not already present)
-                if (!cjkFamilyCss.toLowerCase().contains("sans-serif")) {
-                    cjkFamilyCss = cjkFamilyCss + ", sans-serif";
-                }
+                cjkFamilyCss = ensureFallbacks(cjkFamilyCss);
             } else if (fontProperties.getDefaultFamily() != null && !fontProperties.getDefaultFamily().isEmpty()) {
-                // No CJK-specific config, but default family is configured - use default
+                // No CJK-specific config, but default family is configured - use default with fallbacks
                 cjkFamilyCss = quoteFontFamilyIfNeeded(fontProperties.getDefaultFamily());
-                // Add unified alias as fallback (if not already present)
-                if (!cjkFamilyCss.contains(PDF_FONT_FAMILY_ALIAS)) {
-                    cjkFamilyCss = cjkFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
-                }
-                // Ensure sans-serif is at the end (if not already present)
-                if (!cjkFamilyCss.toLowerCase().contains("sans-serif")) {
-                    cjkFamilyCss = cjkFamilyCss + ", sans-serif";
-                }
+                cjkFamilyCss = ensureFallbacks(cjkFamilyCss);
             } else {
                 // No configuration - use unified alias only
                 cjkFamilyCss = "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
@@ -539,7 +517,7 @@ public class HtmlReportRenderer {
                         
                         // Update user's CJK family config to match extracted name if not already set correctly
                         if (fontProperties.getCjkFamily() == null || fontProperties.getCjkFamily().isEmpty() ||
-                            !fontProperties.getCjkFamily().contains(realFontName)) {
+                            !containsFontName(fontProperties.getCjkFamily(), realFontName)) {
                             // Auto-correct the configuration to use extracted font name
                             fontProperties.setCjkFamily(realFontName + ", sans-serif");
                             logInfo("  Auto-configured CJK font-family: " + fontProperties.getCjkFamily());
@@ -575,7 +553,7 @@ public class HtmlReportRenderer {
                         
                         // Update user's default family config to match extracted name if not already set correctly
                         if (fontProperties.getDefaultFamily() == null || fontProperties.getDefaultFamily().isEmpty() ||
-                            !fontProperties.getDefaultFamily().contains(realFontName)) {
+                            !containsFontName(fontProperties.getDefaultFamily(), realFontName)) {
                             // Auto-correct the configuration to use extracted font name
                             fontProperties.setDefaultFamily(realFontName + ", sans-serif");
                             logInfo("  Auto-configured default font-family: " + fontProperties.getDefaultFamily());
@@ -847,8 +825,66 @@ public class HtmlReportRenderer {
     }
     
     /**
+     * Checks if a font name is already present in a comma-separated font-family list.
+     * Performs exact matching on trimmed font names to avoid false positives.
+     * 
+     * @param fontFamilyList Comma-separated font family list (e.g., "Arial, Helvetica, sans-serif")
+     * @param fontName Font name to search for (e.g., "Arial")
+     * @return true if fontName is present in the list
+     */
+    private boolean containsFontName(String fontFamilyList, String fontName) {
+        if (fontFamilyList == null || fontFamilyList.isEmpty() || fontName == null || fontName.isEmpty()) {
+            return false;
+        }
+        
+        // Split by comma and check each font
+        String[] fonts = fontFamilyList.split(",");
+        String normalizedSearchName = fontName.trim().toLowerCase();
+        
+        for (String font : fonts) {
+            // Remove quotes and trim
+            String normalizedFont = font.trim()
+                .replaceAll("^['\"]|['\"]$", "") // Remove leading/trailing quotes
+                .toLowerCase();
+            
+            if (normalizedFont.equals(normalizedSearchName)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Adds unified alias and sans-serif fallback to a font-family list if not already present.
+     * Ensures proper font fallback chain without duplication.
+     * 
+     * @param fontFamily Base font-family string
+     * @return Font-family string with alias and sans-serif added
+     */
+    private String ensureFallbacks(String fontFamily) {
+        if (fontFamily == null || fontFamily.isEmpty()) {
+            return "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
+        }
+        
+        String result = fontFamily;
+        
+        // Add unified alias if not present
+        if (!containsFontName(result, PDF_FONT_FAMILY_ALIAS)) {
+            result = result + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
+        }
+        
+        // Add sans-serif if not present
+        if (!containsFontName(result, "sans-serif")) {
+            result = result + ", sans-serif";
+        }
+        
+        return result;
+    }
+    
+    /**
      * Checks if a font name is a generic CSS font family.
-     * Generic families should not be deduplicated as they serve as fallbacks.
+     * Generic families should not be quoted as they serve as fallbacks.
      * 
      * @param fontName The font name to check
      * @return true if the font is a generic family (sans-serif, serif, monospace, etc.)
