@@ -121,12 +121,21 @@ public class HtmlReportRenderer {
         this.fontProperties = fontProperties;
         logFontProperties("FontProperties", fontProperties);
         
-        // Also configure chart renderer with the same font for consistent rendering
+        // Also configure chart renderer with CJK font (preferred) or regular font for consistent rendering
         // This is wrapped in try-catch to ensure safe initialization
         try {
-            if (fontProperties != null && fontProperties.getRegularPath() != null) {
-                logInfo("✓ Configuring chart font from regular font: " + fontProperties.getRegularPath());
-                chartRenderer.setChartFont(fontProperties.getRegularPath());
+            if (fontProperties != null) {
+                // PRIORITY: Use CJK font for charts if available (better Chinese character support)
+                // Otherwise fall back to regular font
+                String chartFontPath = fontProperties.getCjkPath();
+                if (chartFontPath == null || chartFontPath.isEmpty()) {
+                    chartFontPath = fontProperties.getRegularPath();
+                }
+                
+                if (chartFontPath != null && !chartFontPath.isEmpty()) {
+                    logInfo("✓ Configuring chart font: " + chartFontPath);
+                    chartRenderer.setChartFont(chartFontPath);
+                }
             }
         } catch (Exception e) {
             // Log warning but don't throw - allows application to start even if font loading fails
@@ -360,10 +369,16 @@ public class HtmlReportRenderer {
             String fontFamilyCss;
             if (fontProperties.getDefaultFamily() != null && !fontProperties.getDefaultFamily().isEmpty()) {
                 // User has configured a custom font family - use it!
-                // Add quotes around the entire family list if it contains spaces
+                // Add quotes around font names with spaces
                 fontFamilyCss = quoteFontFamilyIfNeeded(fontProperties.getDefaultFamily());
-                // Also include the unified alias as fallback for backward compatibility
-                fontFamilyCss = fontFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
+                // Add unified alias as fallback (if not already present)
+                if (!fontFamilyCss.contains(PDF_FONT_FAMILY_ALIAS)) {
+                    fontFamilyCss = fontFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
+                }
+                // Ensure sans-serif is at the end (if not already present)
+                if (!fontFamilyCss.toLowerCase().contains("sans-serif")) {
+                    fontFamilyCss = fontFamilyCss + ", sans-serif";
+                }
             } else {
                 // No user configuration - use unified alias only
                 fontFamilyCss = "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
@@ -376,12 +391,25 @@ public class HtmlReportRenderer {
             if (fontProperties.getCjkFamily() != null && !fontProperties.getCjkFamily().isEmpty()) {
                 // User has configured a custom CJK font family - use it!
                 cjkFamilyCss = quoteFontFamilyIfNeeded(fontProperties.getCjkFamily());
-                // Also include the unified alias as fallback
-                cjkFamilyCss = cjkFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
+                // Add unified alias as fallback (if not already present)
+                if (!cjkFamilyCss.contains(PDF_FONT_FAMILY_ALIAS)) {
+                    cjkFamilyCss = cjkFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
+                }
+                // Ensure sans-serif is at the end (if not already present)
+                if (!cjkFamilyCss.toLowerCase().contains("sans-serif")) {
+                    cjkFamilyCss = cjkFamilyCss + ", sans-serif";
+                }
             } else if (fontProperties.getDefaultFamily() != null && !fontProperties.getDefaultFamily().isEmpty()) {
                 // No CJK-specific config, but default family is configured - use default
                 cjkFamilyCss = quoteFontFamilyIfNeeded(fontProperties.getDefaultFamily());
-                cjkFamilyCss = cjkFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
+                // Add unified alias as fallback (if not already present)
+                if (!cjkFamilyCss.contains(PDF_FONT_FAMILY_ALIAS)) {
+                    cjkFamilyCss = cjkFamilyCss + ", \"" + PDF_FONT_FAMILY_ALIAS + "\"";
+                }
+                // Ensure sans-serif is at the end (if not already present)
+                if (!cjkFamilyCss.toLowerCase().contains("sans-serif")) {
+                    cjkFamilyCss = cjkFamilyCss + ", sans-serif";
+                }
             } else {
                 // No configuration - use unified alias only
                 cjkFamilyCss = "\"" + PDF_FONT_FAMILY_ALIAS + "\", sans-serif";
@@ -488,32 +516,42 @@ public class HtmlReportRenderer {
      */
     private void registerFontsWithRenderer(ITextRenderer renderer) {
         try {
-            int fontsRegistered = 0;
+            int fontFilesProcessed = 0;
+            java.util.Set<String> registeredNames = new java.util.LinkedHashSet<>();
             
             // Register CJK font first (if configured)
             // DUAL REGISTRATION: Register with both real font name AND unified alias for maximum compatibility
             if (fontProperties.getCjkPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getCjkPath());
+                fontFilesProcessed++;
                 
                 // Extract the real font family name from the font file
                 String realFontName = null;
                 try {
                     realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    if (realFontName != null && !realFontName.isEmpty()) {
+                        // Register with real font name first (allows user-configured font-family to work)
+                        renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
+                        registeredNames.add(realFontName);
+                        logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
+                        logInfo("  Font family name: " + realFontName);
+                        logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
+                        
+                        // Update user's CJK family config to match extracted name if not already set correctly
+                        if (fontProperties.getCjkFamily() == null || fontProperties.getCjkFamily().isEmpty() ||
+                            !fontProperties.getCjkFamily().contains(realFontName)) {
+                            // Auto-correct the configuration to use extracted font name
+                            fontProperties.setCjkFamily(realFontName + ", sans-serif");
+                            logInfo("  Auto-configured CJK font-family: " + fontProperties.getCjkFamily());
+                        }
+                    }
                 } catch (Exception e) {
-                    logWarn("Could not extract font name from " + fontPath + ", will use alias only");
-                }
-                
-                // Register with real font name first (allows user-configured font-family to work)
-                if (realFontName != null && !realFontName.isEmpty()) {
-                    renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
-                    fontsRegistered++;
-                    logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
-                    logInfo("  Font family name: " + realFontName);
-                    logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
+                    logWarn("Could not extract font name from " + fontPath + ": " + e.getMessage());
                 }
                 
                 // Also register with unified alias for backward compatibility
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
+                registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
             }
             
@@ -521,26 +559,35 @@ public class HtmlReportRenderer {
             // DUAL REGISTRATION: Register with both real font name AND unified alias
             if (fontProperties.getRegularPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getRegularPath());
+                fontFilesProcessed++;
                 
                 // Extract the real font family name from the font file
                 String realFontName = null;
                 try {
                     realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    if (realFontName != null && !realFontName.isEmpty()) {
+                        // Register with real font name first (allows user-configured font-family to work)
+                        renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
+                        registeredNames.add(realFontName);
+                        logInfo("✓ Regular font registered with Flying Saucer: " + fontPath);
+                        logInfo("  Font family name: " + realFontName);
+                        logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
+                        
+                        // Update user's default family config to match extracted name if not already set correctly
+                        if (fontProperties.getDefaultFamily() == null || fontProperties.getDefaultFamily().isEmpty() ||
+                            !fontProperties.getDefaultFamily().contains(realFontName)) {
+                            // Auto-correct the configuration to use extracted font name
+                            fontProperties.setDefaultFamily(realFontName + ", sans-serif");
+                            logInfo("  Auto-configured default font-family: " + fontProperties.getDefaultFamily());
+                        }
+                    }
                 } catch (Exception e) {
-                    logWarn("Could not extract font name from " + fontPath + ", will use alias only");
-                }
-                
-                // Register with real font name first (allows user-configured font-family to work)
-                if (realFontName != null && !realFontName.isEmpty()) {
-                    renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
-                    fontsRegistered++;
-                    logInfo("✓ Regular font registered with Flying Saucer: " + fontPath);
-                    logInfo("  Font family name: " + realFontName);
-                    logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
+                    logWarn("Could not extract font name from " + fontPath + ": " + e.getMessage());
                 }
                 
                 // Also register with unified alias for backward compatibility
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
+                registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
             }
             
@@ -548,32 +595,33 @@ public class HtmlReportRenderer {
             // DUAL REGISTRATION: Register with both real font name AND unified alias
             if (fontProperties.getBoldPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getBoldPath());
+                fontFilesProcessed++;
                 
                 // Extract the real font family name from the font file
                 String realFontName = null;
                 try {
                     realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    if (realFontName != null && !realFontName.isEmpty()) {
+                        // Register with real font name first (allows user-configured font-family to work)
+                        renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
+                        registeredNames.add(realFontName);
+                        logInfo("✓ Bold font registered with Flying Saucer: " + fontPath);
+                        logInfo("  Font family name: " + realFontName);
+                        logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
+                    }
                 } catch (Exception e) {
-                    logWarn("Could not extract font name from " + fontPath + ", will use alias only");
-                }
-                
-                // Register with real font name first (allows user-configured font-family to work)
-                if (realFontName != null && !realFontName.isEmpty()) {
-                    renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
-                    fontsRegistered++;
-                    logInfo("✓ Bold font registered with Flying Saucer: " + fontPath);
-                    logInfo("  Font family name: " + realFontName);
-                    logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
+                    logWarn("Could not extract font name from " + fontPath + ": " + e.getMessage());
                 }
                 
                 // Also register with unified alias for backward compatibility
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
+                registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
             }
             
-            if (fontsRegistered > 0) {
-                logInfo("✓ Total fonts registered for PDF: " + fontsRegistered);
-                logInfo("  Fonts registered with both real names and unified alias for compatibility");
+            if (fontFilesProcessed > 0) {
+                logInfo("✓ Total font files processed: " + fontFilesProcessed);
+                logInfo("  Registered font names: " + String.join(", ", registeredNames));
             }
         } catch (Exception e) {
             // Log the error but don't fail - fall back to default fonts
