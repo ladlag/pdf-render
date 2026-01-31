@@ -527,7 +527,8 @@ public class HtmlReportRenderer {
                 // IDENTITY_H: Unicode encoding for CJK character support
                 // EMBEDDED: Embeds font in PDF for cross-platform compatibility
                 // ALIAS: Use font's internal name for reliable CSS matching
-                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
+                // Signature: addFont(String path, String fontFamilyNameOverride, String encoding, boolean embedded, String pathToPFB)
+                renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, null);
                 fontsRegistered++;
                 logInfo("✓ Font registered with Flying Saucer: " + fontPath);
                 logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: " + BaseFont.EMBEDDED);
@@ -541,7 +542,7 @@ public class HtmlReportRenderer {
             if (fontProperties.getBoldPath() != null) {
                 String fontPath = resolveFontPath(fontProperties.getBoldPath());
                 String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
-                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
+                renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, null);
                 fontsRegistered++;
                 logInfo("✓ Bold font registered with Flying Saucer: " + fontPath);
                 logInfo("  Font family name: " + fontFamilyName);
@@ -555,7 +556,7 @@ public class HtmlReportRenderer {
                 String fontPath = resolveFontPath(fontProperties.getCjkPath());
                 String fontFamilyName = FontNameExtractor.extractFontFamilyName(fontPath);
                 
-                renderer.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, fontFamilyName);
+                renderer.getFontResolver().addFont(fontPath, fontFamilyName, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, null);
                 fontsRegistered++;
                 logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
                 logInfo("  Font family name: " + fontFamilyName);
