@@ -435,11 +435,12 @@ public class HtmlReportRenderer {
         if (trimmed.isEmpty()) {
             return trimmed;
         }
-        if ((trimmed.startsWith("\"") && trimmed.endsWith("\""))
-            || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+        if (trimmed.length() > 1
+            && ((trimmed.startsWith("\"") && trimmed.endsWith("\""))
+            || (trimmed.startsWith("'") && trimmed.endsWith("'")))) {
             return trimmed;
         }
-        if (trimmed.matches(".*[\\s,].*")) {
+        if (trimmed.indexOf(' ') >= 0 || trimmed.indexOf(',') >= 0) {
             return "\"" + trimmed + "\"";
         }
         return trimmed;

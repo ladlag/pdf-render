@@ -43,4 +43,23 @@ public class FontConsistencyTest {
         renderer.setChartFont(unixStylePath);
         assertNotNull(renderer.getChartFont(), "Chart font should be loaded from normalized paths");
     }
+
+    @Test
+    public void testFormatFontFamilyName() throws Exception {
+        HtmlReportRenderer renderer = new HtmlReportRenderer();
+        java.lang.reflect.Method method = HtmlReportRenderer.class.getDeclaredMethod("formatFontFamilyName", String.class);
+        method.setAccessible(true);
+
+        assertEquals("", method.invoke(renderer, new Object[] { null }), "Null input should return empty string");
+        assertEquals("", method.invoke(renderer, ""), "Empty string should remain empty");
+        assertEquals("HarmonyOS", method.invoke(renderer, "HarmonyOS"), "Unquoted single word should remain unchanged");
+        assertEquals("\"HarmonyOS Sans\"", method.invoke(renderer, "HarmonyOS Sans"),
+            "Names with spaces should be quoted");
+        assertEquals("\"HarmonyOS, Sans\"", method.invoke(renderer, "HarmonyOS, Sans"),
+            "Names with commas should be quoted");
+        assertEquals("\"HarmonyOS Sans\"", method.invoke(renderer, "\"HarmonyOS Sans\""),
+            "Already double-quoted names should remain unchanged");
+        assertEquals("'HarmonyOS Sans'", method.invoke(renderer, "'HarmonyOS Sans'"),
+            "Already single-quoted names should remain unchanged");
+    }
 }
