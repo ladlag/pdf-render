@@ -445,12 +445,12 @@ public class HtmlReportRenderer {
             && firstChar == lastChar
             && (firstChar == '"' || firstChar == '\'')
             && trimmed.indexOf(firstChar, 1) == trimmed.length() - 1
-            && trimmed.indexOf('\\') == -1
-            && (firstChar != '"' || trimmed.indexOf('"', 1) == trimmed.length() - 1)) {
+            && trimmed.indexOf('\\') == -1) {
             return trimmed;
         }
+        boolean hasQuote = trimmed.indexOf('"') >= 0;
         String escaped = trimmed.replace("\"", "\\\"");
-        if (escaped.indexOf(' ') >= 0 || escaped.indexOf(',') >= 0 || trimmed.indexOf('"') >= 0) {
+        if (escaped.indexOf(' ') >= 0 || escaped.indexOf(',') >= 0 || hasQuote) {
             return "\"" + escaped + "\"";
         }
         return escaped;
