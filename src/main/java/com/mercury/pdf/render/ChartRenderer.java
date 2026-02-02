@@ -115,6 +115,30 @@ public class ChartRenderer {
         // Apply custom font if configured (for Chinese/CJK support)
         if (chartFont != null) {
             applyChartFont(chart);
+        } else {
+            // Check if data contains Chinese characters and warn if no font is configured
+            boolean hasChinese = chartData.getData().keySet().stream()
+                .anyMatch(key -> key.matches(".*[\\u4e00-\\u9fa5].*"));
+            
+            // Also check axis labels for Chinese characters
+            boolean hasChineseInLabels = false;
+            if (chartData.getConfig() != null) {
+                String xLabel = chartData.getConfig().getXAxisLabel();
+                String yLabel = chartData.getConfig().getYAxisLabel();
+                if ((xLabel != null && xLabel.matches(".*[\\u4e00-\\u9fa5].*")) ||
+                    (yLabel != null && yLabel.matches(".*[\\u4e00-\\u9fa5].*"))) {
+                    hasChineseInLabels = true;
+                }
+            }
+            
+            if (hasChinese || hasChineseInLabels) {
+                String warningMsg = "WARNING: Chart contains Chinese characters but no custom font is configured. " +
+                       "Chinese characters may not display correctly (will show as boxes □). " +
+                       "Use ChartRenderer.setChartFont() or configure fonts via FontConfig/PdfRenderProperties.";
+                logWarn(warningMsg);
+                // Also print directly to ensure it's visible
+                System.err.println(warningMsg);
+            }
         }
         
         int width = (chartData.getConfig() != null && chartData.getConfig().getWidth() != null) 
@@ -391,40 +415,51 @@ public class ChartRenderer {
     /**
      * Applies the custom font to all text elements in the chart.
      * This ensures Chinese/CJK characters are rendered correctly.
+     * 
+     * Font is applied to:
+     * - CategoryPlot: X-axis and Y-axis labels and tick labels (where Chinese city names, months, etc. appear)
+     * - PiePlot: Section labels (where Chinese category names appear)
+     * - Legend: Legend item labels (where Chinese series names appear)
      */
     private void applyChartFont(JFreeChart chart) {
         if (chartFont == null) {
             return;
         }
         
+        logInfo("Applying custom font to chart: " + chartFont.getFamily(Locale.ROOT) + " (supports Chinese/CJK characters)");
+        
         Plot plot = chart.getPlot();
         
-        // Apply font to category plot axes
+        // Apply font to category plot axes (bar, line, area charts)
         if (plot instanceof CategoryPlot) {
             CategoryPlot categoryPlot = (CategoryPlot) plot;
             
-            // Domain axis (X-axis)
+            // Domain axis (X-axis) - THIS IS WHERE CHINESE CATEGORY LABELS APPEAR
             if (categoryPlot.getDomainAxis() != null) {
                 categoryPlot.getDomainAxis().setLabelFont(chartFont.deriveFont(Font.BOLD, 12f));
                 categoryPlot.getDomainAxis().setTickLabelFont(chartFont.deriveFont(11f));
+                logInfo("  ✓ Applied font to X-axis labels (e.g., Chinese category names)");
             }
             
-            // Range axis (Y-axis)
+            // Range axis (Y-axis) - THIS IS WHERE CHINESE VALUE LABELS APPEAR
             if (categoryPlot.getRangeAxis() != null) {
                 categoryPlot.getRangeAxis().setLabelFont(chartFont.deriveFont(Font.BOLD, 12f));
                 categoryPlot.getRangeAxis().setTickLabelFont(chartFont.deriveFont(11f));
+                logInfo("  ✓ Applied font to Y-axis labels");
             }
         }
         
-        // Apply font to pie plot labels
+        // Apply font to pie plot labels - THIS IS WHERE CHINESE SLICE LABELS APPEAR
         if (plot instanceof PiePlot) {
             PiePlot piePlot = (PiePlot) plot;
             piePlot.setLabelFont(chartFont.deriveFont(11f));
+            logInfo("  ✓ Applied font to pie chart labels (Chinese category names)");
         }
         
-        // Apply font to legend
+        // Apply font to legend - THIS IS WHERE CHINESE LEGEND ITEMS APPEAR
         if (chart.getLegend() != null) {
             chart.getLegend().setItemFont(chartFont.deriveFont(11f));
+            logInfo("  ✓ Applied font to legend (Chinese series names)");
         }
     }
 
