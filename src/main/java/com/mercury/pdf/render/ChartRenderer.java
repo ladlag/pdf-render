@@ -485,8 +485,13 @@ public class ChartRenderer {
                         return null;
                     }
                     String label = key.toString();
+                    // Guard against empty strings to avoid IllegalArgumentException
+                    if (label == null || label.isEmpty()) {
+                        return null;
+                    }
                     AttributedString as = new AttributedString(label);
-                    as.addAttribute(TextAttribute.FONT, labelFont);
+                    // Apply font to the entire string range explicitly
+                    as.addAttribute(TextAttribute.FONT, labelFont, 0, label.length());
                     return as;
                 }
             };
