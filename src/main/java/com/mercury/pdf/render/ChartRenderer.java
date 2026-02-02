@@ -4,6 +4,7 @@ import com.mercury.pdf.render.model.ChartConfig;
 import com.mercury.pdf.render.model.ChartData;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
@@ -12,14 +13,17 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.AttributedString;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
@@ -456,9 +460,39 @@ public class ChartRenderer {
         
         // Apply font to pie plot labels - THIS IS WHERE CHINESE SLICE LABELS APPEAR
         if (plot instanceof PiePlot) {
-            PiePlot piePlot = (PiePlot) plot;
-            piePlot.setLabelFont(chartFont.deriveFont(11f));
-            logInfo("  ✓ Applied font to pie chart labels (Chinese category names)");
+            final PiePlot piePlot = (PiePlot) plot;
+            final Font labelFont = chartFont.deriveFont(11f);
+            
+            // Set the label font
+            piePlot.setLabelFont(labelFont);
+            
+            // CRITICAL FIX: For Chinese characters to display on pie slice labels,
+            // we need to create a custom label generator that uses AttributedString
+            // with the Chinese font explicitly set. Otherwise, JFreeChart may use
+            // a default font that doesn't support Chinese characters.
+            PieSectionLabelGenerator customLabelGenerator = new PieSectionLabelGenerator() {
+                @Override
+                public String generateSectionLabel(PieDataset dataset, Comparable key) {
+                    if (key == null) {
+                        return null;
+                    }
+                    return key.toString();
+                }
+                
+                @Override
+                public AttributedString generateAttributedSectionLabel(PieDataset dataset, Comparable key) {
+                    if (key == null) {
+                        return null;
+                    }
+                    String label = key.toString();
+                    AttributedString as = new AttributedString(label);
+                    as.addAttribute(TextAttribute.FONT, labelFont);
+                    return as;
+                }
+            };
+            
+            piePlot.setLabelGenerator(customLabelGenerator);
+            logInfo("  ✓ Applied font to pie chart labels with custom generator (Chinese category names)");
         }
         
         // Apply font to legend - THIS IS WHERE CHINESE LEGEND ITEMS APPEAR
