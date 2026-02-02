@@ -33,6 +33,12 @@ public class ChartRenderer {
     private static final int DEFAULT_CHART_WIDTH = 500;
     private static final int DEFAULT_CHART_HEIGHT = 300;
     
+    // Warning message for charts with Chinese characters but no font configured
+    private static final String CHINESE_FONT_WARNING = 
+        "WARNING: Chart contains Chinese characters but no custom font is configured. " +
+        "Chinese characters may not display correctly (will show as boxes □). " +
+        "Use ChartRenderer.setChartFont() or configure fonts via FontConfig/PdfRenderProperties.";
+    
     // Font configuration for charts
     private Font chartFont = null; // Default is null, will use JFreeChart defaults
 
@@ -132,12 +138,11 @@ public class ChartRenderer {
             }
             
             if (hasChinese || hasChineseInLabels) {
-                String warningMsg = "WARNING: Chart contains Chinese characters but no custom font is configured. " +
-                       "Chinese characters may not display correctly (will show as boxes □). " +
-                       "Use ChartRenderer.setChartFont() or configure fonts via FontConfig/PdfRenderProperties.";
-                logWarn(warningMsg);
-                // Also print directly to ensure it's visible
-                System.err.println(warningMsg);
+                // Log warning via SLF4J if available
+                logWarn(CHINESE_FONT_WARNING);
+                // Also print to stderr to ensure visibility when SLF4J is not configured
+                // (SLF4J's NOP logger silently discards messages, so we need this fallback)
+                System.err.println(CHINESE_FONT_WARNING);
             }
         }
         
