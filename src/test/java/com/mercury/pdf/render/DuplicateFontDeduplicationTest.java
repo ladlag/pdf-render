@@ -122,9 +122,9 @@ public class DuplicateFontDeduplicationTest {
         // Configure DIFFERENT fonts for regular and CJK
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Bold.ttf"); // Different font
+        fontProps.setCjkPath("classpath:/fonts/NotoSansCJKsc-Regular.otf"); // Different font
         fontProps.setDefaultFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
-        fontProps.setCjkFamily("HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif");
+        fontProps.setCjkFamily("Noto Sans CJK SC, DejaVu Sans, Arial, sans-serif");
         
         renderer.setFontProperties(fontProps);
         
