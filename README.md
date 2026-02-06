@@ -267,6 +267,17 @@ chart.setData(Arrays.asList(100.0, 150.0, 200.0, 180.0));
 Section section = new Section("Sales Chart").addChart(chart);
 ```
 
+### Markdown (LLM-Friendly Content)
+
+```java
+Section section = new Section("Executive Summary")
+    .withMarkdownContent("# Highlights\n\n- Fast to read\n- Easy to share\n");
+```
+
+- Markdown is converted to HTML using **CommonMark** before PDF rendering.
+- Raw HTML inside Markdown is escaped for safety.
+- Use templates that render `customContent` (e.g., `flexible`, `matcher-report-*`) to display Markdown output.
+
 ### Debug HTML Output
 
 Enable debug mode to view the intermediate HTML:

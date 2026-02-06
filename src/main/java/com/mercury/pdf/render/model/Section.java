@@ -1,5 +1,7 @@
 package com.mercury.pdf.render.model;
 
+import com.mercury.pdf.render.util.MarkdownRenderer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,7 @@ public class Section {
     private List<ChartData> charts;
     private List<TableBlock> tableBlocks;
     private String customContent;
+    private String markdownContent;
     private String cssClass;
     
     public Section() {
@@ -106,6 +109,11 @@ public class Section {
     
     public Section withCustomContent(String content) {
         this.customContent = content;
+        return this;
+    }
+
+    public Section withMarkdownContent(String markdownContent) {
+        setMarkdownContent(markdownContent);
         return this;
     }
     
@@ -181,6 +189,18 @@ public class Section {
     public void setCustomContent(String customContent) {
         this.customContent = customContent;
     }
+
+    public String getMarkdownContent() {
+        return markdownContent;
+    }
+
+    public void setMarkdownContent(String markdownContent) {
+        this.markdownContent = markdownContent;
+        if (markdownContent != null && !markdownContent.trim().isEmpty() &&
+            (customContent == null || customContent.trim().isEmpty())) {
+            this.customContent = MarkdownRenderer.toHtml(markdownContent);
+        }
+    }
     
     public String getCssClass() {
         return cssClass;
@@ -208,6 +228,7 @@ public class Section {
                (tables != null && !tables.isEmpty()) ||
                (charts != null && !charts.isEmpty()) ||
                (tableBlocks != null && !tableBlocks.isEmpty()) ||
-               (customContent != null && !customContent.trim().isEmpty());
+               (customContent != null && !customContent.trim().isEmpty()) ||
+               (markdownContent != null && !markdownContent.trim().isEmpty());
     }
 }

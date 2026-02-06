@@ -389,6 +389,9 @@ public class MultiTemplateExample {
 6. **图表** (Charts) - 按添加顺序
 7. **自定义内容** (Custom Content)
 
+> ✅ 支持 Markdown（大模型输出常见格式）：使用 `withMarkdownContent(...)`，内容会先转换为 HTML，
+> 并在自定义内容位置渲染（适合标题、列表、强调等格式化文本）。
+
 #### 详细说明
 
 ```java
