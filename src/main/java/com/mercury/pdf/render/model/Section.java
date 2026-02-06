@@ -184,23 +184,7 @@ public class Section {
     }
     
     public String getCustomContent() {
-        if (markdownContent == null || markdownContent.trim().isEmpty()) {
-            return customContent;
-        }
-
-        if (renderedMarkdownContent == null) {
-            String markdownHtml = MarkdownRenderer.toHtml(markdownContent);
-            renderedMarkdownContent = "<div class=\"markdown-content\">" + markdownHtml + "</div>";
-        }
-        if (customContent == null || customContent.trim().isEmpty()) {
-            return renderedMarkdownContent;
-        }
-        StringBuilder combined = new StringBuilder();
-        combined.append("<div class=\"custom-html-content\">")
-            .append(customContent)
-            .append("</div>")
-            .append(renderedMarkdownContent);
-        return combined.toString();
+        return customContent;
     }
     
     public void setCustomContent(String customContent) {
@@ -209,6 +193,21 @@ public class Section {
 
     public String getMarkdownContent() {
         return markdownContent;
+    }
+
+    /**
+     * Returns rendered Markdown as HTML for templates to display.
+     *
+     * @return HTML string for markdown content, or null if no markdown was provided
+     */
+    public String getMarkdownHtml() {
+        if (markdownContent == null || markdownContent.trim().isEmpty()) {
+            return null;
+        }
+        if (renderedMarkdownContent == null) {
+            renderedMarkdownContent = MarkdownRenderer.toHtml(markdownContent);
+        }
+        return renderedMarkdownContent;
     }
 
     public void setMarkdownContent(String markdownContent) {

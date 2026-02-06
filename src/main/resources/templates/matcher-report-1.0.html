@@ -294,6 +294,8 @@
     <!-- customContent (raw html) -->
     <div th:if="${sec.customContent != null and sec.customContent != ''}"
          th:utext="${sec.customContent}"></div>
+    <div th:if="${sec.markdownHtml != null and sec.markdownHtml != ''}"
+         th:utext="${sec.markdownHtml}"></div>
   </div>
 </div>
 
@@ -363,6 +365,7 @@
     </div>
 
     <div th:if="${sec.customContent != null and sec.customContent != ''}" th:utext="${sec.customContent}"></div>
+    <div th:if="${sec.markdownHtml != null and sec.markdownHtml != ''}" th:utext="${sec.markdownHtml}"></div>
   </div>
 </div>
 

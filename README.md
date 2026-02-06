@@ -276,7 +276,7 @@ Section section = new Section("Executive Summary")
 
 - Markdown is converted to HTML using **CommonMark** before PDF rendering.
 - Raw HTML inside Markdown is escaped for safety.
-- Use templates that render `customContent` (e.g., `flexible`, `matcher-report-*`) to display Markdown output.
+- Templates render Markdown via `section.markdownHtml` (e.g., `flexible`, `matcher-report-*`).
 
 ### Debug HTML Output
 

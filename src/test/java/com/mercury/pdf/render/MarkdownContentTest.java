@@ -17,11 +17,11 @@ public class MarkdownContentTest {
         Section section = new Section("Markdown Section")
             .withMarkdownContent("# 标题\n\n- 项目1\n- 项目2");
 
-        String customContent = section.getCustomContent();
+        String markdownHtml = section.getMarkdownHtml();
 
-        assertNotNull(customContent);
-        assertTrue(customContent.contains("<h1>标题</h1>"));
-        assertTrue(customContent.contains("<li>项目1</li>"));
+        assertNotNull(markdownHtml);
+        assertTrue(markdownHtml.contains("<h1>标题</h1>"));
+        assertTrue(markdownHtml.contains("<li>项目1</li>"));
     }
 
     @Test
@@ -29,11 +29,11 @@ public class MarkdownContentTest {
         Section section = new Section("Security")
             .withMarkdownContent("Hello <script>alert('x')</script>");
 
-        String customContent = section.getCustomContent();
+        String markdownHtml = section.getMarkdownHtml();
 
-        assertNotNull(customContent);
-        assertTrue(customContent.contains("&lt;script&gt;alert('x')&lt;/script&gt;"));
-        assertFalse(customContent.contains("<script>"));
+        assertNotNull(markdownHtml);
+        assertTrue(markdownHtml.contains("&lt;script&gt;alert('x')&lt;/script&gt;"));
+        assertFalse(markdownHtml.contains("<script>"));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class MarkdownContentTest {
 
         assertNull(cacheField.get(section));
 
-        String firstRender = section.getCustomContent();
+        String firstRender = section.getMarkdownHtml();
 
         assertNotNull(firstRender);
         assertNotNull(cacheField.get(section));
@@ -60,13 +60,13 @@ public class MarkdownContentTest {
         Field cacheField = Section.class.getDeclaredField("renderedMarkdownContent");
         cacheField.setAccessible(true);
 
-        String firstRender = section.getCustomContent();
+        String firstRender = section.getMarkdownHtml();
         assertNotNull(cacheField.get(section));
 
         section.setMarkdownContent("**New**");
         assertNull(cacheField.get(section));
 
-        String secondRender = section.getCustomContent();
+        String secondRender = section.getMarkdownHtml();
         assertNotNull(cacheField.get(section));
 
         assertNotNull(firstRender);
