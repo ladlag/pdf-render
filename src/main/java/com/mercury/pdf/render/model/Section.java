@@ -46,6 +46,7 @@ public class Section {
     private List<TableBlock> tableBlocks;
     private String customContent;
     private String markdownContent;
+    private String renderedMarkdownContent;
     private String cssClass;
     
     public Section() {
@@ -183,7 +184,23 @@ public class Section {
     }
     
     public String getCustomContent() {
-        return customContent;
+        if (markdownContent == null || markdownContent.trim().isEmpty()) {
+            return customContent;
+        }
+
+        if (renderedMarkdownContent == null) {
+            String markdownHtml = MarkdownRenderer.toHtml(markdownContent);
+            renderedMarkdownContent = "<div class=\"markdown-content\">" + markdownHtml + "</div>";
+        }
+        if (customContent == null || customContent.trim().isEmpty()) {
+            return renderedMarkdownContent;
+        }
+        StringBuilder combined = new StringBuilder();
+        combined.append("<div class=\"custom-html-content\">")
+            .append(customContent)
+            .append("</div>")
+            .append(renderedMarkdownContent);
+        return combined.toString();
     }
     
     public void setCustomContent(String customContent) {
@@ -196,10 +213,7 @@ public class Section {
 
     public void setMarkdownContent(String markdownContent) {
         this.markdownContent = markdownContent;
-        if (markdownContent != null && !markdownContent.trim().isEmpty() &&
-            (customContent == null || customContent.trim().isEmpty())) {
-            this.customContent = MarkdownRenderer.toHtml(markdownContent);
-        }
+        this.renderedMarkdownContent = null;
     }
     
     public String getCssClass() {

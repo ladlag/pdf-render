@@ -3,7 +3,11 @@ package com.mercury.pdf.render;
 import com.mercury.pdf.render.model.Section;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MarkdownContentTest {
@@ -29,5 +33,45 @@ public class MarkdownContentTest {
 
         assertNotNull(customContent);
         assertTrue(customContent.contains("&lt;script&gt;alert('x')&lt;/script&gt;"));
+        assertFalse(customContent.contains("<script>"));
+    }
+
+    @Test
+    public void testMarkdownCacheInitializedOnFirstAccess() throws Exception {
+        Section section = new Section("Cache")
+            .withMarkdownContent("**Bold**");
+
+        Field cacheField = Section.class.getDeclaredField("renderedMarkdownContent");
+        cacheField.setAccessible(true);
+
+        assertNull(cacheField.get(section));
+
+        String firstRender = section.getCustomContent();
+
+        assertNotNull(firstRender);
+        assertNotNull(cacheField.get(section));
+    }
+
+    @Test
+    public void testMarkdownCacheInvalidatedOnUpdate() throws Exception {
+        Section section = new Section("Cache")
+            .withMarkdownContent("**Old**");
+
+        Field cacheField = Section.class.getDeclaredField("renderedMarkdownContent");
+        cacheField.setAccessible(true);
+
+        String firstRender = section.getCustomContent();
+        assertNotNull(cacheField.get(section));
+
+        section.setMarkdownContent("**New**");
+        assertNull(cacheField.get(section));
+
+        String secondRender = section.getCustomContent();
+        assertNotNull(cacheField.get(section));
+
+        assertNotNull(firstRender);
+        assertNotNull(secondRender);
+        assertTrue(secondRender.contains("New"));
+        assertFalse(secondRender.contains("Old"));
     }
 }
