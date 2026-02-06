@@ -1,5 +1,7 @@
 package com.mercury.pdf.render.model;
 
+import com.mercury.pdf.render.util.MarkdownRenderer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,8 @@ public class Section {
     private List<ChartData> charts;
     private List<TableBlock> tableBlocks;
     private String customContent;
+    private String markdownContent;
+    private String renderedMarkdownContent;
     private String cssClass;
     
     public Section() {
@@ -106,6 +110,11 @@ public class Section {
     
     public Section withCustomContent(String content) {
         this.customContent = content;
+        return this;
+    }
+
+    public Section withMarkdownContent(String markdownContent) {
+        setMarkdownContent(markdownContent);
         return this;
     }
     
@@ -181,6 +190,30 @@ public class Section {
     public void setCustomContent(String customContent) {
         this.customContent = customContent;
     }
+
+    public String getMarkdownContent() {
+        return markdownContent;
+    }
+
+    /**
+     * Returns rendered Markdown as HTML for templates to display.
+     *
+     * @return HTML string for markdown content, or null if no markdown was provided
+     */
+    public String getMarkdownHtml() {
+        if (markdownContent == null || markdownContent.trim().isEmpty()) {
+            return null;
+        }
+        if (renderedMarkdownContent == null) {
+            renderedMarkdownContent = MarkdownRenderer.toHtml(markdownContent);
+        }
+        return renderedMarkdownContent;
+    }
+
+    public void setMarkdownContent(String markdownContent) {
+        this.markdownContent = markdownContent;
+        this.renderedMarkdownContent = null;
+    }
     
     public String getCssClass() {
         return cssClass;
@@ -208,6 +241,7 @@ public class Section {
                (tables != null && !tables.isEmpty()) ||
                (charts != null && !charts.isEmpty()) ||
                (tableBlocks != null && !tableBlocks.isEmpty()) ||
-               (customContent != null && !customContent.trim().isEmpty());
+               (customContent != null && !customContent.trim().isEmpty()) ||
+               (markdownContent != null && !markdownContent.trim().isEmpty());
     }
 }

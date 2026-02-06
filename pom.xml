@@ -44,6 +44,13 @@
             <version>3.1.1.RELEASE</version>
         </dependency>
 
+        <!-- Markdown rendering for LLM-friendly content -->
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.21.0</version>
+        </dependency>
+
         <!-- JSON processing for data -->
         <dependency>
             <groupId>com.google.code.gson</groupId>

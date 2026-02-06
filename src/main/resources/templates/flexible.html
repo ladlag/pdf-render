@@ -277,6 +277,11 @@
             <div th:if="${section.customContent != null}" 
                  class="custom-content" 
                  th:utext="${section.customContent}">Custom HTML content</div>
+
+            <!-- Markdown Content -->
+            <div th:if="${section.markdownHtml != null}" 
+                 class="markdown-content"
+                 th:utext="${section.markdownHtml}">Markdown content</div>
         </div>
     </div>
     
