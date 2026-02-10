@@ -129,18 +129,6 @@
       background: #f8fafc; 
     }
 
-    /* ===== Summary Table ===== */
-    .summary-table th {
-      background: #d1d5e8;
-      border: 2px solid #a8adc4;
-      color: #000;
-    }
-    .summary-table {
-      border: 1px solid #cfcfcf;
-    }
-    .summary-table td {
-      border: 1px solid #cfcfcf;
-    }
 
     /* ===== List Items ===== */
     .list-item {
@@ -446,24 +434,6 @@
 <h2>三、预审结果总结</h2>
 
 <div class="section-card">
-
-  <table class="summary-table" th:if="${summaryTable != null}">
-    <thead>
-    <tr>
-      <!-- 汇总表同样过滤“优先级”列（如果存在） -->
-      <th th:each="col : ${summaryTable.headers}"
-          th:if="${col != '优先级'}"
-          th:text="${col}">列名</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="row, rStat : ${summaryTable.rows}" th:class="${rStat.index % 2 == 1} ? 'row-alt' : ''">
-      <td th:each="cell, cStat : ${row}"
-          th:if="${summaryTable.headers != null and summaryTable.headers[cStat.index] != '优先级'}"
-          th:text="${cell}">数据</td>
-    </tr>
-    </tbody>
-  </table>
 
   <!-- Chapter 3 sections: Use sectionType if available, fallback to title prefix -->
   <div th:if="${sections != null and !#lists.isEmpty(sections)}">
