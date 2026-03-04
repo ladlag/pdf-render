@@ -7,7 +7,12 @@ import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.Section;
 import com.mercury.pdf.render.util.FontNameExtractor;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
 import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfGState;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.PdfStamper;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -345,7 +350,17 @@ public class HtmlReportRenderer {
         }
         
         // Step 3: Convert HTML to PDF using Flying Saucer
-        return convertHtmlToPdf(html);
+        byte[] pdfBytes = convertHtmlToPdf(html);
+        
+        // Step 4: Add watermark at PDF level using OpenPDF
+        // (Flying Saucer does not support CSS flexbox or transform, so watermark
+        //  must be applied directly to the PDF for correct centering and rotation)
+        if (watermarkProperties != null && watermarkProperties.isEnabled()
+                && watermarkProperties.getText() != null && !watermarkProperties.getText().isEmpty()) {
+            pdfBytes = addPdfWatermark(pdfBytes);
+        }
+        
+        return pdfBytes;
     }
     
     /**
@@ -422,19 +437,10 @@ public class HtmlReportRenderer {
             logWarn("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
         }
         
-        // Add watermark configuration
-        if (watermarkProperties != null && watermarkProperties.isEnabled() 
-                && watermarkProperties.getText() != null && !watermarkProperties.getText().isEmpty()) {
-            data.put("watermarkEnabled", true);
-            data.put("watermarkText", watermarkProperties.getText());
-            data.put("watermarkFontSize", watermarkProperties.getFontSize());
-            data.put("watermarkColor", watermarkProperties.getColor());
-            data.put("watermarkOpacity", watermarkProperties.getOpacity());
-            data.put("watermarkRotation", watermarkProperties.getRotation());
-            logInfo("✓ Watermark enabled: \"" + watermarkProperties.getText() + "\"");
-        } else {
-            data.put("watermarkEnabled", false);
-        }
+        // Watermark is rendered at the PDF level (not via HTML/CSS) because
+        // Flying Saucer does not support CSS flexbox or transform: rotate().
+        // Always disable the HTML watermark to avoid a broken overlay.
+        data.put("watermarkEnabled", false);
         
         return data;
     }
@@ -467,6 +473,100 @@ public class HtmlReportRenderer {
         renderer.createPDF(baos);
         
         return baos.toByteArray();
+    }
+    
+    /**
+     * Adds a text watermark to every page of the PDF using OpenPDF.
+     * <p>
+     * This method post-processes the generated PDF to overlay a rotated, centered,
+     * semi-transparent watermark on each page. It bypasses Flying Saucer's CSS
+     * limitations (no flexbox, no CSS transforms) by drawing directly on the PDF
+     * content layer via {@link PdfContentByte}.
+     *
+     * @param pdfBytes The original PDF bytes
+     * @return PDF bytes with watermark applied on every page
+     * @throws IOException if the PDF cannot be read or written
+     * @throws DocumentException if the watermark cannot be applied
+     */
+    private byte[] addPdfWatermark(byte[] pdfBytes) throws IOException, DocumentException {
+        PdfReader reader = new PdfReader(pdfBytes);
+        ByteArrayOutputStream stamped = new ByteArrayOutputStream();
+        PdfStamper stamper = new PdfStamper(reader, stamped);
+        
+        // Resolve the watermark font — prefer the configured CJK font for
+        // Chinese/Japanese/Korean watermark text, fall back to Helvetica.
+        BaseFont watermarkFont;
+        try {
+            String fontPath = null;
+            if (fontProperties != null && fontProperties.getCjkPath() != null) {
+                fontPath = resolveFontPath(fontProperties.getCjkPath());
+            } else if (fontProperties != null && fontProperties.getRegularPath() != null) {
+                fontPath = resolveFontPath(fontProperties.getRegularPath());
+            }
+            if (fontPath != null) {
+                watermarkFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            } else {
+                watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+            }
+        } catch (Exception e) {
+            logWarn("⚠️ Could not load watermark font, falling back to Helvetica: " + e.getMessage());
+            watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+        }
+        
+        // Parse color from hex string (e.g. "#cccccc")
+        String colorHex = watermarkProperties.getColor();
+        if (colorHex == null) colorHex = "#cccccc";
+        if (colorHex.startsWith("#")) colorHex = colorHex.substring(1);
+        int r = 204, g = 204, b = 204; // default light gray
+        if (colorHex.length() == 6) {
+            try {
+                r = Integer.parseInt(colorHex.substring(0, 2), 16);
+                g = Integer.parseInt(colorHex.substring(2, 4), 16);
+                b = Integer.parseInt(colorHex.substring(4, 6), 16);
+            } catch (NumberFormatException ignored) {
+                // keep defaults
+            }
+        }
+        
+        float fontSize = watermarkProperties.getFontSize();
+        float opacity = (float) watermarkProperties.getOpacity();
+        float rotationDeg = watermarkProperties.getRotation();
+        String text = watermarkProperties.getText();
+        
+        PdfGState gState = new PdfGState();
+        gState.setFillOpacity(opacity);
+        
+        int totalPages = reader.getNumberOfPages();
+        for (int i = 1; i <= totalPages; i++) {
+            PdfContentByte over = stamper.getOverContent(i);
+            
+            // Get page dimensions
+            com.lowagie.text.Rectangle pageSize = reader.getPageSizeWithRotation(i);
+            float pageWidth = pageSize.getWidth();
+            float pageHeight = pageSize.getHeight();
+            
+            over.saveState();
+            over.setGState(gState);
+            over.beginText();
+            over.setFontAndSize(watermarkFont, fontSize);
+            over.setColorFill(new java.awt.Color(r, g, b));
+            // Draw text centered on page with the configured rotation.
+            // Negate the rotation because CSS uses clockwise-positive convention
+            // while OpenPDF's showTextAligned uses counterclockwise-positive.
+            // e.g. CSS rotate(-30deg) = 30° CCW on screen = OpenPDF rotation(+30).
+            over.showTextAligned(Element.ALIGN_CENTER, text,
+                    pageWidth / 2, pageHeight / 2, -rotationDeg);
+            over.endText();
+            over.restoreState();
+        }
+        
+        stamper.close();
+        reader.close();
+        
+        logInfo("✓ Watermark applied at PDF level: \"" + text + "\" on " + totalPages + " page(s)"
+                + " (rotation=" + rotationDeg + "°, fontSize=" + fontSize + "pt, opacity=" + opacity + ")");
+        
+        return stamped.toByteArray();
     }
     
     /**
