@@ -9,12 +9,14 @@ import com.mercury.pdf.render.util.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -139,7 +141,7 @@ public class MarkdownPdfRenderTest {
         assertTrue(pdfBytes.length > 0, "PDF should not be empty");
 
         // Verify that the CJK font is embedded with Identity-H encoding
-        String pdfContent = new String(pdfBytes, "ISO-8859-1");
+        String pdfContent = new String(pdfBytes, StandardCharsets.ISO_8859_1);
         assertTrue(pdfContent.contains("Identity-H"),
             "PDF must contain Identity-H encoding for CJK font support");
 
@@ -151,10 +153,12 @@ public class MarkdownPdfRenderTest {
         // Verify debug HTML was generated (with timestamp in filename)
         Path debugDir = Paths.get(DEBUG_HTML_DIR);
         assertTrue(Files.exists(debugDir), "Debug HTML directory should exist");
-        long htmlCount = Files.list(debugDir)
-            .filter(f -> f.getFileName().toString().startsWith("flexible-") && f.getFileName().toString().endsWith(".html"))
-            .count();
-        assertTrue(htmlCount > 0, "Debug HTML file with timestamp should be created");
+        try (Stream<Path> files = Files.list(debugDir)) {
+            long htmlCount = files
+                .filter(f -> f.getFileName().toString().startsWith("flexible-") && f.getFileName().toString().endsWith(".html"))
+                .count();
+            assertTrue(htmlCount > 0, "Debug HTML file with timestamp should be created");
+        }
         System.out.println("✓ Debug HTML saved with timestamp to: " + debugDir.toAbsolutePath());
     }
 
