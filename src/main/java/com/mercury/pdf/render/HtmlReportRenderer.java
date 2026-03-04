@@ -624,12 +624,18 @@ public class HtmlReportRenderer {
     /**
      * Disables font subsetting for a registered font to ensure full font embedding.
      * 
-     * <p><b>Why this is needed:</b> OpenPDF 1.3.11's CID font subsetting creates TrueType
-     * subsets containing only 6 tables (glyf, head, hhea, hmtx, loca, maxp), stripping
-     * critical tables like {@code cmap}, {@code OS/2}, {@code name}, and {@code post}.
+     * <p><b>Why this is needed:</b> OpenPDF's CID font subsetting (all 1.3.x versions
+     * through 1.3.43 and even 3.x) passes {@code includeCmap=false, includeExtras=false}
+     * to {@code TrueTypeFontSubSet}, creating TrueType subsets containing only basic
+     * tables (glyf, head, hhea, hmtx, loca, maxp) and stripping critical tables like
+     * {@code cmap}, {@code OS/2}, {@code name}, and {@code post}.
      * While most PDF viewers (Chrome, Adobe Acrobat, MuPDF) handle these minimal subsets,
      * WPS Office requires the missing tables for correct CJK character rendering, causing
      * Chinese text to appear blank.
+     * 
+     * <p><b>Note:</b> No version of OpenPDF has fixed this root cause. Upgrading OpenPDF
+     * alone will not resolve the issue. This workaround (disabling subsetting) remains
+     * necessary for WPS Office compatibility.
      * 
      * <p>This method retrieves the cached {@link BaseFont} object (created by the prior
      * {@code addFont} call) and sets {@code subset = false}, so the complete font file
