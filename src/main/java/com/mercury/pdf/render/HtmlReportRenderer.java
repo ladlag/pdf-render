@@ -70,9 +70,16 @@ public class HtmlReportRenderer {
      */
     private void initDefaultFonts() {
         try {
+            boolean fontAvailable = false;
             java.io.InputStream fontStream = getClass().getResourceAsStream("/fonts/HarmonyOS_Sans_SC_Regular.ttf");
             if (fontStream != null) {
-                fontStream.close();
+                try {
+                    fontAvailable = true;
+                } finally {
+                    fontStream.close();
+                }
+            }
+            if (fontAvailable) {
                 PdfRenderProperties.FontProperties defaultProps = new PdfRenderProperties.FontProperties();
                 defaultProps.setRegularPath(DEFAULT_CJK_FONT_PATH);
                 this.fontProperties = defaultProps;
