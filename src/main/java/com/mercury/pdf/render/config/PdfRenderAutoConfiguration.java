@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
  *     cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
  *     default-family: HarmonyOS Sans SC, DejaVu Sans, Arial, sans-serif
  *     cjk-family: Noto Sans CJK, SimSun, sans-serif
+ *     disable-subsetting: true
  *   debug:
  *     enabled: false
  *     output-directory: debug-html

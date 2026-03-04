@@ -19,6 +19,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *     regular-path: classpath:/fonts/custom-regular.ttf
  *     bold-path: classpath:/fonts/custom-bold.ttf
  *     cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
+ *     disable-subsetting: true
  *   debug:
  *     enabled: true
  *     output-directory: debug-html
@@ -176,6 +177,24 @@ public class PdfRenderProperties {
          */
         private String cjkFamily = "";
         
+        /**
+         * Whether to disable font subsetting and embed the full font file.
+         * 
+         * <p>When {@code true} (default), the complete font file is embedded in the PDF,
+         * preserving all TrueType tables (cmap, OS/2, name, post, etc.). This ensures
+         * compatibility with viewers like WPS Office that require these tables for
+         * correct CJK character rendering.
+         * 
+         * <p>When {@code false}, OpenPDF will embed only a subset of the font containing
+         * the glyphs actually used in the document. This produces smaller PDF files but
+         * may cause blank Chinese text in some viewers (e.g., WPS Office) because
+         * OpenPDF 1.3.11's CID subsetting strips critical tables.
+         * 
+         * <p>Set to {@code false} if file size is critical and the PDF will only be
+         * viewed in Chrome, Adobe Acrobat, or other viewers that handle minimal subsets.
+         */
+        private boolean disableSubsetting = true;
+        
         public String getRegularPath() {
             return regularPath;
         }
@@ -214,6 +233,14 @@ public class PdfRenderProperties {
         
         public void setCjkFamily(String cjkFamily) {
             this.cjkFamily = cjkFamily;
+        }
+        
+        public boolean isDisableSubsetting() {
+            return disableSubsetting;
+        }
+        
+        public void setDisableSubsetting(boolean disableSubsetting) {
+            this.disableSubsetting = disableSubsetting;
         }
     }
     

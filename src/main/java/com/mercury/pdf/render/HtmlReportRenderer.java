@@ -533,7 +533,9 @@ public class HtmlReportRenderer {
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
                 
-                disableFontSubsetting(fontPath, disabledSubsetPaths);
+                if (fontProperties.isDisableSubsetting()) {
+                    disableFontSubsetting(fontPath, disabledSubsetPaths);
+                }
             }
             
             // Register regular font with Identity-H encoding for Unicode support
@@ -571,7 +573,9 @@ public class HtmlReportRenderer {
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
                 
-                disableFontSubsetting(fontPath, disabledSubsetPaths);
+                if (fontProperties.isDisableSubsetting()) {
+                    disableFontSubsetting(fontPath, disabledSubsetPaths);
+                }
             }
             
             // Register bold font with Identity-H encoding
@@ -601,7 +605,9 @@ public class HtmlReportRenderer {
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
                 
-                disableFontSubsetting(fontPath, disabledSubsetPaths);
+                if (fontProperties.isDisableSubsetting()) {
+                    disableFontSubsetting(fontPath, disabledSubsetPaths);
+                }
             }
             
             if (fontFilesProcessed > 0) {
