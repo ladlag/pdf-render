@@ -234,6 +234,12 @@ public class Section {
         return allowHtmlInMarkdown;
     }
 
+    /**
+     * Sets whether raw HTML in markdown content should be preserved.
+     * Changing this flag invalidates the cached rendered content.
+     *
+     * @param allowHtmlInMarkdown {@code true} to preserve raw HTML, {@code false} to escape it
+     */
     public void setAllowHtmlInMarkdown(boolean allowHtmlInMarkdown) {
         this.allowHtmlInMarkdown = allowHtmlInMarkdown;
         this.renderedMarkdownContent = null;
