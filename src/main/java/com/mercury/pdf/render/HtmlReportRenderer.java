@@ -51,47 +51,10 @@ public class HtmlReportRenderer {
     private String debugHtmlOutputDirectory = "debug-html"; // Directory for debug HTML files
     private boolean debugHtmlIncludeTimestamp = false; // Whether to include timestamp in filename
     
-    /**
-     * Default bundled CJK font path in classpath.
-     * Used for automatic Chinese/CJK character support when no explicit font configuration is provided.
-     */
-    private static final String DEFAULT_CJK_FONT_PATH = "classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf";
-    
     public HtmlReportRenderer() {
         this.chartRenderer = new ChartRenderer();
         this.templateEngine = createTemplateEngine();
-        initDefaultFonts();
-    }
-    
-    /**
-     * Initializes default font configuration using bundled CJK font if available.
-     * This ensures Chinese/CJK characters render correctly out of the box
-     * without requiring explicit font configuration.
-     */
-    private void initDefaultFonts() {
-        try {
-            boolean fontAvailable = false;
-            java.io.InputStream fontStream = getClass().getResourceAsStream("/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-            if (fontStream != null) {
-                try {
-                    fontAvailable = true;
-                } finally {
-                    fontStream.close();
-                }
-            }
-            if (fontAvailable) {
-                PdfRenderProperties.FontProperties defaultProps = new PdfRenderProperties.FontProperties();
-                defaultProps.setRegularPath(DEFAULT_CJK_FONT_PATH);
-                this.fontProperties = defaultProps;
-                logInfo("✓ Auto-configured default CJK font: " + DEFAULT_CJK_FONT_PATH);
-            } else {
-                this.fontProperties = null;
-                logInfo("No bundled CJK font found, using system defaults");
-            }
-        } catch (Exception e) {
-            this.fontProperties = null;
-            logWarn("Could not auto-configure default fonts: " + e.getMessage());
-        }
+        this.fontProperties = null; // No custom fonts by default
     }
     
     /**

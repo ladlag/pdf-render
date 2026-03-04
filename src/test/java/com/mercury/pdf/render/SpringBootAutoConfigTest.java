@@ -187,20 +187,19 @@ public class SpringBootAutoConfigTest {
 
     @Test
     public void testAutoConfigWithNoFontsConfigured() {
-        // Setup properties with NO fonts explicitly configured
+        // Setup properties with NO explicit fonts configured
         PdfRenderProperties properties = new PdfRenderProperties();
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
         ReportService service = autoConfig.reportService();
         
-        // Even without explicit font configuration, the library auto-configures bundled
-        // HarmonyOS CJK font as default to ensure Chinese content renders correctly
+        // FontProperties defaults to bundled HarmonyOS font for out-of-the-box CJK support
         FontConfig fontConfig = service.getHtmlRenderer().getFontConfig();
         assertNotNull(fontConfig,
                    "Font config should be auto-configured with bundled CJK font");
-        assertNotNull(fontConfig.getRegularFontPath(),
-                   "Regular font path should be auto-configured");
+        assertEquals("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf", fontConfig.getRegularFontPath(),
+                   "Default regular font should be the bundled HarmonyOS font");
         
         System.out.println("✓ Spring Boot auto-configuration: Default CJK font auto-configured");
     }

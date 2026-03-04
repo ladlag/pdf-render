@@ -145,9 +145,10 @@ public class PdfRenderProperties {
      */
     public static class FontProperties {
         /**
-         * Path to regular font file
+         * Path to regular font file.
+         * Defaults to the bundled HarmonyOS Sans SC font for out-of-the-box CJK support.
          */
-        private String regularPath;
+        private String regularPath = "classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf";
         
         /**
          * Path to bold font file
