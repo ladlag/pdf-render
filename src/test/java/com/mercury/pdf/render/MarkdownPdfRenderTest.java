@@ -1,5 +1,6 @@
 package com.mercury.pdf.render;
 
+import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MarkdownPdfRenderTest {
 
     private static final String TEST_OUTPUT_DIR = System.getProperty("test.output.dir", "test-output");
+    private static final String DEBUG_HTML_DIR = "test-output/debug-html";
 
     @Test
     public void testGfmTableRendering() {
@@ -123,6 +125,18 @@ public class MarkdownPdfRenderTest {
 
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
+
+        // Configure Chinese font for proper CJK character rendering
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
+        service.getHtmlRenderer().setFontConfig(fontConfig);
+
+        // Enable debug HTML output for troubleshooting
+        service.getHtmlRenderer().setDebugHtmlEnabled(true);
+        service.getHtmlRenderer().setDebugHtmlOutputDirectory(DEBUG_HTML_DIR);
+        service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(false);
+
         byte[] pdfBytes = service.generatePdf(report);
 
         assertNotNull(pdfBytes);
@@ -132,6 +146,11 @@ public class MarkdownPdfRenderTest {
         Files.createDirectories(outputPath.getParent());
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Large markdown PDF generated: " + outputPath.toAbsolutePath());
+
+        // Verify debug HTML was generated
+        Path debugHtmlPath = Paths.get(DEBUG_HTML_DIR, "flexible.html");
+        assertTrue(Files.exists(debugHtmlPath), "Debug HTML file should be created");
+        System.out.println("✓ Debug HTML saved: " + debugHtmlPath.toAbsolutePath());
     }
 
     @Test
@@ -231,6 +250,13 @@ public class MarkdownPdfRenderTest {
 
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
+
+        // Configure Chinese font for proper CJK character rendering
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
+        service.getHtmlRenderer().setFontConfig(fontConfig);
+
         byte[] pdfBytes = service.generatePdf(report);
 
         assertNotNull(pdfBytes);
