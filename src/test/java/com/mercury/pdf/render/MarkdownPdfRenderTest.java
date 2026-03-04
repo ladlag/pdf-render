@@ -1,6 +1,6 @@
 package com.mercury.pdf.render;
 
-import com.mercury.pdf.render.config.FontConfig;
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -131,22 +131,31 @@ public class MarkdownPdfRenderTest {
         // Enable debug HTML output for troubleshooting
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
         service.getHtmlRenderer().setDebugHtmlOutputDirectory(DEBUG_HTML_DIR);
-        service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(false);
+        service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(true);
 
         byte[] pdfBytes = service.generatePdf(report);
 
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0, "PDF should not be empty");
 
+        // Verify that the CJK font is embedded with Identity-H encoding
+        String pdfContent = new String(pdfBytes, "ISO-8859-1");
+        assertTrue(pdfContent.contains("Identity-H"),
+            "PDF must contain Identity-H encoding for CJK font support");
+
         Path outputPath = Paths.get(TEST_OUTPUT_DIR, "markdown_large_content.pdf");
         Files.createDirectories(outputPath.getParent());
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Large markdown PDF generated: " + outputPath.toAbsolutePath());
 
-        // Verify debug HTML was generated
-        Path debugHtmlPath = Paths.get(DEBUG_HTML_DIR, "flexible.html");
-        assertTrue(Files.exists(debugHtmlPath), "Debug HTML file should be created");
-        System.out.println("✓ Debug HTML saved: " + debugHtmlPath.toAbsolutePath());
+        // Verify debug HTML was generated (with timestamp in filename)
+        Path debugDir = Paths.get(DEBUG_HTML_DIR);
+        assertTrue(Files.exists(debugDir), "Debug HTML directory should exist");
+        long htmlCount = Files.list(debugDir)
+            .filter(f -> f.getFileName().toString().startsWith("flexible-") && f.getFileName().toString().endsWith(".html"))
+            .count();
+        assertTrue(htmlCount > 0, "Debug HTML file with timestamp should be created");
+        System.out.println("✓ Debug HTML saved with timestamp to: " + debugDir.toAbsolutePath());
     }
 
     @Test
@@ -260,10 +269,15 @@ public class MarkdownPdfRenderTest {
         System.out.println("✓ Mixed traditional+markdown PDF generated: " + outputPath.toAbsolutePath());
     }
 
+    /**
+     * Configures Chinese font using PdfRenderProperties.FontProperties directly,
+     * matching the same approach used by Spring Boot auto-configuration.
+     * Uses the bundled HarmonyOS Sans SC font with Identity-H encoding for CJK support.
+     */
     private void configureChineseFont(ReportService service) {
-        FontConfig fontConfig = new FontConfig();
-        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
-        service.getHtmlRenderer().setFontConfig(fontConfig);
+        PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
+        fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        service.getHtmlRenderer().setFontProperties(fontProps);
     }
 }
