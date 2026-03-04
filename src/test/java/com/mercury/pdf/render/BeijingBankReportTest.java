@@ -6,6 +6,7 @@ import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -84,14 +85,13 @@ public class BeijingBankReportTest {
             if (is == null) {
                 throw new IOException("Resource not found: " + resourceName);
             }
-            byte[] bytes = new byte[is.available()];
-            int totalRead = 0;
-            while (totalRead < bytes.length) {
-                int read = is.read(bytes, totalRead, bytes.length - totalRead);
-                if (read < 0) break;
-                totalRead += read;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int len;
+            while ((len = is.read(buffer)) != -1) {
+                baos.write(buffer, 0, len);
             }
-            return new String(bytes, 0, totalRead, StandardCharsets.UTF_8);
+            return baos.toString("UTF-8");
         }
     }
 
