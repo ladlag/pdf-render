@@ -37,12 +37,15 @@ public class BeijingBankReportTest {
 
         // Build the report using markdown content
         ReportData report = ReportDataBuilder.create()
-            .title("北京银行财报分析报告")
-            .subtitle("2025年上半年财务分析")
-            .reportDate("2025-06-30")
-            .addSection(new Section("报告正文")
-                .withMarkdownContent(markdown))
-            .build();
+                .title("北京银行财报分析报告")
+                .subtitle("2025年上半年财务分析")
+                .reportDate("2025-06-30")
+                .coverDisclaimer("免责声明：本报告仅供内部参考，不构成投资建议")
+                .headerText("")
+                .footerText("注: 本报告由AI生成 仅供参考")
+                .addSection(new Section("报告正文")
+                        .withMarkdownContent(markdown))
+                .build();
 
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("financial-report");
@@ -53,7 +56,7 @@ public class BeijingBankReportTest {
         // Configure watermark
         PdfRenderProperties.WatermarkProperties watermark = new PdfRenderProperties.WatermarkProperties();
         watermark.setEnabled(true);
-        watermark.setText("内部资料");
+        watermark.setText("仅供教学使用");
         watermark.setFontSize(50);
         watermark.setColor("#cccccc");
         watermark.setOpacity(0.3);
@@ -73,7 +76,7 @@ public class BeijingBankReportTest {
         // Verify that the CJK font is embedded with Identity-H encoding
         String pdfContent = new String(pdfBytes, StandardCharsets.ISO_8859_1);
         assertTrue(pdfContent.contains("Identity-H"),
-            "PDF must contain Identity-H encoding for CJK font support");
+                "PDF must contain Identity-H encoding for CJK font support");
 
         // Save the output PDF
         Path outputPath = Paths.get(TEST_OUTPUT_DIR, "beijing_bank_financial_report.pdf");
@@ -84,7 +87,7 @@ public class BeijingBankReportTest {
 
         // Verify the PDF is substantial (should be large with full font + many pages)
         assertTrue(pdfBytes.length > 50000,
-            "Financial report PDF should be substantial (>50KB). Actual: " + pdfBytes.length);
+                "Financial report PDF should be substantial (>50KB). Actual: " + pdfBytes.length);
     }
 
     /**
