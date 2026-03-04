@@ -47,6 +47,7 @@ public class Section {
     private String customContent;
     private String markdownContent;
     private String renderedMarkdownContent;
+    private boolean allowHtmlInMarkdown;
     private String cssClass;
     
     public Section() {
@@ -115,6 +116,20 @@ public class Section {
 
     public Section withMarkdownContent(String markdownContent) {
         setMarkdownContent(markdownContent);
+        return this;
+    }
+
+    /**
+     * Sets markdown content with an option to allow raw HTML.
+     *
+     * @param markdownContent the markdown text
+     * @param allowHtml when {@code true}, raw HTML in the markdown is preserved;
+     *                  when {@code false}, it is escaped
+     * @return this Section for method chaining
+     */
+    public Section withMarkdownContent(String markdownContent, boolean allowHtml) {
+        setMarkdownContent(markdownContent);
+        this.allowHtmlInMarkdown = allowHtml;
         return this;
     }
     
@@ -205,13 +220,28 @@ public class Section {
             return null;
         }
         if (renderedMarkdownContent == null) {
-            renderedMarkdownContent = MarkdownRenderer.toHtml(markdownContent);
+            renderedMarkdownContent = MarkdownRenderer.toHtml(markdownContent, allowHtmlInMarkdown);
         }
         return renderedMarkdownContent;
     }
 
     public void setMarkdownContent(String markdownContent) {
         this.markdownContent = markdownContent;
+        this.renderedMarkdownContent = null;
+    }
+
+    public boolean isAllowHtmlInMarkdown() {
+        return allowHtmlInMarkdown;
+    }
+
+    /**
+     * Sets whether raw HTML in markdown content should be preserved.
+     * Changing this flag invalidates the cached rendered content.
+     *
+     * @param allowHtmlInMarkdown {@code true} to preserve raw HTML, {@code false} to escape it
+     */
+    public void setAllowHtmlInMarkdown(boolean allowHtmlInMarkdown) {
+        this.allowHtmlInMarkdown = allowHtmlInMarkdown;
         this.renderedMarkdownContent = null;
     }
     
