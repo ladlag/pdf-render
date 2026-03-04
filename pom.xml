@@ -35,6 +35,20 @@
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf-openpdf</artifactId>
             <version>9.1.22</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.librepdf</groupId>
+                    <artifactId>openpdf</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- OpenPDF upgraded to 1.3.43 for general bug fixes (Java 8 compatible).
+             Note: CID font subsetting still strips cmap/OS/2 tables in all 1.3.x versions;
+             the disableSubsetting workaround remains necessary for WPS Office compatibility. -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.43</version>
         </dependency>
 
         <!-- Thymeleaf for HTML templating -->

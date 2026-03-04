@@ -367,6 +367,12 @@ mvn test
 - Tests for Chinese fonts, tables, charts, templates
 - Spring Boot auto-configuration tests
 - JAR resource loading tests
+- **Watermark tests** (`WatermarkTest.java`) — validates watermark generation:
+  - `testWatermarkEnabled` — English watermark ("CONFIDENTIAL") on flexible template
+  - `testChineseWatermark` — Chinese watermark ("内部资料") with CJK font verification
+  - `testWatermarkDisabledByDefault` — verifies watermark is off when not configured
+  - `testWatermarkWithFinancialReportTemplate` — watermark ("DRAFT") on financial-report template
+  - `testWatermarkPropertiesDefaults` — validates default property values
 
 ---
 

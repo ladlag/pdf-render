@@ -1,5 +1,6 @@
 package com.mercury.pdf.render;
 
+import com.mercury.pdf.render.config.PdfRenderProperties;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -8,12 +9,14 @@ import com.mercury.pdf.render.util.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MarkdownPdfRenderTest {
 
     private static final String TEST_OUTPUT_DIR = System.getProperty("test.output.dir", "test-output");
+    private static final String DEBUG_HTML_DIR = "test-output/debug-html";
 
     @Test
     public void testGfmTableRendering() {
@@ -123,15 +127,39 @@ public class MarkdownPdfRenderTest {
 
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
+
+        configureChineseFont(service);
+
+        // Enable debug HTML output for troubleshooting
+        service.getHtmlRenderer().setDebugHtmlEnabled(true);
+        service.getHtmlRenderer().setDebugHtmlOutputDirectory(DEBUG_HTML_DIR);
+        service.getHtmlRenderer().setDebugHtmlIncludeTimestamp(true);
+
         byte[] pdfBytes = service.generatePdf(report);
 
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0, "PDF should not be empty");
 
+        // Verify that the CJK font is embedded with Identity-H encoding
+        String pdfContent = new String(pdfBytes, StandardCharsets.ISO_8859_1);
+        assertTrue(pdfContent.contains("Identity-H"),
+            "PDF must contain Identity-H encoding for CJK font support");
+
         Path outputPath = Paths.get(TEST_OUTPUT_DIR, "markdown_large_content.pdf");
         Files.createDirectories(outputPath.getParent());
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Large markdown PDF generated: " + outputPath.toAbsolutePath());
+
+        // Verify debug HTML was generated (with timestamp in filename)
+        Path debugDir = Paths.get(DEBUG_HTML_DIR);
+        assertTrue(Files.exists(debugDir), "Debug HTML directory should exist");
+        try (Stream<Path> files = Files.list(debugDir)) {
+            long htmlCount = files
+                .filter(f -> f.getFileName().toString().startsWith("flexible-") && f.getFileName().toString().endsWith(".html"))
+                .count();
+            assertTrue(htmlCount > 0, "Debug HTML file with timestamp should be created");
+        }
+        System.out.println("✓ Debug HTML saved with timestamp to: " + debugDir.toAbsolutePath());
     }
 
     @Test
@@ -231,6 +259,9 @@ public class MarkdownPdfRenderTest {
 
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
+
+        configureChineseFont(service);
+
         byte[] pdfBytes = service.generatePdf(report);
 
         assertNotNull(pdfBytes);
@@ -240,5 +271,17 @@ public class MarkdownPdfRenderTest {
         Files.createDirectories(outputPath.getParent());
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Mixed traditional+markdown PDF generated: " + outputPath.toAbsolutePath());
+    }
+
+    /**
+     * Configures Chinese font using PdfRenderProperties.FontProperties directly,
+     * matching the same approach used by Spring Boot auto-configuration.
+     * Uses the bundled HarmonyOS Sans SC font with Identity-H encoding for CJK support.
+     */
+    private void configureChineseFont(ReportService service) {
+        PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
+        fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        service.getHtmlRenderer().setFontProperties(fontProps);
     }
 }

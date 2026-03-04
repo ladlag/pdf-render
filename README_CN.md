@@ -204,6 +204,20 @@ mvn test
 
 测试生成的PDF将保存在`test-output/`目录中供检查。
 
+生成水印的测试案例位于 `WatermarkTest.java`（`src/test/java/com/mercury/pdf/render/WatermarkTest.java`）：
+
+- `testWatermarkEnabled` — 英文水印（"CONFIDENTIAL"），使用 flexible 模板
+- `testChineseWatermark` — 中文水印（"内部资料"），验证 CJK 字体嵌入
+- `testWatermarkDisabledByDefault` — 验证未配置时水印默认关闭
+- `testWatermarkWithFinancialReportTemplate` — 水印（"DRAFT"）应用于 financial-report 模板
+- `testWatermarkPropertiesDefaults` — 验证水印属性默认值
+
+单独运行水印测试：
+
+```bash
+mvn test -Dtest=WatermarkTest
+```
+
 ## 详细使用示例
 
 ### 示例1：创建简单报告

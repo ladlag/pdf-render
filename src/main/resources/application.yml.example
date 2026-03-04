@@ -42,6 +42,23 @@ pdf-render:
     # Note: Without custom fonts, Chinese characters may appear as boxes (□)
     # Place your font files in src/main/resources/fonts/ directory
   
+  # Watermark configuration - 水印配置
+  watermark:
+    # Whether to enable watermark - 是否启用水印 (default: false)
+    enabled: false
+    # Watermark text content - 水印文字内容
+    # Examples: "CONFIDENTIAL", "DRAFT", "内部资料"
+    text: CONFIDENTIAL
+    # Font size in pt - 字体大小 (default: 60)
+    font-size: 60
+    # Text color in CSS format - 文字颜色 (default: #cccccc)
+    color: "#cccccc"
+    # Opacity from 0.0 to 1.0 - 透明度 (default: 0.3)
+    opacity: 0.3
+    # Rotation angle in degrees - 旋转角度 (default: -30)
+    # Negative values rotate counter-clockwise
+    rotation: -30
+
   # Debug configuration - 调试HTML输出配置
   debug:
     # Enable debug HTML output - 是否启用调试HTML输出

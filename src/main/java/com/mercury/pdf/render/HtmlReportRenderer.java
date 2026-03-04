@@ -7,7 +7,12 @@ import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.Section;
 import com.mercury.pdf.render.util.FontNameExtractor;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
 import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfGState;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.PdfStamper;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -33,6 +38,7 @@ public class HtmlReportRenderer {
     private String defaultTemplateName = "report"; // Default template name
     private String templateLocation = "/templates/"; // Template location prefix
     private PdfRenderProperties.FontProperties fontProperties; // Optional font configuration
+    private PdfRenderProperties.WatermarkProperties watermarkProperties; // Optional watermark configuration
     
     // Font cache to avoid extracting same font multiple times
     private final java.util.Map<String, String> fontPathCache = new java.util.concurrent.ConcurrentHashMap<>();
@@ -152,6 +158,25 @@ public class HtmlReportRenderer {
      */
     public PdfRenderProperties.FontProperties getFontProperties() {
         return fontProperties;
+    }
+    
+    /**
+     * Sets watermark configuration for the PDF renderer.
+     * When enabled, a text watermark is rendered on every page.
+     *
+     * @param watermarkProperties Watermark configuration properties
+     */
+    public void setWatermarkProperties(PdfRenderProperties.WatermarkProperties watermarkProperties) {
+        this.watermarkProperties = watermarkProperties;
+    }
+    
+    /**
+     * Gets the current watermark configuration.
+     *
+     * @return Current watermark properties, or null if not set
+     */
+    public PdfRenderProperties.WatermarkProperties getWatermarkProperties() {
+        return watermarkProperties;
     }
     
     /**
@@ -325,7 +350,17 @@ public class HtmlReportRenderer {
         }
         
         // Step 3: Convert HTML to PDF using Flying Saucer
-        return convertHtmlToPdf(html);
+        byte[] pdfBytes = convertHtmlToPdf(html);
+        
+        // Step 4: Add watermark at PDF level using OpenPDF
+        // (Flying Saucer does not support CSS flexbox or transform, so watermark
+        //  must be applied directly to the PDF for correct centering and rotation)
+        if (watermarkProperties != null && watermarkProperties.isEnabled()
+                && watermarkProperties.getText() != null && !watermarkProperties.getText().isEmpty()) {
+            pdfBytes = addPdfWatermark(pdfBytes);
+        }
+        
+        return pdfBytes;
     }
     
     /**
@@ -341,6 +376,9 @@ public class HtmlReportRenderer {
         data.put("reportNumber", reportData.getReportNumber());
         data.put("reportNotice", reportData.getReportNotice());
         data.put("metadata", reportData.getMetadata());
+        data.put("coverDisclaimer", reportData.getCoverDisclaimer());
+        data.put("footerText", reportData.getFooterText());
+        data.put("headerText", reportData.getHeaderText() != null ? reportData.getHeaderText() : (reportData.getTitle() != null ? reportData.getTitle() : ""));
         
         // Process flexible sections
         List<Section> sections = reportData.getSections();
@@ -436,6 +474,107 @@ public class HtmlReportRenderer {
     }
     
     /**
+     * Adds a text watermark to every page of the PDF using OpenPDF.
+     * <p>
+     * This method post-processes the generated PDF to overlay a rotated, centered,
+     * semi-transparent watermark on each page. It bypasses Flying Saucer's CSS
+     * limitations (no flexbox, no CSS transforms) by drawing directly on the PDF
+     * content layer via {@link PdfContentByte}.
+     *
+     * @param pdfBytes The original PDF bytes
+     * @return PDF bytes with watermark applied on every page
+     * @throws IOException if the PDF cannot be read or written
+     * @throws DocumentException if the watermark cannot be applied
+     */
+    private static final int DEFAULT_WATERMARK_R = 204;
+    private static final int DEFAULT_WATERMARK_G = 204;
+    private static final int DEFAULT_WATERMARK_B = 204;
+    private static final String DEFAULT_WATERMARK_COLOR_HEX = "#cccccc";
+
+    private byte[] addPdfWatermark(byte[] pdfBytes) throws IOException, DocumentException {
+        PdfReader reader = new PdfReader(pdfBytes);
+        ByteArrayOutputStream stamped = new ByteArrayOutputStream();
+        try {
+            PdfStamper stamper = new PdfStamper(reader, stamped);
+            try {
+                // Resolve the watermark font — prefer the configured CJK font for
+                // Chinese/Japanese/Korean watermark text, fall back to Helvetica.
+                BaseFont watermarkFont;
+                try {
+                    String fontPath = null;
+                    if (fontProperties != null && fontProperties.getCjkPath() != null) {
+                        fontPath = resolveFontPath(fontProperties.getCjkPath());
+                    } else if (fontProperties != null && fontProperties.getRegularPath() != null) {
+                        fontPath = resolveFontPath(fontProperties.getRegularPath());
+                    }
+                    if (fontPath != null) {
+                        watermarkFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                    } else {
+                        watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                    }
+                } catch (Exception e) {
+                    logWarn("⚠️ Could not load watermark font, falling back to Helvetica: " + e.getMessage());
+                    watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                }
+                
+                // Parse color from hex string (e.g. "#cccccc")
+                String colorHex = watermarkProperties.getColor();
+                if (colorHex == null) colorHex = DEFAULT_WATERMARK_COLOR_HEX;
+                if (colorHex.startsWith("#")) colorHex = colorHex.substring(1);
+                int r = DEFAULT_WATERMARK_R, g = DEFAULT_WATERMARK_G, b = DEFAULT_WATERMARK_B;
+                if (colorHex.length() == 6) {
+                    try {
+                        r = Integer.parseInt(colorHex.substring(0, 2), 16);
+                        g = Integer.parseInt(colorHex.substring(2, 4), 16);
+                        b = Integer.parseInt(colorHex.substring(4, 6), 16);
+                    } catch (NumberFormatException ignored) {
+                        // keep defaults
+                    }
+                }
+                
+                float fontSize = watermarkProperties.getFontSize();
+                float opacity = (float) watermarkProperties.getOpacity();
+                float rotationDeg = watermarkProperties.getRotation();
+                String text = watermarkProperties.getText();
+                
+                PdfGState gState = new PdfGState();
+                gState.setFillOpacity(opacity);
+                
+                int totalPages = reader.getNumberOfPages();
+                for (int i = 1; i <= totalPages; i++) {
+                    PdfContentByte over = stamper.getOverContent(i);
+                    
+                    // Get page dimensions
+                    com.lowagie.text.Rectangle pageSize = reader.getPageSizeWithRotation(i);
+                    float pageWidth = pageSize.getWidth();
+                    float pageHeight = pageSize.getHeight();
+                    
+                    over.saveState();
+                    over.setGState(gState);
+                    over.beginText();
+                    over.setFontAndSize(watermarkFont, fontSize);
+                    over.setColorFill(new java.awt.Color(r, g, b));
+                    // Negate the rotation: CSS rotate() treats positive as clockwise,
+                    // while OpenPDF showTextAligned treats positive as counterclockwise.
+                    over.showTextAligned(Element.ALIGN_CENTER, text,
+                            pageWidth / 2, pageHeight / 2, -rotationDeg);
+                    over.endText();
+                    over.restoreState();
+                }
+                
+                logInfo("✓ Watermark applied at PDF level: \"" + text + "\" on " + totalPages + " page(s)"
+                        + " (rotation=" + rotationDeg + "°, fontSize=" + fontSize + "pt, opacity=" + opacity + ")");
+            } finally {
+                stamper.close();
+            }
+        } finally {
+            reader.close();
+        }
+        
+        return stamped.toByteArray();
+    }
+    
+    /**
      * Registers custom fonts with the Flying Saucer renderer for PDF embedding.
      * 
      * <p><b>Implementation follows official OpenPDF/Flying Saucer community guidelines for Chinese font support:</b>
@@ -496,6 +635,7 @@ public class HtmlReportRenderer {
         try {
             int fontFilesProcessed = 0;
             java.util.Set<String> registeredNames = new java.util.LinkedHashSet<>();
+            java.util.Set<String> disabledSubsetPaths = new java.util.LinkedHashSet<>();
             
             // Register CJK font first (if configured)
             // DUAL REGISTRATION: Register with both real font name AND unified alias for maximum compatibility
@@ -531,6 +671,10 @@ public class HtmlReportRenderer {
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
+                
+                if (fontProperties.isDisableSubsetting()) {
+                    disableFontSubsetting(fontPath, disabledSubsetPaths);
+                }
             }
             
             // Register regular font with Identity-H encoding for Unicode support
@@ -567,6 +711,10 @@ public class HtmlReportRenderer {
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
+                
+                if (fontProperties.isDisableSubsetting()) {
+                    disableFontSubsetting(fontPath, disabledSubsetPaths);
+                }
             }
             
             // Register bold font with Identity-H encoding
@@ -595,6 +743,10 @@ public class HtmlReportRenderer {
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
+                
+                if (fontProperties.isDisableSubsetting()) {
+                    disableFontSubsetting(fontPath, disabledSubsetPaths);
+                }
             }
             
             if (fontFilesProcessed > 0) {
@@ -605,6 +757,45 @@ public class HtmlReportRenderer {
             // Log the error but don't fail - fall back to default fonts
             logWarn("✗ Warning: Failed to register custom fonts: " + e.getMessage());
             logWarn("Stack trace:", e);
+        }
+    }
+    
+    /**
+     * Disables font subsetting for a registered font to ensure full font embedding.
+     * 
+     * <p><b>Why this is needed:</b> OpenPDF's CID font subsetting (all 1.3.x versions
+     * through 1.3.43 and even 3.x) passes {@code includeCmap=false, includeExtras=false}
+     * to {@code TrueTypeFontSubSet}, creating TrueType subsets containing only basic
+     * tables (glyf, head, hhea, hmtx, loca, maxp) and stripping critical tables like
+     * {@code cmap}, {@code OS/2}, {@code name}, and {@code post}.
+     * While most PDF viewers (Chrome, Adobe Acrobat, MuPDF) handle these minimal subsets,
+     * WPS Office requires the missing tables for correct CJK character rendering, causing
+     * Chinese text to appear blank.
+     * 
+     * <p><b>Note:</b> No version of OpenPDF has fixed this root cause. Upgrading OpenPDF
+     * alone will not resolve the issue. This workaround (disabling subsetting) remains
+     * necessary for WPS Office compatibility.
+     * 
+     * <p>This method retrieves the cached {@link BaseFont} object (created by the prior
+     * {@code addFont} call) and sets {@code subset = false}, so the complete font file
+     * is embedded in the PDF with all tables preserved.
+     * 
+     * @param fontPath Path to the font file (must match the path used in addFont)
+     * @param processedPaths Set of paths already processed, to avoid redundant calls
+     */
+    private void disableFontSubsetting(String fontPath, java.util.Set<String> processedPaths) {
+        if (processedPaths.contains(fontPath)) {
+            return; // Already disabled for this font file
+        }
+        try {
+            // BaseFont.createFont caches by (path, encoding, embedded), so this returns
+            // the same object that addFont stored internally — no new font is created
+            BaseFont bf = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            bf.setSubset(false);
+            processedPaths.add(fontPath);
+            logInfo("  Font subsetting disabled for full embedding (WPS compatibility)");
+        } catch (Exception e) {
+            logWarn("Could not disable font subsetting: " + e.getMessage());
         }
     }
     

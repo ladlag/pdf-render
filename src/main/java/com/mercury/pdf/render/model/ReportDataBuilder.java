@@ -87,6 +87,32 @@ public class ReportDataBuilder {
     }
     
     /**
+     * Sets the cover disclaimer text displayed at the bottom of the cover page (optional)
+     */
+    public ReportDataBuilder coverDisclaimer(String coverDisclaimer) {
+        reportData.setCoverDisclaimer(coverDisclaimer);
+        return this;
+    }
+    
+    /**
+     * Sets the footer text displayed at the bottom of every page (optional).
+     * This text appears in the page footer area alongside page numbers.
+     */
+    public ReportDataBuilder footerText(String footerText) {
+        reportData.setFooterText(footerText);
+        return this;
+    }
+    
+    /**
+     * Sets the header text displayed at the top of every page (optional).
+     * Defaults to the report title if not set. Set to empty string to hide.
+     */
+    public ReportDataBuilder headerText(String headerText) {
+        reportData.setHeaderText(headerText);
+        return this;
+    }
+    
+    /**
      * Adds a flexible section to the report.
      * Sections can contain any combination of paragraphs, tables, and charts.
      */
