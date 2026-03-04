@@ -378,6 +378,7 @@ public class HtmlReportRenderer {
         data.put("metadata", reportData.getMetadata());
         data.put("coverDisclaimer", reportData.getCoverDisclaimer());
         data.put("footerText", reportData.getFooterText());
+        data.put("headerText", reportData.getHeaderText() != null ? reportData.getHeaderText() : reportData.getTitle());
         
         // Process flexible sections
         List<Section> sections = reportData.getSections();

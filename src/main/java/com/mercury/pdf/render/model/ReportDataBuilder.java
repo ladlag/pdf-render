@@ -104,6 +104,15 @@ public class ReportDataBuilder {
     }
     
     /**
+     * Sets the header text displayed at the top of every page (optional).
+     * Defaults to the report title if not set. Set to empty string to hide.
+     */
+    public ReportDataBuilder headerText(String headerText) {
+        reportData.setHeaderText(headerText);
+        return this;
+    }
+    
+    /**
      * Adds a flexible section to the report.
      * Sections can contain any combination of paragraphs, tables, and charts.
      */

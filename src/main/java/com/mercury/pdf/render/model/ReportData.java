@@ -37,6 +37,7 @@ public class ReportData {
     private String metadata;
     private String coverDisclaimer;
     private String footerText;
+    private String headerText;
     
     // Flexible section-based structure
     private List<Section> sections;
@@ -107,6 +108,14 @@ public class ReportData {
 
     public void setFooterText(String footerText) {
         this.footerText = footerText;
+    }
+
+    public String getHeaderText() {
+        return headerText;
+    }
+
+    public void setHeaderText(String headerText) {
+        this.headerText = headerText;
     }
 
     public List<Section> getSections() {
