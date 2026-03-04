@@ -496,6 +496,7 @@ public class HtmlReportRenderer {
         try {
             int fontFilesProcessed = 0;
             java.util.Set<String> registeredNames = new java.util.LinkedHashSet<>();
+            java.util.Set<String> disabledSubsetPaths = new java.util.LinkedHashSet<>();
             
             // Register CJK font first (if configured)
             // DUAL REGISTRATION: Register with both real font name AND unified alias for maximum compatibility
@@ -531,6 +532,8 @@ public class HtmlReportRenderer {
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
+                
+                disableFontSubsetting(fontPath, disabledSubsetPaths);
             }
             
             // Register regular font with Identity-H encoding for Unicode support
@@ -567,6 +570,8 @@ public class HtmlReportRenderer {
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
+                
+                disableFontSubsetting(fontPath, disabledSubsetPaths);
             }
             
             // Register bold font with Identity-H encoding
@@ -595,6 +600,8 @@ public class HtmlReportRenderer {
                 renderer.getFontResolver().addFont(fontPath, PDF_FONT_FAMILY_ALIAS, BaseFont.IDENTITY_H, true, null);
                 registeredNames.add(PDF_FONT_FAMILY_ALIAS);
                 logInfo("  Also registered as alias: " + PDF_FONT_FAMILY_ALIAS);
+                
+                disableFontSubsetting(fontPath, disabledSubsetPaths);
             }
             
             if (fontFilesProcessed > 0) {
@@ -605,6 +612,39 @@ public class HtmlReportRenderer {
             // Log the error but don't fail - fall back to default fonts
             logWarn("✗ Warning: Failed to register custom fonts: " + e.getMessage());
             logWarn("Stack trace:", e);
+        }
+    }
+    
+    /**
+     * Disables font subsetting for a registered font to ensure full font embedding.
+     * 
+     * <p><b>Why this is needed:</b> OpenPDF 1.3.11's CID font subsetting creates TrueType
+     * subsets containing only 6 tables (glyf, head, hhea, hmtx, loca, maxp), stripping
+     * critical tables like {@code cmap}, {@code OS/2}, {@code name}, and {@code post}.
+     * While most PDF viewers (Chrome, Adobe Acrobat, MuPDF) handle these minimal subsets,
+     * WPS Office requires the missing tables for correct CJK character rendering, causing
+     * Chinese text to appear blank.
+     * 
+     * <p>This method retrieves the cached {@link BaseFont} object (created by the prior
+     * {@code addFont} call) and sets {@code subset = false}, so the complete font file
+     * is embedded in the PDF with all tables preserved.
+     * 
+     * @param fontPath Path to the font file (must match the path used in addFont)
+     * @param processedPaths Set of paths already processed, to avoid redundant calls
+     */
+    private void disableFontSubsetting(String fontPath, java.util.Set<String> processedPaths) {
+        if (processedPaths.contains(fontPath)) {
+            return; // Already disabled for this font file
+        }
+        try {
+            // BaseFont.createFont caches by (path, encoding, embedded), so this returns
+            // the same object that addFont stored internally — no new font is created
+            BaseFont bf = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            bf.setSubset(false);
+            processedPaths.add(fontPath);
+            logInfo("  Font subsetting disabled for full embedding (WPS compatibility)");
+        } catch (Exception e) {
+            logWarn("Could not disable font subsetting: " + e.getMessage());
         }
     }
     
