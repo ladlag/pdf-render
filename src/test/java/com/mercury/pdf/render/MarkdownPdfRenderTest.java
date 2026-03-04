@@ -3,6 +3,7 @@ package com.mercury.pdf.render;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
+import com.mercury.pdf.render.model.TableData;
 import com.mercury.pdf.render.util.MarkdownRenderer;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +11,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -168,5 +172,73 @@ public class MarkdownPdfRenderTest {
         String html = section.getMarkdownHtml();
         assertTrue(html.contains("<table>"));
         assertTrue(html.contains("<td>1</td>"));
+    }
+
+    /**
+     * Demonstrates mixing traditional structured content (paragraphs, tables, charts)
+     * with markdown content in the same report and even within the same section.
+     * The flexible.html template renders all content types per section in order:
+     * title → subtitle → paragraphs → tables → charts → customContent → markdownContent.
+     */
+    @Test
+    public void testMixedTraditionalAndMarkdownContent() throws IOException {
+        // Markdown content for the analysis body
+        StringBuilder md = new StringBuilder();
+        md.append("## 详细分析\n\n");
+        md.append("根据以上数据，我们发现以下趋势：\n\n");
+        md.append("| 季度 | 增长率 |\n");
+        md.append("|------|--------|\n");
+        md.append("| Q1 | 10% |\n");
+        md.append("| Q2 | 15% |\n\n");
+        md.append("> 备注：增长率基于同比数据\n\n");
+        md.append("### 结论\n\n");
+        md.append("整体表现**良好**，建议继续当前策略。\n");
+
+        // Section 1: traditional structured data (paragraphs + table)
+        TableData summaryTable = new TableData(
+            Arrays.asList("指标", "值", "状态"),
+            Arrays.asList(
+                Arrays.asList("收入", "1000万", "达标"),
+                Arrays.asList("利润", "200万", "超额")
+            )
+        );
+        Section structuredSection = new Section("一、数据概览")
+            .addParagraph("本章节使用传统结构化数据展示关键指标。")
+            .addTable(summaryTable);
+
+        // Section 2: markdown-only content
+        Section markdownSection = new Section("二、分析报告")
+            .withMarkdownContent(md.toString());
+
+        // Section 3: mixed — traditional paragraph + markdown in the SAME section
+        Section mixedSection = new Section("三、综合展示")
+            .addParagraph("本章节同时包含传统段落和Markdown内容。")
+            .addTable(new TableData(
+                Arrays.asList("项目", "分数"),
+                Arrays.asList(Arrays.asList("A", "95"), Arrays.asList("B", "88"))
+            ))
+            .withMarkdownContent("### 补充说明\n\n- 以上数据来自最新报告\n- 所有指标均已通过审核\n");
+
+        ReportData report = ReportDataBuilder.create()
+            .title("混合内容报告")
+            .subtitle("传统用法与Markdown混排示例")
+            .reportDate("2024-12-31")
+            .reportNumber("MIX-001")
+            .addSection(structuredSection)
+            .addSection(markdownSection)
+            .addSection(mixedSection)
+            .build();
+
+        ReportService service = new ReportService();
+        service.getHtmlRenderer().setDefaultTemplateName("flexible");
+        byte[] pdfBytes = service.generatePdf(report);
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0, "PDF should not be empty");
+
+        Path outputPath = Paths.get(TEST_OUTPUT_DIR, "mixed_traditional_and_markdown.pdf");
+        Files.createDirectories(outputPath.getParent());
+        Files.write(outputPath, pdfBytes);
+        System.out.println("✓ Mixed traditional+markdown PDF generated: " + outputPath.toAbsolutePath());
     }
 }
