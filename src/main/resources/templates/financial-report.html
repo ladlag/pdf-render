@@ -43,7 +43,7 @@
             padding-top: 120px;
             page-break-after: always;
             position: relative;
-            height: 253mm; /* A4 (297mm) minus top and bottom margins (2cm each) */
+            height: 257mm; /* A4 (297mm) minus top and bottom margins (2cm × 2 = 4cm) */
         }
         
         .cover-page h1 {
@@ -286,11 +286,9 @@
             </p>
         </div>
         
-        <div class="cover-disclaimer" th:if="${coverDisclaimer != null}">
-            <p th:text="${coverDisclaimer}">Disclaimer text</p>
-        </div>
-        <div class="cover-disclaimer" th:if="${coverDisclaimer == null}">
-            <p>注: 本报告由AI生成 仅供参考</p>
+        <div class="cover-disclaimer">
+            <p th:if="${coverDisclaimer != null}" th:text="${coverDisclaimer}">Disclaimer text</p>
+            <p th:if="${coverDisclaimer == null}">注: 本报告由AI生成 仅供参考</p>
         </div>
     </div>
     
