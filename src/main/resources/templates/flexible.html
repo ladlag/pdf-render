@@ -13,6 +13,7 @@
             
             @bottom-left {
                 content: "[(${footerText != null ? footerText : ''})]";
+                font-family: [(${fontFamily})];
                 font-size: 9pt;
                 color: #666;
             }
@@ -34,7 +35,6 @@
         /* Cover page styles */
         .cover-page {
             text-align: center;
-            padding-top: 100px;
             position: relative;
             height: 267mm; /* A4 (297mm) minus top and bottom margins (1.5cm × 2 = 3cm) */
         }
@@ -44,6 +44,7 @@
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 20px;
+            padding-top: 100px;
         }
         
         .cover-page h2 {
