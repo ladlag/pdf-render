@@ -11,7 +11,13 @@
             size: A4;
             margin: 1.5cm;
             
-            @bottom-center {
+            @bottom-left {
+                content: "[(${footerText != null ? footerText : ''})]";
+                font-size: 9pt;
+                color: #666;
+            }
+            
+            @bottom-right {
                 content: "Page " counter(page);
                 font-size: 9pt;
                 color: #666;
@@ -29,6 +35,8 @@
         .cover-page {
             text-align: center;
             padding-top: 100px;
+            position: relative;
+            height: 267mm; /* A4 (297mm) minus top and bottom margins (1.5cm each) */
         }
         
         .cover-page h1 {
@@ -53,6 +61,16 @@
         
         .cover-metadata p {
             margin: 8px 0;
+        }
+        
+        .cover-disclaimer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 9pt;
+            color: #999;
+            text-align: center;
         }
         
         /* Section styles */
@@ -331,6 +349,10 @@
             <p th:if="${reportDate != null}">
                 <strong>Report Date:</strong> <span th:text="${reportDate}">N/A</span>
             </p>
+        </div>
+        
+        <div class="cover-disclaimer" th:if="${coverDisclaimer != null}">
+            <p th:text="${coverDisclaimer}">Disclaimer text</p>
         </div>
     </div>
     

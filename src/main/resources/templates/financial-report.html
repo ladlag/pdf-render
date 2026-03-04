@@ -17,7 +17,13 @@
                 color: #999;
             }
             
-            @bottom-center {
+            @bottom-left {
+                content: "[(${footerText != null ? footerText : ''})]";
+                font-size: 8pt;
+                color: #666;
+            }
+            
+            @bottom-right {
                 content: "Page " counter(page) " / " counter(pages);
                 font-size: 8pt;
                 color: #666;
@@ -36,6 +42,8 @@
             text-align: center;
             padding-top: 120px;
             page-break-after: always;
+            position: relative;
+            height: 253mm; /* A4 (297mm) minus top and bottom margins (2cm each) */
         }
         
         .cover-page h1 {
@@ -64,9 +72,13 @@
         }
         
         .cover-disclaimer {
-            margin-top: 60px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             font-size: 9pt;
             color: #999;
+            text-align: center;
         }
         
         /* Markdown content styles */
@@ -274,7 +286,10 @@
             </p>
         </div>
         
-        <div class="cover-disclaimer">
+        <div class="cover-disclaimer" th:if="${coverDisclaimer != null}">
+            <p th:text="${coverDisclaimer}">Disclaimer text</p>
+        </div>
+        <div class="cover-disclaimer" th:if="${coverDisclaimer == null}">
             <p>注: 本报告由AI生成 仅供参考</p>
         </div>
     </div>
