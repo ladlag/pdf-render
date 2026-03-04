@@ -50,6 +50,16 @@ public class BeijingBankReportTest {
         // Configure Chinese font
         configureChineseFont(service);
 
+        // Configure watermark
+        PdfRenderProperties.WatermarkProperties watermark = new PdfRenderProperties.WatermarkProperties();
+        watermark.setEnabled(true);
+        watermark.setText("内部资料");
+        watermark.setFontSize(50);
+        watermark.setColor("#cccccc");
+        watermark.setOpacity(0.3);
+        watermark.setRotation(-30);
+        service.getHtmlRenderer().setWatermarkProperties(watermark);
+
         // Enable debug HTML output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
         service.getHtmlRenderer().setDebugHtmlOutputDirectory("test-output/debug-html");
