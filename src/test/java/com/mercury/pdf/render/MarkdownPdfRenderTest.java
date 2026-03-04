@@ -126,11 +126,7 @@ public class MarkdownPdfRenderTest {
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
 
-        // Configure Chinese font for proper CJK character rendering
-        FontConfig fontConfig = new FontConfig();
-        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
-        service.getHtmlRenderer().setFontConfig(fontConfig);
+        configureChineseFont(service);
 
         // Enable debug HTML output for troubleshooting
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -251,11 +247,7 @@ public class MarkdownPdfRenderTest {
         ReportService service = new ReportService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
 
-        // Configure Chinese font for proper CJK character rendering
-        FontConfig fontConfig = new FontConfig();
-        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
-        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
-        service.getHtmlRenderer().setFontConfig(fontConfig);
+        configureChineseFont(service);
 
         byte[] pdfBytes = service.generatePdf(report);
 
@@ -266,5 +258,12 @@ public class MarkdownPdfRenderTest {
         Files.createDirectories(outputPath.getParent());
         Files.write(outputPath, pdfBytes);
         System.out.println("✓ Mixed traditional+markdown PDF generated: " + outputPath.toAbsolutePath());
+    }
+
+    private void configureChineseFont(ReportService service) {
+        FontConfig fontConfig = new FontConfig();
+        fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
+        fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
+        service.getHtmlRenderer().setFontConfig(fontConfig);
     }
 }
