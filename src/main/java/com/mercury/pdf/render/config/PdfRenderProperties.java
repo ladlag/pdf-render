@@ -20,6 +20,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *     bold-path: classpath:/fonts/custom-bold.ttf
  *     cjk-path: classpath:/fonts/NotoSansCJK-Regular.otf
  *     disable-subsetting: true
+ *   watermark:
+ *     enabled: false
+ *     text: CONFIDENTIAL
+ *     font-size: 60
+ *     color: "#cccccc"
+ *     opacity: 0.3
+ *     rotation: -30
  *   debug:
  *     enabled: true
  *     output-directory: debug-html
@@ -32,6 +39,7 @@ public class PdfRenderProperties {
     private TemplateProperties template = new TemplateProperties();
     private OutputProperties output = new OutputProperties();
     private FontProperties fonts = new FontProperties();
+    private WatermarkProperties watermark = new WatermarkProperties();
     private DebugProperties debug = new DebugProperties();
     
     public TemplateProperties getTemplate() {
@@ -56,6 +64,14 @@ public class PdfRenderProperties {
     
     public void setFonts(FontProperties fonts) {
         this.fonts = fonts;
+    }
+    
+    public WatermarkProperties getWatermark() {
+        return watermark;
+    }
+    
+    public void setWatermark(WatermarkProperties watermark) {
+        this.watermark = watermark;
     }
     
     public DebugProperties getDebug() {
@@ -241,6 +257,91 @@ public class PdfRenderProperties {
         
         public void setDisableSubsetting(boolean disableSubsetting) {
             this.disableSubsetting = disableSubsetting;
+        }
+    }
+    
+    /**
+     * Watermark configuration properties.
+     * When enabled, a text watermark is rendered on every page of the PDF.
+     */
+    public static class WatermarkProperties {
+        /**
+         * Whether to enable watermark (default: false)
+         */
+        private boolean enabled = false;
+        
+        /**
+         * Watermark text content (e.g., "CONFIDENTIAL", "DRAFT", "内部资料")
+         */
+        private String text = "";
+        
+        /**
+         * Font size in pt for watermark text (default: 60)
+         */
+        private int fontSize = 60;
+        
+        /**
+         * Watermark text color in CSS format (default: #cccccc)
+         */
+        private String color = "#cccccc";
+        
+        /**
+         * Watermark opacity from 0.0 (invisible) to 1.0 (fully opaque). Default: 0.3
+         */
+        private double opacity = 0.3;
+        
+        /**
+         * Rotation angle in degrees for watermark text (default: -30).
+         * Negative values rotate counter-clockwise.
+         */
+        private int rotation = -30;
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
+        
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
+        public String getText() {
+            return text;
+        }
+        
+        public void setText(String text) {
+            this.text = text;
+        }
+        
+        public int getFontSize() {
+            return fontSize;
+        }
+        
+        public void setFontSize(int fontSize) {
+            this.fontSize = fontSize;
+        }
+        
+        public String getColor() {
+            return color;
+        }
+        
+        public void setColor(String color) {
+            this.color = color;
+        }
+        
+        public double getOpacity() {
+            return opacity;
+        }
+        
+        public void setOpacity(double opacity) {
+            this.opacity = opacity;
+        }
+        
+        public int getRotation() {
+            return rotation;
+        }
+        
+        public void setRotation(int rotation) {
+            this.rotation = rotation;
         }
     }
     

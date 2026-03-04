@@ -34,6 +34,13 @@ import org.springframework.context.annotation.Configuration;
  *     enabled: false
  *     output-directory: debug-html
  *     include-timestamp: false
+ *   watermark:
+ *     enabled: false
+ *     text: CONFIDENTIAL
+ *     font-size: 60
+ *     color: "#cccccc"
+ *     opacity: 0.3
+ *     rotation: -30
  * </pre>
  */
 @Configuration
@@ -69,6 +76,9 @@ public class PdfRenderAutoConfiguration {
             
             // Configure debug HTML output settings
             configureDebugSettings(htmlRenderer);
+            
+            // Configure watermark settings
+            configureWatermark(htmlRenderer);
         }
         
         return service;
@@ -115,6 +125,23 @@ public class PdfRenderAutoConfiguration {
             logger.info("PDF Render: Debug HTML output enabled");
             logger.info("  - Output directory: {}", debugProps.getOutputDirectory());
             logger.info("  - Include timestamp: {}", debugProps.isIncludeTimestamp());
+        }
+    }
+    
+    /**
+     * Configures watermark settings from properties.
+     * When enabled, a text watermark is added to every page of the generated PDF.
+     */
+    private void configureWatermark(HtmlReportRenderer htmlRenderer) {
+        PdfRenderProperties.WatermarkProperties watermarkProps = properties.getWatermark();
+        
+        if (watermarkProps.isEnabled()) {
+            htmlRenderer.setWatermarkProperties(watermarkProps);
+            
+            logger.info("PDF Render: Watermark enabled");
+            logger.info("  - Text: {}", watermarkProps.getText());
+            logger.info("  - Font size: {}pt", watermarkProps.getFontSize());
+            logger.info("  - Opacity: {}", watermarkProps.getOpacity());
         }
     }
 }

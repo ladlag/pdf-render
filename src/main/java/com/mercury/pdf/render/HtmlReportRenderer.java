@@ -33,6 +33,7 @@ public class HtmlReportRenderer {
     private String defaultTemplateName = "report"; // Default template name
     private String templateLocation = "/templates/"; // Template location prefix
     private PdfRenderProperties.FontProperties fontProperties; // Optional font configuration
+    private PdfRenderProperties.WatermarkProperties watermarkProperties; // Optional watermark configuration
     
     // Font cache to avoid extracting same font multiple times
     private final java.util.Map<String, String> fontPathCache = new java.util.concurrent.ConcurrentHashMap<>();
@@ -152,6 +153,25 @@ public class HtmlReportRenderer {
      */
     public PdfRenderProperties.FontProperties getFontProperties() {
         return fontProperties;
+    }
+    
+    /**
+     * Sets watermark configuration for the PDF renderer.
+     * When enabled, a text watermark is rendered on every page.
+     *
+     * @param watermarkProperties Watermark configuration properties
+     */
+    public void setWatermarkProperties(PdfRenderProperties.WatermarkProperties watermarkProperties) {
+        this.watermarkProperties = watermarkProperties;
+    }
+    
+    /**
+     * Gets the current watermark configuration.
+     *
+     * @return Current watermark properties, or null if not set
+     */
+    public PdfRenderProperties.WatermarkProperties getWatermarkProperties() {
+        return watermarkProperties;
     }
     
     /**
@@ -400,6 +420,20 @@ public class HtmlReportRenderer {
             data.put("fontFamily", "sans-serif");
             data.put("cjkFontFamily", "");
             logWarn("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
+        }
+        
+        // Add watermark configuration
+        if (watermarkProperties != null && watermarkProperties.isEnabled() 
+                && watermarkProperties.getText() != null && !watermarkProperties.getText().isEmpty()) {
+            data.put("watermarkEnabled", true);
+            data.put("watermarkText", watermarkProperties.getText());
+            data.put("watermarkFontSize", watermarkProperties.getFontSize());
+            data.put("watermarkColor", watermarkProperties.getColor());
+            data.put("watermarkOpacity", watermarkProperties.getOpacity());
+            data.put("watermarkRotation", watermarkProperties.getRotation());
+            logInfo("✓ Watermark enabled: \"" + watermarkProperties.getText() + "\"");
+        } else {
+            data.put("watermarkEnabled", false);
         }
         
         return data;
