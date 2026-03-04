@@ -437,11 +437,6 @@ public class HtmlReportRenderer {
             logWarn("⚠️ No font configuration provided; using default CSS font-family: sans-serif");
         }
         
-        // Watermark is rendered at the PDF level (not via HTML/CSS) because
-        // Flying Saucer does not support CSS flexbox or transform: rotate().
-        // Always disable the HTML watermark to avoid a broken overlay.
-        data.put("watermarkEnabled", false);
-        
         return data;
     }
     
