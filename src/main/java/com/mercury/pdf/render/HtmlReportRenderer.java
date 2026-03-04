@@ -488,83 +488,90 @@ public class HtmlReportRenderer {
      * @throws IOException if the PDF cannot be read or written
      * @throws DocumentException if the watermark cannot be applied
      */
+    private static final int DEFAULT_WATERMARK_R = 204;
+    private static final int DEFAULT_WATERMARK_G = 204;
+    private static final int DEFAULT_WATERMARK_B = 204;
+    private static final String DEFAULT_WATERMARK_COLOR_HEX = "#cccccc";
+
     private byte[] addPdfWatermark(byte[] pdfBytes) throws IOException, DocumentException {
         PdfReader reader = new PdfReader(pdfBytes);
         ByteArrayOutputStream stamped = new ByteArrayOutputStream();
-        PdfStamper stamper = new PdfStamper(reader, stamped);
-        
-        // Resolve the watermark font — prefer the configured CJK font for
-        // Chinese/Japanese/Korean watermark text, fall back to Helvetica.
-        BaseFont watermarkFont;
         try {
-            String fontPath = null;
-            if (fontProperties != null && fontProperties.getCjkPath() != null) {
-                fontPath = resolveFontPath(fontProperties.getCjkPath());
-            } else if (fontProperties != null && fontProperties.getRegularPath() != null) {
-                fontPath = resolveFontPath(fontProperties.getRegularPath());
-            }
-            if (fontPath != null) {
-                watermarkFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-            } else {
-                watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
-            }
-        } catch (Exception e) {
-            logWarn("⚠️ Could not load watermark font, falling back to Helvetica: " + e.getMessage());
-            watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
-        }
-        
-        // Parse color from hex string (e.g. "#cccccc")
-        String colorHex = watermarkProperties.getColor();
-        if (colorHex == null) colorHex = "#cccccc";
-        if (colorHex.startsWith("#")) colorHex = colorHex.substring(1);
-        int r = 204, g = 204, b = 204; // default light gray
-        if (colorHex.length() == 6) {
+            PdfStamper stamper = new PdfStamper(reader, stamped);
             try {
-                r = Integer.parseInt(colorHex.substring(0, 2), 16);
-                g = Integer.parseInt(colorHex.substring(2, 4), 16);
-                b = Integer.parseInt(colorHex.substring(4, 6), 16);
-            } catch (NumberFormatException ignored) {
-                // keep defaults
+                // Resolve the watermark font — prefer the configured CJK font for
+                // Chinese/Japanese/Korean watermark text, fall back to Helvetica.
+                BaseFont watermarkFont;
+                try {
+                    String fontPath = null;
+                    if (fontProperties != null && fontProperties.getCjkPath() != null) {
+                        fontPath = resolveFontPath(fontProperties.getCjkPath());
+                    } else if (fontProperties != null && fontProperties.getRegularPath() != null) {
+                        fontPath = resolveFontPath(fontProperties.getRegularPath());
+                    }
+                    if (fontPath != null) {
+                        watermarkFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                    } else {
+                        watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                    }
+                } catch (Exception e) {
+                    logWarn("⚠️ Could not load watermark font, falling back to Helvetica: " + e.getMessage());
+                    watermarkFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                }
+                
+                // Parse color from hex string (e.g. "#cccccc")
+                String colorHex = watermarkProperties.getColor();
+                if (colorHex == null) colorHex = DEFAULT_WATERMARK_COLOR_HEX;
+                if (colorHex.startsWith("#")) colorHex = colorHex.substring(1);
+                int r = DEFAULT_WATERMARK_R, g = DEFAULT_WATERMARK_G, b = DEFAULT_WATERMARK_B;
+                if (colorHex.length() == 6) {
+                    try {
+                        r = Integer.parseInt(colorHex.substring(0, 2), 16);
+                        g = Integer.parseInt(colorHex.substring(2, 4), 16);
+                        b = Integer.parseInt(colorHex.substring(4, 6), 16);
+                    } catch (NumberFormatException ignored) {
+                        // keep defaults
+                    }
+                }
+                
+                float fontSize = watermarkProperties.getFontSize();
+                float opacity = (float) watermarkProperties.getOpacity();
+                float rotationDeg = watermarkProperties.getRotation();
+                String text = watermarkProperties.getText();
+                
+                PdfGState gState = new PdfGState();
+                gState.setFillOpacity(opacity);
+                
+                int totalPages = reader.getNumberOfPages();
+                for (int i = 1; i <= totalPages; i++) {
+                    PdfContentByte over = stamper.getOverContent(i);
+                    
+                    // Get page dimensions
+                    com.lowagie.text.Rectangle pageSize = reader.getPageSizeWithRotation(i);
+                    float pageWidth = pageSize.getWidth();
+                    float pageHeight = pageSize.getHeight();
+                    
+                    over.saveState();
+                    over.setGState(gState);
+                    over.beginText();
+                    over.setFontAndSize(watermarkFont, fontSize);
+                    over.setColorFill(new java.awt.Color(r, g, b));
+                    // Negate the rotation: CSS rotate() treats positive as clockwise,
+                    // while OpenPDF showTextAligned treats positive as counterclockwise.
+                    over.showTextAligned(Element.ALIGN_CENTER, text,
+                            pageWidth / 2, pageHeight / 2, -rotationDeg);
+                    over.endText();
+                    over.restoreState();
+                }
+                
+                logInfo("✓ Watermark applied at PDF level: \"" + text + "\" on " + totalPages + " page(s)"
+                        + " (rotation=" + rotationDeg + "°, fontSize=" + fontSize + "pt, opacity=" + opacity + ")");
+            } finally {
+                stamper.close();
             }
+        } finally {
+            reader.close();
         }
-        
-        float fontSize = watermarkProperties.getFontSize();
-        float opacity = (float) watermarkProperties.getOpacity();
-        float rotationDeg = watermarkProperties.getRotation();
-        String text = watermarkProperties.getText();
-        
-        PdfGState gState = new PdfGState();
-        gState.setFillOpacity(opacity);
-        
-        int totalPages = reader.getNumberOfPages();
-        for (int i = 1; i <= totalPages; i++) {
-            PdfContentByte over = stamper.getOverContent(i);
-            
-            // Get page dimensions
-            com.lowagie.text.Rectangle pageSize = reader.getPageSizeWithRotation(i);
-            float pageWidth = pageSize.getWidth();
-            float pageHeight = pageSize.getHeight();
-            
-            over.saveState();
-            over.setGState(gState);
-            over.beginText();
-            over.setFontAndSize(watermarkFont, fontSize);
-            over.setColorFill(new java.awt.Color(r, g, b));
-            // Draw text centered on page with the configured rotation.
-            // Negate the rotation because CSS uses clockwise-positive convention
-            // while OpenPDF's showTextAligned uses counterclockwise-positive.
-            // e.g. CSS rotate(-30deg) = 30° CCW on screen = OpenPDF rotation(+30).
-            over.showTextAligned(Element.ALIGN_CENTER, text,
-                    pageWidth / 2, pageHeight / 2, -rotationDeg);
-            over.endText();
-            over.restoreState();
-        }
-        
-        stamper.close();
-        reader.close();
-        
-        logInfo("✓ Watermark applied at PDF level: \"" + text + "\" on " + totalPages + " page(s)"
-                + " (rotation=" + rotationDeg + "°, fontSize=" + fontSize + "pt, opacity=" + opacity + ")");
         
         return stamped.toByteArray();
     }
