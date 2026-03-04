@@ -63,6 +63,12 @@
             margin: 8px 0;
         }
         
+        .cover-disclaimer {
+            margin-top: 60px;
+            font-size: 9pt;
+            color: #999;
+        }
+        
         /* Markdown content styles */
         .markdown-content {
             margin: 0;
@@ -266,6 +272,10 @@
             <p th:if="${reportDate != null}">
                 <strong>Report Date:</strong> <span th:text="${reportDate}">N/A</span>
             </p>
+        </div>
+        
+        <div class="cover-disclaimer">
+            <p>注: 本报告由AI生成 仅供参考</p>
         </div>
     </div>
     
