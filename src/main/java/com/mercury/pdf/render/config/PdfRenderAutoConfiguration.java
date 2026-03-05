@@ -77,7 +77,7 @@ public class PdfRenderAutoConfiguration {
      * @deprecated Inject {@link PdfRenderService} instead.
      */
     @Bean
-    @ConditionalOnMissingBean(ReportService.class)
+    @ConditionalOnMissingBean({ReportService.class, PdfRenderService.class})
     @Deprecated
     public ReportService reportService() {
         ReportService service = new ReportService();
