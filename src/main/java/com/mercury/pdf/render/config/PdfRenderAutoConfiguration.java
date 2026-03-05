@@ -5,6 +5,7 @@ import com.mercury.pdf.render.PdfRenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,9 +58,11 @@ public class PdfRenderAutoConfiguration {
     }
     
     /**
-     * Creates a configured PdfRenderService bean with full property configuration
+     * Creates a configured PdfRenderService bean with full property configuration.
+     * Uses @ConditionalOnMissingBean so host applications can override with their own bean.
      */
     @Bean
+    @ConditionalOnMissingBean
     public PdfRenderService pdfRenderService() {
         PdfRenderService service = new PdfRenderService();
         
