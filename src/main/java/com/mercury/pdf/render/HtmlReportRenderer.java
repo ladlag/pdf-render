@@ -74,11 +74,8 @@ public class HtmlReportRenderer {
         try {
             // Verify that the PdfContentByte class has setColorFill(Color) — 
             // this method exists in OpenPDF but not in old iText 4.x
-            java.lang.reflect.Method method = com.lowagie.text.pdf.PdfContentByte.class
+            com.lowagie.text.pdf.PdfContentByte.class
                     .getMethod("setColorFill", java.awt.Color.class);
-            if (method == null) {
-                logOpenPdfConflictWarning();
-            }
         } catch (NoSuchMethodException e) {
             logOpenPdfConflictWarning();
         } catch (Exception e) {
