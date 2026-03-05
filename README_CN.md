@@ -819,7 +819,7 @@ pdf-render:
 
 ```java
 @Service
-public class PdfPdfRenderService {
+public class PdfReportService {
     
     private final PdfRenderService pdfRenderService = new PdfRenderService();
     
@@ -845,7 +845,7 @@ public class PdfPdfRenderService {
 public class ReportController {
     
     @Autowired
-    private PdfPdfRenderService pdfService;
+    private PdfReportService pdfService;
     
     @PostMapping("/generate")
     public ResponseEntity<byte[]> generateReport(@RequestBody ReportRequest request) 

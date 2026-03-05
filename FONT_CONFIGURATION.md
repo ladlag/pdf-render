@@ -103,13 +103,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PdfPdfRenderService {
+public class PdfReportService {
 
     private final PdfRenderService pdfRenderService;
     private final PdfRenderProperties properties;
 
     @Autowired
-    public PdfPdfRenderService(PdfRenderProperties properties) {
+    public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
         this.pdfRenderService = new PdfRenderService();
 
@@ -346,13 +346,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PdfPdfRenderService {
+public class PdfReportService {
 
     private final PdfRenderService pdfRenderService;
     private final PdfRenderProperties properties;
 
     @Autowired
-    public PdfPdfRenderService(PdfRenderProperties properties) {
+    public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
         this.pdfRenderService = new PdfRenderService();
 

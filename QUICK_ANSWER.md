@@ -307,12 +307,12 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class PdfPdfRenderService {
+public class PdfReportService {
     
     private final PdfRenderService pdfRenderService;
     
     // 构造器注入（Spring自动注入）
-    public PdfPdfRenderService(PdfRenderService pdfRenderService) {
+    public PdfReportService(PdfRenderService pdfRenderService) {
         this.pdfRenderService = pdfRenderService;
     }
     
@@ -347,7 +347,7 @@ public class PdfPdfRenderService {
 ```java
 package com.example.yourapp.controller;
 
-import com.example.yourapp.service.PdfPdfRenderService;
+import com.example.yourapp.service.PdfReportService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -359,16 +359,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/pdf")
 public class PdfController {
     
-    private final PdfPdfRenderService pdfPdfRenderService;
+    private final PdfReportService pdfReportService;
     
-    public PdfController(PdfPdfRenderService pdfPdfRenderService) {
-        this.pdfPdfRenderService = pdfPdfRenderService;
+    public PdfController(PdfReportService pdfReportService) {
+        this.pdfReportService = pdfReportService;
     }
     
     @GetMapping(value = "/test", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> generateTestPdf() {
         try {
-            byte[] pdf = pdfPdfRenderService.generateTestReport();
+            byte[] pdf = pdfReportService.generateTestReport();
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);

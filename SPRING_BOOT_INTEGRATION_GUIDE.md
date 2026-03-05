@@ -170,7 +170,7 @@ my-spring-boot-app/
 │   │   │               ├── controller/
 │   │   │               │   └── ReportController.java
 │   │   │               ├── service/
-│   │   │               │   └── PdfPdfRenderService.java
+│   │   │               │   └── PdfReportService.java
 │   │   │               └── config/
 │   │   │                   └── PdfRenderConfig.java
 │   │   └── resources/
@@ -286,14 +286,14 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @Service
-public class PdfPdfRenderService {
+public class PdfReportService {
 
-   private static final Logger log = LoggerFactory.getLogger(PdfPdfRenderService.class);
+   private static final Logger log = LoggerFactory.getLogger(PdfReportService.class);
 
    private final PdfRenderService pdfRenderService;
    private final PdfRenderProperties properties;
 
-   public PdfPdfRenderService(PdfRenderService pdfRenderService, PdfRenderProperties properties) {
+   public PdfReportService(PdfRenderService pdfRenderService, PdfRenderProperties properties) {
       this.pdfRenderService = pdfRenderService;
       this.properties = properties;
    }
@@ -418,7 +418,7 @@ public class PdfPdfRenderService {
 ```java
 package com.example.myapp.controller;
 
-import com.example.myapp.service.PdfPdfRenderService;
+import com.example.myapp.service.PdfReportService;
 import com.mercury.pdf.render.model.ReportData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -440,10 +440,10 @@ public class ReportController {
 
    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
 
-   private final PdfPdfRenderService pdfPdfRenderService;
+   private final PdfReportService pdfReportService;
 
-   public ReportController(PdfPdfRenderService pdfPdfRenderService) {
-      this.pdfPdfRenderService = pdfPdfRenderService;
+   public ReportController(PdfReportService pdfReportService) {
+      this.pdfReportService = pdfReportService;
    }
 
    /**
@@ -460,7 +460,7 @@ public class ReportController {
       log.info("收到生成需求预审报告请求");
 
       try {
-         byte[] pdfBytes = pdfPdfRenderService.generateMatcherReport(reportData);
+         byte[] pdfBytes = pdfReportService.generateMatcherReport(reportData);
 
          // 设置响应头
          HttpHeaders headers = new HttpHeaders();
@@ -500,8 +500,8 @@ public class ReportController {
       log.info("生成示例需求预审报告");
 
       try {
-         ReportData sampleData = pdfPdfRenderService.createSampleMatcherReportData();
-         byte[] pdfBytes = pdfPdfRenderService.generateMatcherReport(sampleData);
+         ReportData sampleData = pdfReportService.createSampleMatcherReportData();
+         byte[] pdfBytes = pdfReportService.generateMatcherReport(sampleData);
 
          HttpHeaders headers = new HttpHeaders();
          headers.setContentType(MediaType.APPLICATION_PDF);
@@ -537,9 +537,9 @@ public class ReportController {
       try {
          byte[] pdfBytes;
          if (templateName != null && !templateName.isEmpty()) {
-            pdfBytes = pdfPdfRenderService.generateCustomReport(reportData, templateName);
+            pdfBytes = pdfReportService.generateCustomReport(reportData, templateName);
          } else {
-            pdfBytes = pdfPdfRenderService.generateReport(reportData);
+            pdfBytes = pdfReportService.generateReport(reportData);
          }
 
          HttpHeaders headers = new HttpHeaders();
@@ -626,7 +626,7 @@ fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
 
 ```java
 @Service
-public class AsyncPdfPdfRenderService {
+public class AsyncPdfReportService {
     
     @Async
     public CompletableFuture<byte[]> generateReportAsync(ReportData data) {
@@ -744,15 +744,15 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ```java
 @SpringBootTest
-public class PdfPdfRenderServiceTest {
+public class PdfReportServiceTest {
     
     @Autowired
-    private PdfPdfRenderService pdfPdfRenderService;
+    private PdfReportService pdfReportService;
     
     @Test
     public void testGenerateMatcherReport() throws IOException {
-        ReportData data = pdfPdfRenderService.createSampleMatcherReportData();
-        byte[] pdf = pdfPdfRenderService.generateMatcherReport(data);
+        ReportData data = pdfReportService.createSampleMatcherReportData();
+        byte[] pdf = pdfReportService.generateMatcherReport(data);
         
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);

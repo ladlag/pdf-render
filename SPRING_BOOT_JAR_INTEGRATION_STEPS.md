@@ -410,12 +410,12 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class PdfPdfRenderService {
+public class PdfReportService {
     
     private final PdfRenderService pdfRenderService;
     
     // 构造器注入（Spring自动注入）
-    public PdfPdfRenderService(PdfRenderService pdfRenderService) {
+    public PdfReportService(PdfRenderService pdfRenderService) {
         this.pdfRenderService = pdfRenderService;
     }
     
@@ -472,7 +472,7 @@ public class PdfPdfRenderService {
 ```java
 package com.example.yourapp.controller;
 
-import com.example.yourapp.service.PdfPdfRenderService;
+import com.example.yourapp.service.PdfReportService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -488,10 +488,10 @@ import java.nio.charset.StandardCharsets;
 @RequestMapping("/api/pdf")
 public class PdfController {
     
-    private final PdfPdfRenderService pdfPdfRenderService;
+    private final PdfReportService pdfReportService;
     
-    public PdfController(PdfPdfRenderService pdfPdfRenderService) {
-        this.pdfPdfRenderService = pdfPdfRenderService;
+    public PdfController(PdfReportService pdfReportService) {
+        this.pdfReportService = pdfReportService;
     }
     
     /**
@@ -501,7 +501,7 @@ public class PdfController {
     @GetMapping(value = "/test", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> generateTestPdf() {
         try {
-            byte[] pdfBytes = pdfPdfRenderService.generateTestReport();
+            byte[] pdfBytes = pdfReportService.generateTestReport();
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
@@ -951,7 +951,7 @@ your-spring-boot-app/
 │   │   │           └── yourapp/
 │   │   │               ├── YourApplication.java          # 主类（添加@EnableConfigurationProperties）
 │   │   │               ├── service/
-│   │   │               │   └── PdfPdfRenderService.java     # PDF生成服务
+│   │   │               │   └── PdfReportService.java     # PDF生成服务
 │   │   │               └── controller/
 │   │   │                   └── PdfController.java        # REST接口
 │   │   └── resources/

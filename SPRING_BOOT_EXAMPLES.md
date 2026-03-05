@@ -21,7 +21,7 @@ examples/
     │   │   │               ├── controller/
     │   │   │               │   └── ReportController.java
     │   │   │               └── service/
-    │   │   │                   └── PdfPdfRenderService.java
+    │   │   │                   └── PdfReportService.java
     │   │   └── resources/
     │   │       ├── application.yml
     │   │       ├── templates/
@@ -114,7 +114,7 @@ public class PdfRenderConfig {
 }
 ```
 
-### PdfPdfRenderService.java
+### PdfReportService.java
 
 See [SPRING_BOOT_INTEGRATION_GUIDE.md](../SPRING_BOOT_INTEGRATION_GUIDE.md#3-pdf报告服务类) for the complete service implementation.
 
