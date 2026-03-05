@@ -9,24 +9,6 @@ import java.io.IOException;
  * Main service for generating PDF reports.
  * Uses HTML/CSS -> PDF pipeline with Flying Saucer and OpenPDF.
  * Supports unlimited flexible sections through the Section model.
- *
- * <p>Usage:
- * <pre>
- * PdfRenderService service = new PdfRenderService();
- * // Configure via HtmlReportRenderer
- * service.getHtmlRenderer().setDefaultTemplateName("flexible");
- * service.getHtmlRenderer().setFontProperties(fontProps);
- * // Generate PDF
- * byte[] pdf = service.generatePdf(reportData);
- * </pre>
- *
- * <p>In a Spring Boot project, this bean is auto-configured via
- * {@link com.mercury.pdf.render.config.PdfRenderAutoConfiguration}.
- * Simply inject it:
- * <pre>
- * &#064;Autowired
- * private PdfRenderService pdfRenderService;
- * </pre>
  */
 public class PdfRenderService {
     
@@ -62,16 +44,7 @@ public class PdfRenderService {
     
     /**
      * Gets the HTML report renderer for configuration purposes.
-     * Use this to configure templates, caching, fonts, watermarks, debug settings, etc.
-     *
-     * <p>Example:
-     * <pre>
-     * HtmlReportRenderer renderer = service.getHtmlRenderer();
-     * renderer.setDefaultTemplateName("flexible");
-     * renderer.setFontProperties(fontProps);
-     * renderer.setWatermarkProperties(watermarkProps);
-     * renderer.setDebugHtmlEnabled(true);
-     * </pre>
+     * Useful when integrating with Spring Boot to configure templates, caching, fonts, etc.
      * 
      * @return The HTML report renderer instance
      */

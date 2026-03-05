@@ -1,55 +1,5 @@
 # 问题排查指南 / Troubleshooting Guide
 
-## 问题：NoSuchMethodError: PdfContentByte.setColorFill / Issue: iText/OpenPDF Classpath Conflict
-
-如果您看到以下错误：
-```
-java.lang.NoSuchMethodError: com.lowagie.text.pdf.PdfContentByte.setColorFill(Ljava/awt/Color;)V
-  at org.xhtmlrenderer.pdf.ITextOutputDevice.ensureFillColor(...)
-```
-
-**原因 / Cause:**
-
-您的项目同时存在 `com.github.librepdf:openpdf`（pdf-render 使用）和 `com.lowagie:itext`（旧版 iText）。
-两个 JAR 包含相同的类 `com.lowagie.text.pdf.PdfContentByte`，但旧版 iText 的方法签名不同，
-导致 JVM 加载了错误的类版本。
-
-常见引入 `com.lowagie:itext` 的依赖：JasperReports、iReport 等。
-
-**解决方法 / Solution:**
-
-运行以下命令找到冲突来源：
-```bash
-mvn dependency:tree | grep -i itext
-```
-
-然后在 pom.xml 中排除旧版 iText：
-```xml
-<!-- 示例：如果 jasperreports 引入了旧 iText -->
-<dependency>
-    <groupId>net.sf.jasperreports</groupId>
-    <artifactId>jasperreports</artifactId>
-    <version>...</version>
-    <exclusions>
-        <exclusion>
-            <groupId>com.lowagie</groupId>
-            <artifactId>itext</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-```
-
-如果使用 Gradle：
-```groovy
-implementation('net.sf.jasperreports:jasperreports:...') {
-    exclude group: 'com.lowagie', module: 'itext'
-}
-```
-
-pdf-render 库会在启动时自动检测此冲突并输出警告日志。
-
----
-
 ## 问题：中文显示为方框 (□) / Issue: Chinese Shows as Boxes (□)
 
 如果您的 PDF 中中文显示为方框，请按照以下步骤排查：

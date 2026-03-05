@@ -61,52 +61,6 @@ public class HtmlReportRenderer {
         this.chartRenderer = new ChartRenderer();
         this.templateEngine = createTemplateEngine();
         this.fontProperties = null; // No custom fonts by default
-        checkOpenPdfClasspathConflict();
-    }
-    
-    /**
-     * Checks for classpath conflicts between OpenPDF and old iText.
-     * When both com.github.librepdf:openpdf and com.lowagie:itext are on the classpath,
-     * the JVM may load PdfContentByte from the wrong JAR, causing NoSuchMethodError
-     * at runtime (e.g. setColorFill(java.awt.Color) missing).
-     */
-    private void checkOpenPdfClasspathConflict() {
-        try {
-            // Verify that the PdfContentByte class has setColorFill(Color) — 
-            // this method exists in OpenPDF but not in old iText 4.x
-            com.lowagie.text.pdf.PdfContentByte.class
-                    .getMethod("setColorFill", java.awt.Color.class);
-        } catch (NoSuchMethodException e) {
-            logOpenPdfConflictWarning();
-        } catch (Exception e) {
-            // Ignore other reflection errors
-        }
-    }
-    
-    private void logOpenPdfConflictWarning() {
-        logWarn("╔══════════════════════════════════════════════════════════════════════╗");
-        logWarn("║  ⚠️  CLASSPATH CONFLICT: iText / OpenPDF Version Mismatch!          ║");
-        logWarn("╚══════════════════════════════════════════════════════════════════════╝");
-        logWarn("");
-        logWarn("pdf-render requires com.github.librepdf:openpdf, but your project");
-        logWarn("has a conflicting com.lowagie:itext JAR on the classpath.");
-        logWarn("Both contain com.lowagie.text.pdf.PdfContentByte, causing:");
-        logWarn("  NoSuchMethodError: PdfContentByte.setColorFill(Ljava/awt/Color;)V");
-        logWarn("");
-        logWarn("FIX: Exclude the old iText dependency from your pom.xml:");
-        logWarn("  <dependency>");
-        logWarn("    <groupId>your-dependency-that-brings-itext</groupId>");
-        logWarn("    <artifactId>...</artifactId>");
-        logWarn("    <exclusions>");
-        logWarn("      <exclusion>");
-        logWarn("        <groupId>com.lowagie</groupId>");
-        logWarn("        <artifactId>itext</artifactId>");
-        logWarn("      </exclusion>");
-        logWarn("    </exclusions>");
-        logWarn("  </dependency>");
-        logWarn("");
-        logWarn("Run 'mvn dependency:tree | grep itext' to find the source.");
-        logWarn("══════════════════════════════════════════════════════════════════════");
     }
     
     /**
