@@ -97,7 +97,7 @@ public class FlexibleReportTest {
         assertEquals(2, report.getSections().size());
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -126,7 +126,7 @@ public class FlexibleReportTest {
             .addSection(section)
             .build();
         
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -258,7 +258,7 @@ public class FlexibleReportTest {
         assertTrue(errors.isEmpty(), "Report should be valid: " + errors);
         
         // Generate
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         

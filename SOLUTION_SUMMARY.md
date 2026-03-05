@@ -184,7 +184,7 @@ kubernetes-deployment.yaml - K8s生产部署
 ### 纯Java Pure Java
 
 ```java
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
@@ -208,11 +208,11 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 构造函数注入 - 不要用@PostConstruct
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
 }
 ```

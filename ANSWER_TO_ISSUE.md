@@ -46,16 +46,16 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 自动注入，字体已配置完成
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws IOException {
         // 直接使用，无需再设置字体
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -72,7 +72,7 @@ public class PdfService {
 适用场景：
 - 普通Java项目（非Spring Boot）
 - 需要动态切换字体
-- 需要多个不同配置的ReportService实例
+- 需要多个不同配置的PdfRenderService实例
 
 ### 3. 是否还需要@EnableConfigurationProperties注解？
 
@@ -117,7 +117,7 @@ public class MyApplication {
 
 1. 在Application类上添加`@EnableConfigurationProperties(PdfRenderProperties.class)`
 2. 在application.yml中配置所有参数
-3. 直接注入ReportService使用
+3. 直接注入PdfRenderService使用
 4. **不要在代码中调用setFontProperties()**
 
 ### 普通Java项目

@@ -16,7 +16,7 @@ public class PostConstructSafetyTest {
 
     @Test
     public void testSetFontConfigWithInvalidPathDoesNotThrow() {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Simulate @PostConstruct initialization with invalid font path
         FontConfig fontConfig = new FontConfig();
@@ -31,7 +31,7 @@ public class PostConstructSafetyTest {
     
     @Test
     public void testSetFontConfigWithNullPathDoesNotThrow() {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Simulate @PostConstruct initialization with null paths
         FontConfig fontConfig = new FontConfig();
@@ -45,7 +45,7 @@ public class PostConstructSafetyTest {
     
     @Test
     public void testSetFontConfigWithEmptyStringDoesNotThrow() {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Simulate @PostConstruct initialization with empty string
         FontConfig fontConfig = new FontConfig();
@@ -59,7 +59,7 @@ public class PostConstructSafetyTest {
     
     @Test
     public void testSetFontConfigWithInvalidClasspathPrefix() {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Simulate @PostConstruct with malformed classpath
         FontConfig fontConfig = new FontConfig();
@@ -73,7 +73,7 @@ public class PostConstructSafetyTest {
     
     @Test
     public void testMultipleSetFontConfigCallsAreSafe() {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // First call with invalid font
         FontConfig fontConfig1 = new FontConfig();
@@ -108,11 +108,11 @@ public class PostConstructSafetyTest {
         
         // Simulate a Spring Service with @PostConstruct
         class SimulatedSpringService {
-            private ReportService reportService;
+            private PdfRenderService pdfRenderService;
             
             // Simulate @PostConstruct
             public void init() {
-                reportService = new ReportService();
+                pdfRenderService = new PdfRenderService();
                 
                 // This should not throw exception even if font loading fails
                 FontConfig fontConfig = new FontConfig();
@@ -121,13 +121,13 @@ public class PostConstructSafetyTest {
                 fontConfig.setCjkFontPath("classpath:/fonts/missing-cjk.otf");
                 fontConfig.setDefaultFontFamily("Missing Font, DejaVu Sans, sans-serif");
                 
-                reportService.getHtmlRenderer().setFontConfig(fontConfig);
+                pdfRenderService.getHtmlRenderer().setFontConfig(fontConfig);
                 
                 System.out.println("  @PostConstruct method completed successfully");
             }
             
-            public ReportService getReportService() {
-                return reportService;
+            public PdfRenderService getPdfRenderService() {
+                return pdfRenderService;
             }
         }
         
@@ -138,7 +138,7 @@ public class PostConstructSafetyTest {
             service.init(); // This simulates @PostConstruct being called
         }, "@PostConstruct initialization should not fail due to font loading errors");
         
-        assertNotNull(service.getReportService(), "Service should be initialized");
+        assertNotNull(service.getPdfRenderService(), "Service should be initialized");
         
         System.out.println("✓ Spring Boot application can start successfully");
         System.out.println("  @PostConstruct completed without throwing exceptions");
@@ -153,7 +153,7 @@ public class PostConstructSafetyTest {
         System.out.println("Test: PDF generation works after font loading failure");
         System.out.println("========================================\n");
         
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Configure with invalid font path (simulating font loading failure)
         FontConfig fontConfig = new FontConfig();

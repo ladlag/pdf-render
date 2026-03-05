@@ -91,7 +91,7 @@ public class UniversalTemplateDemo {
      * NO template-specific code or logic needed!
      */
     private static void generateWithAllTemplates(ReportData data) throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         System.out.println("Generating documents with different templates using SAME data:\n");
         
@@ -134,7 +134,7 @@ public class UniversalTemplateDemo {
     /**
      * Universal PDF generation - works with ANY template
      */
-    private static void generatePDF(ReportService service, ReportData data, 
+    private static void generatePDF(PdfRenderService service, ReportData data, 
                                     String templateName, String outputFile) throws IOException {
         service.getHtmlRenderer().setDefaultTemplateName(templateName);
         byte[] pdfBytes = service.generatePdf(data);

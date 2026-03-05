@@ -182,10 +182,10 @@ The following variables are available in templates:
 ### 在代码中使用 / Using in Code
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 
 // 方法1: 使用默认模板
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
         byte[] pdf = service.generatePdf(reportData);
 
         // 方法2: 指定模板名称（不含.html扩展名）

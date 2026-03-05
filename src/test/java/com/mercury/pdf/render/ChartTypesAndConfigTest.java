@@ -31,7 +31,7 @@ public class ChartTypesAndConfigTest {
 
     @Test
     public void testAllChartTypesWithCustomization() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -186,7 +186,7 @@ public class ChartTypesAndConfigTest {
 
     @Test
     public void testChartWithCustomDimensions() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         Map<String, Double> data = new LinkedHashMap<>();
         data.put("A", 10.0);
@@ -222,7 +222,7 @@ public class ChartTypesAndConfigTest {
 
     @Test
     public void testLineChartWithoutGridLines() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         Map<String, Double> data = new LinkedHashMap<>();
         data.put("Jan", 100.0);

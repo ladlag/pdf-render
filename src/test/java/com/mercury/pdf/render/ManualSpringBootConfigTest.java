@@ -32,19 +32,19 @@ public class ManualSpringBootConfigTest {
         // Simulate what Spring Boot auto-configuration does
         PdfRenderProperties properties = createTestProperties();
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService reportService = autoConfig.reportService();
+        PdfRenderService pdfRenderService = autoConfig.pdfRenderService();
         
         System.out.println("Step 1: Verifying properties are loaded...");
         verifyProperties(properties);
         
-        System.out.println("\nStep 2: Verifying ReportService is configured...");
-        verifyReportServiceConfiguration(reportService);
+        System.out.println("\nStep 2: Verifying PdfRenderService is configured...");
+        verifyPdfRenderServiceConfiguration(pdfRenderService);
         
         System.out.println("\nStep 3: Generating PDF with Chinese text...");
-        testChineseTextRendering(reportService);
+        testChineseTextRendering(pdfRenderService);
         
         System.out.println("\nStep 4: Verifying debug HTML output...");
-        verifyDebugHtmlOutput(reportService);
+        verifyDebugHtmlOutput(pdfRenderService);
         
         System.out.println("\n========================================");
         System.out.println("✓ 所有验证通过！");
@@ -95,8 +95,8 @@ public class ManualSpringBootConfigTest {
         System.out.println("  ✓ Properties loaded successfully");
     }
     
-    private static void verifyReportServiceConfiguration(ReportService reportService) {
-        HtmlReportRenderer htmlRenderer = reportService.getHtmlRenderer();
+    private static void verifyPdfRenderServiceConfiguration(PdfRenderService pdfRenderService) {
+        HtmlReportRenderer htmlRenderer = pdfRenderService.getHtmlRenderer();
         
         // Check font properties
         PdfRenderProperties.FontProperties fontProps = htmlRenderer.getFontProperties();
@@ -122,7 +122,7 @@ public class ManualSpringBootConfigTest {
         System.out.println("    - Default template: " + htmlRenderer.getDefaultTemplateName());
     }
     
-    private static void testChineseTextRendering(ReportService reportService) throws IOException, DocumentException {
+    private static void testChineseTextRendering(PdfRenderService pdfRenderService) throws IOException, DocumentException {
         ReportData reportData = ReportDataBuilder.create()
             .title("测试报告 - 验证配置")
             .subtitle("这是副标题 - 验证中文字体")
@@ -132,7 +132,7 @@ public class ManualSpringBootConfigTest {
                 .addParagraph("如果您看到正确的中文，说明配置正确！"))
             .build();
         
-        byte[] pdfBytes = reportService.generatePdf(reportData);
+        byte[] pdfBytes = pdfRenderService.generatePdf(reportData);
         
         File outputDir = new File("test-output");
         outputDir.mkdirs();
@@ -148,7 +148,7 @@ public class ManualSpringBootConfigTest {
         System.out.println("  → Please open the PDF file to verify Chinese characters!");
     }
     
-    private static void verifyDebugHtmlOutput(ReportService reportService) {
+    private static void verifyDebugHtmlOutput(PdfRenderService pdfRenderService) {
         File debugDir = new File("test-output/debug-html");
         File debugHtmlFile = new File(debugDir, "report.html");
         

@@ -32,7 +32,7 @@
 
 ```java
 // ❌ 错误 - 创建了FontConfig但忘记设置
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 // 忘记了这一行！
@@ -45,7 +45,7 @@ byte[] pdf = service.generatePdf(data); // 不会有字体注册日志
 
 ```java
 // ✅ 正确 - 必须调用 setFontConfig()
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
@@ -69,7 +69,7 @@ byte[] pdf = service.generatePdf(data); // 现在会看到日志
 public class PdfService {
     
     @Autowired
-    private ReportService reportService;
+    private PdfRenderService pdfRenderService;
     
     @PostConstruct
     public void init() {
@@ -77,19 +77,19 @@ public class PdfService {
         FontConfig config = new FontConfig();
         config.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         config.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
-        reportService.getHtmlRenderer().setFontConfig(config);
+        pdfRenderService.getHtmlRenderer().setFontConfig(config);
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
         // 这里调用时，@PostConstruct中的配置可能已经失效
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
 
 **为什么会失效？**
 
-Spring Boot的自动配置在 `@PostConstruct` **之后**运行，会创建一个新的 `ReportService` 实例，覆盖你的配置。
+Spring Boot的自动配置在 `@PostConstruct` **之后**运行，会创建一个新的 `PdfRenderService` 实例，覆盖你的配置。
 
 **正确做法 - 使用构造函数注入：**
 
@@ -97,16 +97,16 @@ Spring Boot的自动配置在 `@PostConstruct` **之后**运行，会创建一�
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ 使用构造函数注入
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
         // 配置已经从application.yml加载了
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -158,7 +158,7 @@ service.getHtmlRenderer().setFontConfig(fontConfig);
 
 ```java
 // ❌ 错误顺序
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 byte[] pdf = service.generatePdf(data); // 这时还没有配置字体！
 
 FontConfig fontConfig = new FontConfig();
@@ -170,7 +170,7 @@ service.getHtmlRenderer().setFontConfig(fontConfig); // 太晚了！
 
 ```java
 // ✅ 正确顺序：先配置，再生成
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
@@ -221,7 +221,7 @@ pdf-render:
 在你的代码中添加日志来追踪配置：
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 
 public class DebugFontConfig {
@@ -229,8 +229,8 @@ public class DebugFontConfig {
         System.out.println("========== 开始调试 Debug Start ==========");
         
         // 创建服务
-        ReportService service = new ReportService();
-        System.out.println("✓ ReportService created");
+        PdfRenderService service = new PdfRenderService();
+        System.out.println("✓ PdfRenderService created");
         
         // 配置字体
         FontConfig fontConfig = new FontConfig();
@@ -283,7 +283,7 @@ public class DebugFontConfig {
 
 ```
 ========== 开始调试 Debug Start ==========
-✓ ReportService created
+✓ PdfRenderService created
 ✓ FontConfig created
 ✓ Font path set: classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf
 ✓ Font family set: HarmonyOS Sans SC, sans-serif
@@ -322,11 +322,11 @@ mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontConfigDiagnos
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     private final PdfRenderProperties properties;
     
-    public PdfService(ReportService reportService, PdfRenderProperties properties) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService, PdfRenderProperties properties) {
+        this.pdfRenderService = pdfRenderService;
         this.properties = properties;
         
         // 添加日志检查配置
@@ -339,13 +339,13 @@ public class PdfService {
             System.err.println("✗ PdfRenderProperties is NULL or fonts not configured!");
         }
         
-        // 验证ReportService配置
-        FontConfig config = reportService.getHtmlRenderer().getFontConfig();
+        // 验证PdfRenderService配置
+        FontConfig config = pdfRenderService.getHtmlRenderer().getFontConfig();
         if (config != null) {
-            System.out.println("✓ FontConfig is set in ReportService");
+            System.out.println("✓ FontConfig is set in PdfRenderService");
             System.out.println("  Path: " + config.getRegularFontPath());
         } else {
-            System.err.println("✗ FontConfig is NULL in ReportService!");
+            System.err.println("✗ FontConfig is NULL in PdfRenderService!");
         }
         System.out.println("========================================");
     }
@@ -360,14 +360,14 @@ public class PdfService {
 
 ```java
 // 完整的、能看到日志的代码
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         // 1. 创建服务
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // 2. 配置字体 - 这是关键！
         FontConfig fontConfig = new FontConfig();
@@ -418,16 +418,16 @@ logging:
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 构造函数注入 - 配置自动加载
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
         // 直接调用 - 配置已经生效
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```

@@ -34,7 +34,7 @@ public class WindowsPathCompatibilityTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // Create test data
         ReportData reportData = new ReportData();
@@ -80,7 +80,7 @@ public class WindowsPathCompatibilityTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // Create test data
         ReportData reportData = new ReportData();
@@ -119,7 +119,7 @@ public class WindowsPathCompatibilityTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // Generate multiple PDFs - fonts should be cached after first extraction
         ReportData reportData1 = new ReportData();

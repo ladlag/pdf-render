@@ -58,7 +58,7 @@ mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontFileVerifier"
 
 **纯Java项目：**
 ```java
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
@@ -81,15 +81,15 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 构造函数注入 - 不要用@PostConstruct
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -267,7 +267,7 @@ mvn exec:java -Dexec.mainClass="com.mercury.pdf.render.ChineseFontConfigurationD
 ```java
 package com.example;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.*;
 
@@ -277,7 +277,7 @@ import java.nio.file.Paths;
 public class ChinesePdfGenerator {
     public static void main(String[] args) throws Exception {
         // 1. 创建服务
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // 2. 配置中文字体
         FontConfig fontConfig = new FontConfig();
@@ -331,20 +331,20 @@ pdf-render:
 ```java
 package com.example.service;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```

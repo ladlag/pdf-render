@@ -1,7 +1,7 @@
 package com.mercury.pdf.render.config;
 
 import com.mercury.pdf.render.HtmlReportRenderer;
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
  * </pre>
  */
 @Configuration
-@ConditionalOnClass(ReportService.class)
+@ConditionalOnClass(PdfRenderService.class)
 @EnableConfigurationProperties(PdfRenderProperties.class)
 public class PdfRenderAutoConfiguration {
     
@@ -57,11 +57,11 @@ public class PdfRenderAutoConfiguration {
     }
     
     /**
-     * Creates a configured ReportService bean with full property configuration
+     * Creates a configured PdfRenderService bean with full property configuration
      */
     @Bean
-    public ReportService reportService() {
-        ReportService service = new ReportService();
+    public PdfRenderService pdfRenderService() {
+        PdfRenderService service = new PdfRenderService();
         
         // Configure HTML renderer with properties
         HtmlReportRenderer htmlRenderer = service.getHtmlRenderer();

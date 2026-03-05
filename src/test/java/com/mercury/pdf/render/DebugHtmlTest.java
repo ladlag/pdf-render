@@ -41,7 +41,7 @@ public class DebugHtmlTest {
 
     @Test
     public void testDebugHtmlOutput() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         // Configure font for Chinese text
         FontConfig fontConfig = new FontConfig();
@@ -83,7 +83,7 @@ public class DebugHtmlTest {
 
     @Test
     public void testDebugHtmlWithTimestamp() throws IOException, InterruptedException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         // Configure font for Chinese text
         FontConfig fontConfig = new FontConfig();

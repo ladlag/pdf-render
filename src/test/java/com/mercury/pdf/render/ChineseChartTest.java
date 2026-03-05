@@ -34,7 +34,7 @@ public class ChineseChartTest {
     @Test
     public void testChineseCharactersInCharts() throws IOException {
         // Create service with Chinese font configuration
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output for manual verification
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -158,7 +158,7 @@ public class ChineseChartTest {
     @Test
     public void testChineseChartsWithoutFontConfig() throws IOException {
         // Test without font configuration to show the difference
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // DO NOT configure fonts - this should result in boxes in charts
 

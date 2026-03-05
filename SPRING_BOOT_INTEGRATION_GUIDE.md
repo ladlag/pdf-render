@@ -170,7 +170,7 @@ my-spring-boot-app/
 │   │   │               ├── controller/
 │   │   │               │   └── ReportController.java
 │   │   │               ├── service/
-│   │   │               │   └── PdfReportService.java
+│   │   │               │   └── PdfPdfRenderService.java
 │   │   │               └── config/
 │   │   │                   └── PdfRenderConfig.java
 │   │   └── resources/
@@ -207,7 +207,7 @@ public class MyApplication {
 ```java
 package com.example.myapp.config;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.context.annotation.Bean;
@@ -223,12 +223,12 @@ public class PdfRenderConfig {
     }
 
     /**
-     * 创建ReportService Bean
+     * 创建PdfRenderService Bean
      * 配置模板、字体等设置
      */
     @Bean
-    public ReportService reportService() {
-        ReportService service = new ReportService();
+    public PdfRenderService pdfRenderService() {
+        PdfRenderService service = new PdfRenderService();
 
         // 启用HTML渲染管道（推荐）
         service.setUseHtmlPipeline(true);
@@ -268,7 +268,7 @@ public class PdfRenderConfig {
 ```java
 package com.example.myapp.service;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.PdfRenderProperties;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
@@ -286,15 +286,15 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @Service
-public class PdfReportService {
+public class PdfPdfRenderService {
 
-   private static final Logger log = LoggerFactory.getLogger(PdfReportService.class);
+   private static final Logger log = LoggerFactory.getLogger(PdfPdfRenderService.class);
 
-   private final ReportService reportService;
+   private final PdfRenderService pdfRenderService;
    private final PdfRenderProperties properties;
 
-   public PdfReportService(ReportService reportService, PdfRenderProperties properties) {
-      this.reportService = reportService;
+   public PdfPdfRenderService(PdfRenderService pdfRenderService, PdfRenderProperties properties) {
+      this.pdfRenderService = pdfRenderService;
       this.properties = properties;
    }
 
@@ -309,7 +309,7 @@ public class PdfReportService {
       log.info("开始生成需求预审报告PDF，标题: {}", reportData.getTitle());
 
       // 使用matcher-report-final模板生成PDF
-      byte[] pdfBytes = reportService.generatePdf(reportData, "matcher-report-final");
+      byte[] pdfBytes = pdfRenderService.generatePdf(reportData, "matcher-report-final");
 
       // 如果配置了自动保存，则保存到文件
       if (properties.getOutput().isSaveToDirectory()
@@ -330,7 +330,7 @@ public class PdfReportService {
     */
    public byte[] generateReport(ReportData reportData) throws IOException {
       log.info("开始生成报告PDF，标题: {}", reportData.getTitle());
-      byte[] pdfBytes = reportService.generatePdf(reportData);
+      byte[] pdfBytes = pdfRenderService.generatePdf(reportData);
       log.info("报告PDF生成成功");
       return pdfBytes;
    }
@@ -345,7 +345,7 @@ public class PdfReportService {
     */
    public byte[] generateCustomReport(ReportData reportData, String templateName) throws IOException {
       log.info("使用模板 {} 生成报告PDF", templateName);
-      return reportService.generatePdf(reportData, templateName);
+      return pdfRenderService.generatePdf(reportData, templateName);
    }
 
    /**
@@ -418,7 +418,7 @@ public class PdfReportService {
 ```java
 package com.example.myapp.controller;
 
-import com.example.myapp.service.PdfReportService;
+import com.example.myapp.service.PdfPdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -440,10 +440,10 @@ public class ReportController {
 
    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
 
-   private final PdfReportService pdfReportService;
+   private final PdfPdfRenderService pdfPdfRenderService;
 
-   public ReportController(PdfReportService pdfReportService) {
-      this.pdfReportService = pdfReportService;
+   public ReportController(PdfPdfRenderService pdfPdfRenderService) {
+      this.pdfPdfRenderService = pdfPdfRenderService;
    }
 
    /**
@@ -460,7 +460,7 @@ public class ReportController {
       log.info("收到生成需求预审报告请求");
 
       try {
-         byte[] pdfBytes = pdfReportService.generateMatcherReport(reportData);
+         byte[] pdfBytes = pdfPdfRenderService.generateMatcherReport(reportData);
 
          // 设置响应头
          HttpHeaders headers = new HttpHeaders();
@@ -500,8 +500,8 @@ public class ReportController {
       log.info("生成示例需求预审报告");
 
       try {
-         ReportData sampleData = pdfReportService.createSampleMatcherReportData();
-         byte[] pdfBytes = pdfReportService.generateMatcherReport(sampleData);
+         ReportData sampleData = pdfPdfRenderService.createSampleMatcherReportData();
+         byte[] pdfBytes = pdfPdfRenderService.generateMatcherReport(sampleData);
 
          HttpHeaders headers = new HttpHeaders();
          headers.setContentType(MediaType.APPLICATION_PDF);
@@ -537,9 +537,9 @@ public class ReportController {
       try {
          byte[] pdfBytes;
          if (templateName != null && !templateName.isEmpty()) {
-            pdfBytes = pdfReportService.generateCustomReport(reportData, templateName);
+            pdfBytes = pdfPdfRenderService.generateCustomReport(reportData, templateName);
          } else {
-            pdfBytes = pdfReportService.generateReport(reportData);
+            pdfBytes = pdfPdfRenderService.generateReport(reportData);
          }
 
          HttpHeaders headers = new HttpHeaders();
@@ -626,12 +626,12 @@ fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
 
 ```java
 @Service
-public class AsyncPdfReportService {
+public class AsyncPdfPdfRenderService {
     
     @Async
     public CompletableFuture<byte[]> generateReportAsync(ReportData data) {
         try {
-            byte[] pdf = reportService.generatePdf(data);
+            byte[] pdf = pdfRenderService.generatePdf(data);
             return CompletableFuture.completedFuture(pdf);
         } catch (IOException e) {
             return CompletableFuture.failedFuture(e);
@@ -671,7 +671,7 @@ logging:
 ### 6. 性能优化
 
 - 启用模板缓存
-- 复用 `ReportService` 实例（Spring Bean单例）
+- 复用 `PdfRenderService` 实例（Spring Bean单例）
 - 对于频繁生成的报告，考虑添加Redis缓存
 
 ---
@@ -744,15 +744,15 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ```java
 @SpringBootTest
-public class PdfReportServiceTest {
+public class PdfPdfRenderServiceTest {
     
     @Autowired
-    private PdfReportService pdfReportService;
+    private PdfPdfRenderService pdfPdfRenderService;
     
     @Test
     public void testGenerateMatcherReport() throws IOException {
-        ReportData data = pdfReportService.createSampleMatcherReportData();
-        byte[] pdf = pdfReportService.generateMatcherReport(data);
+        ReportData data = pdfPdfRenderService.createSampleMatcherReportData();
+        byte[] pdf = pdfPdfRenderService.generateMatcherReport(data);
         
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
@@ -823,7 +823,7 @@ public class MultiTenantPdfService {
     public byte[] generateReport(ReportData data, String tenantId) {
         // 根据租户ID选择不同的模板或配置
         String template = "matcher-report-" + tenantId;
-        return reportService.generatePdf(data, template);
+        return pdfRenderService.generatePdf(data, template);
     }
 }
 ```
@@ -836,7 +836,7 @@ public byte[] generateLocalizedReport(ReportData data, Locale locale) {
     String template = locale.equals(Locale.CHINA) 
         ? "matcher-report-final-zh" 
         : "matcher-report-final-en";
-    return reportService.generatePdf(data, template);
+    return pdfRenderService.generatePdf(data, template);
 }
 ```
 

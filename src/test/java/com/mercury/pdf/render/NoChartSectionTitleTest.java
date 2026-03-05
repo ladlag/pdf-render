@@ -35,7 +35,7 @@ public class NoChartSectionTitleTest {
 
     @Test
     public void testNoChartSectionTitle() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);

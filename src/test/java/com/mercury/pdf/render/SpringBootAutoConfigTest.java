@@ -37,7 +37,7 @@ public class SpringBootAutoConfigTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // Verify that font configuration was applied
         assertNotNull(service.getHtmlRenderer());
@@ -84,7 +84,7 @@ public class SpringBootAutoConfigTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // Verify that debug configuration was applied
         assertTrue(service.getHtmlRenderer().isDebugHtmlEnabled(), "Debug HTML should be enabled from properties");
@@ -133,7 +133,7 @@ public class SpringBootAutoConfigTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // Verify all settings were applied
         assertNotNull(service.getHtmlRenderer());
@@ -169,7 +169,7 @@ public class SpringBootAutoConfigTest {
 
     @Test
     public void testTemplateLocationNormalization() {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         HtmlReportRenderer renderer = service.getHtmlRenderer();
         renderer.setTemplateLocation("templates");
@@ -192,7 +192,7 @@ public class SpringBootAutoConfigTest {
         
         // Create auto-configuration
         PdfRenderAutoConfiguration autoConfig = new PdfRenderAutoConfiguration(properties);
-        ReportService service = autoConfig.reportService();
+        PdfRenderService service = autoConfig.pdfRenderService();
         
         // FontProperties defaults to bundled HarmonyOS font for out-of-the-box CJK support
         FontConfig fontConfig = service.getHtmlRenderer().getFontConfig();

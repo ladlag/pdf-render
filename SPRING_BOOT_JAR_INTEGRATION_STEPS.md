@@ -138,9 +138,9 @@ pdf-render:
    ↓
 6. 创建PdfRenderProperties对象
    ↓
-7. 创建ReportService Bean
+7. 创建PdfRenderService Bean
    ↓
-8. 应用所有配置到ReportService
+8. 应用所有配置到PdfRenderService
    ↓
 9. 完成自动配置
 ```
@@ -390,7 +390,7 @@ cp /path/to/pdf-render/src/main/resources/templates/flexible.html \
 
 ---
 
-### 步骤7: 使用ReportService
+### 步骤7: 使用PdfRenderService
 
 **目的**: 在代码中使用PDF生成功能
 
@@ -401,7 +401,7 @@ cp /path/to/pdf-render/src/main/resources/templates/flexible.html \
 ```java
 package com.example.yourapp.service;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -410,13 +410,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class PdfReportService {
+public class PdfPdfRenderService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 构造器注入（Spring自动注入）
-    public PdfReportService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfPdfRenderService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     /**
@@ -437,7 +437,7 @@ public class PdfReportService {
             .build();
         
         // 2. 生成PDF（使用默认模板）
-        byte[] pdfBytes = reportService.generatePdf(reportData);
+        byte[] pdfBytes = pdfRenderService.generatePdf(reportData);
         
         return pdfBytes;
     }
@@ -447,16 +447,16 @@ public class PdfReportService {
      */
     public byte[] generateCustomReport(ReportData data, String templateName) 
             throws IOException {
-        return reportService.generatePdf(data, templateName);
+        return pdfRenderService.generatePdf(data, templateName);
     }
 }
 ```
 
 **重要**:
-- ✅ 使用构造器注入，让Spring自动注入ReportService
-- ✅ ReportService已经由PdfRenderAutoConfiguration配置好
+- ✅ 使用构造器注入，让Spring自动注入PdfRenderService
+- ✅ PdfRenderService已经由PdfRenderAutoConfiguration配置好
 - ✅ 所有application.yml配置已自动应用
-- ❌ 不要手动创建ReportService实例：`new ReportService()`
+- ❌ 不要手动创建PdfRenderService实例：`new PdfRenderService()`
 - ❌ 不要在代码中调用`setFontProperties()`（会覆盖YAML配置）
 
 ---
@@ -472,7 +472,7 @@ public class PdfReportService {
 ```java
 package com.example.yourapp.controller;
 
-import com.example.yourapp.service.PdfReportService;
+import com.example.yourapp.service.PdfPdfRenderService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -488,10 +488,10 @@ import java.nio.charset.StandardCharsets;
 @RequestMapping("/api/pdf")
 public class PdfController {
     
-    private final PdfReportService pdfReportService;
+    private final PdfPdfRenderService pdfPdfRenderService;
     
-    public PdfController(PdfReportService pdfReportService) {
-        this.pdfReportService = pdfReportService;
+    public PdfController(PdfPdfRenderService pdfPdfRenderService) {
+        this.pdfPdfRenderService = pdfPdfRenderService;
     }
     
     /**
@@ -501,7 +501,7 @@ public class PdfController {
     @GetMapping(value = "/test", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> generateTestPdf() {
         try {
-            byte[] pdfBytes = pdfReportService.generateTestReport();
+            byte[] pdfBytes = pdfPdfRenderService.generateTestReport();
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
@@ -583,7 +583,7 @@ mvn dependency:tree | grep pdf-render
 创建配置验证类：
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -591,12 +591,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PdfConfigVerifier implements CommandLineRunner {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     private final PdfRenderProperties properties;
     
-    public PdfConfigVerifier(ReportService reportService, 
+    public PdfConfigVerifier(PdfRenderService pdfRenderService, 
                              PdfRenderProperties properties) {
-        this.reportService = reportService;
+        this.pdfRenderService = pdfRenderService;
         this.properties = properties;
     }
     
@@ -604,11 +604,11 @@ public class PdfConfigVerifier implements CommandLineRunner {
     public void run(String... args) {
         System.out.println("\n========== PDF Render 配置验证 ==========");
         
-        // 检查ReportService
-        if (reportService != null) {
-            System.out.println("✓ ReportService 注入成功");
+        // 检查PdfRenderService
+        if (pdfRenderService != null) {
+            System.out.println("✓ PdfRenderService 注入成功");
         } else {
-            System.err.println("✗ ReportService 注入失败！");
+            System.err.println("✗ PdfRenderService 注入失败！");
         }
         
         // 检查配置属性
@@ -627,9 +627,9 @@ public class PdfConfigVerifier implements CommandLineRunner {
         
         // 检查字体配置
         PdfRenderProperties.FontProperties fontProps = 
-            reportService.getHtmlRenderer().getFontProperties();
+            pdfRenderService.getHtmlRenderer().getFontProperties();
         if (fontProps != null) {
-            System.out.println("\n✓ 字体配置已应用到ReportService");
+            System.out.println("\n✓ 字体配置已应用到PdfRenderService");
         } else {
             System.err.println("\n✗ 字体配置未应用！检查@EnableConfigurationProperties注解");
         }
@@ -643,7 +643,7 @@ public class PdfConfigVerifier implements CommandLineRunner {
 
 ```
 ========== PDF Render 配置验证 ==========
-✓ ReportService 注入成功
+✓ PdfRenderService 注入成功
 
 配置项检查：
   Template:
@@ -656,7 +656,7 @@ public class PdfConfigVerifier implements CommandLineRunner {
     - enabled: false
     - output-directory: debug-html
 
-✓ 字体配置已应用到ReportService
+✓ 字体配置已应用到PdfRenderService
 ========================================
 ```
 
@@ -665,7 +665,7 @@ public class PdfConfigVerifier implements CommandLineRunner {
 创建测试用例：
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -682,11 +682,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PdfGenerationTest {
     
     @Autowired
-    private ReportService reportService;
+    private PdfRenderService pdfRenderService;
     
     @Test
-    public void testReportServiceInjection() {
-        assertNotNull(reportService, "ReportService应该被注入");
+    public void testPdfRenderServiceInjection() {
+        assertNotNull(pdfRenderService, "PdfRenderService应该被注入");
     }
     
     @Test
@@ -698,7 +698,7 @@ public class PdfGenerationTest {
                 .addParagraph("这是中文测试内容。"))
             .build();
         
-        byte[] pdfBytes = reportService.generatePdf(data);
+        byte[] pdfBytes = pdfRenderService.generatePdf(data);
         
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
@@ -723,11 +723,11 @@ mvn test -Dtest=PdfGenerationTest
 
 ## 常见问题排查
 
-### 问题1: ReportService无法注入
+### 问题1: PdfRenderService无法注入
 
 **症状**:
 ```
-Field reportService in ... required a bean of type 'ReportService' that could not be found.
+Field pdfRenderService in ... required a bean of type 'PdfRenderService' that could not be found.
 ```
 
 **原因**: 
@@ -808,7 +808,7 @@ jar tf target/yourapp.jar | grep fonts
 @PostConstruct
 public void checkFonts() {
     PdfRenderProperties.FontProperties fonts = 
-        reportService.getHtmlRenderer().getFontProperties();
+        pdfRenderService.getHtmlRenderer().getFontProperties();
     
     if (fonts == null) {
         System.err.println("✗ 字体配置未应用！");
@@ -867,7 +867,7 @@ pdf-render:
 1. 确认配置已加载：
 ```java
 System.out.println("Debug enabled: " + 
-    reportService.getHtmlRenderer().isDebugHtmlEnabled());
+    pdfRenderService.getHtmlRenderer().isDebugHtmlEnabled());
 ```
 
 2. 检查输出目录权限：
@@ -951,7 +951,7 @@ your-spring-boot-app/
 │   │   │           └── yourapp/
 │   │   │               ├── YourApplication.java          # 主类（添加@EnableConfigurationProperties）
 │   │   │               ├── service/
-│   │   │               │   └── PdfReportService.java     # PDF生成服务
+│   │   │               │   └── PdfPdfRenderService.java     # PDF生成服务
 │   │   │               └── controller/
 │   │   │                   └── PdfController.java        # REST接口
 │   │   └── resources/
@@ -989,7 +989,7 @@ your-spring-boot-app/
 - [ ] **步骤4**: `application.yml`已配置pdf-render（至少配置fonts）
 - [ ] **步骤5**: 主类已添加`@EnableConfigurationProperties(PdfRenderProperties.class)`
 - [ ] **步骤6**: （可选）模板文件已复制到`src/main/resources/templates/`
-- [ ] **步骤7**: Service类已创建，使用构造器注入ReportService
+- [ ] **步骤7**: Service类已创建，使用构造器注入PdfRenderService
 - [ ] **步骤8**: （可选）Controller类已创建
 - [ ] **步骤9**: 应用启动成功，日志显示"Font configuration applied"
 - [ ] **验证**: 生成的PDF中文正常显示
@@ -1009,7 +1009,7 @@ your-spring-boot-app/
    - 添加`@EnableConfigurationProperties`注解
    - 配置application.yml（至少配置fonts以支持中文）
 
-3. **无需手动配置**: Spring Boot会自动配置ReportService，直接注入使用即可
+3. **无需手动配置**: Spring Boot会自动配置PdfRenderService，直接注入使用即可
 
 4. **配置优先级**: 
    ```

@@ -132,15 +132,15 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ Auto-configured - just inject!
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws IOException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -154,12 +154,12 @@ public class PdfService {
 **Direct integration in plain Java projects:**
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.*;
 
 public class PdfDemo {
     public static void main(String[] args) throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Configure Chinese fonts (if needed)
         PdfRenderProperties.FontProperties fonts = new PdfRenderProperties.FontProperties();

@@ -47,7 +47,7 @@ service.getHtmlRenderer().setFontProperties(fonts);
    ↓
 2. PdfRenderAutoConfiguration读取application.yaml
    ↓
-3. 自动配置ReportService，应用YAML配置
+3. 自动配置PdfRenderService，应用YAML配置
    ↓
 4. 你的代码调用 setFontProperties(fonts)
    ↓
@@ -75,16 +75,16 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 自动注入，字体已配置
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws IOException {
         // 直接使用，无需再设置字体
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -102,20 +102,20 @@ public class PdfService {
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
         
         // 程序化配置
         PdfRenderProperties.FontProperties fonts = new PdfRenderProperties.FontProperties();
         fonts.setRegularPath("classpath:/fonts/Custom_Font.ttf");
         fonts.setDefaultFamily("Custom Font, sans-serif");
-        reportService.getHtmlRenderer().setFontProperties(fonts);
+        pdfRenderService.getHtmlRenderer().setFontProperties(fonts);
     }
     
     public byte[] generatePdf(ReportData data) throws IOException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -213,12 +213,12 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    public PdfService(ReportService reportService) {
+    public PdfService(PdfRenderService pdfRenderService) {
         // 这会覆盖YAML配置
         PdfRenderProperties.FontProperties fonts = new PdfRenderProperties.FontProperties();
         fonts.setRegularPath("classpath:/fonts/Font_B.ttf");
         fonts.setDefaultFamily("Font B, sans-serif");
-        reportService.getHtmlRenderer().setFontProperties(fonts);
+        pdfRenderService.getHtmlRenderer().setFontProperties(fonts);
     }
 }
 ```
@@ -232,12 +232,12 @@ public class PdfService {
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     @PostConstruct
     public void init() {
         PdfRenderProperties.FontProperties fonts = 
-            reportService.getHtmlRenderer().getFontProperties();
+            pdfRenderService.getHtmlRenderer().getFontProperties();
         
         if (fonts != null) {
             System.out.println("当前字体配置:");
@@ -284,15 +284,15 @@ public class MyApplication {
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
         // 不需要任何额外配置
     }
     
     public byte[] generatePdf(ReportData data) throws IOException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -354,8 +354,8 @@ public class MultiLanguagePdfService {
     }
     
     public byte[] generatePdf(ReportData data, String language) throws IOException {
-        // 创建新的ReportService实例
-        ReportService service = new ReportService();
+        // 创建新的PdfRenderService实例
+        PdfRenderService service = new PdfRenderService();
         
         // 根据语言选择字体
         PdfRenderProperties.FontProperties fonts = fontSelector.selectFont(language);
@@ -376,8 +376,8 @@ public class TenantPdfService {
     private TenantConfigRepository tenantConfigRepository;
     
     public byte[] generatePdf(ReportData data, String tenantId) throws IOException {
-        // 创建新的ReportService实例
-        ReportService service = new ReportService();
+        // 创建新的PdfRenderService实例
+        PdfRenderService service = new PdfRenderService();
         
         // 从数据库加载租户配置
         TenantConfig config = tenantConfigRepository.findByTenantId(tenantId);
@@ -412,7 +412,7 @@ public void checkConfiguration() {
     System.out.println("=== PDF Render Configuration Check ===");
     
     PdfRenderProperties.FontProperties fonts = 
-        reportService.getHtmlRenderer().getFontProperties();
+        pdfRenderService.getHtmlRenderer().getFontProperties();
     
     if (fonts == null) {
         System.err.println("❌ 错误：字体配置为空！");
@@ -465,27 +465,27 @@ pdf-render:  # ← 注意缩进
 service.getHtmlRenderer().setFontProperties(fonts);  // ← 删除这行
 ```
 
-4. ✅ 确认使用的是Spring注入的ReportService
+4. ✅ 确认使用的是Spring注入的PdfRenderService
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 正确：使用构造器注入
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
 }
 ```
 
-5. ✅ 确认没有手动创建ReportService实例
+5. ✅ 确认没有手动创建PdfRenderService实例
 ```java
 // 错误：手动创建的实例不会应用YAML配置
-ReportService service = new ReportService();  // ← 不要这样做
+PdfRenderService service = new PdfRenderService();  // ← 不要这样做
 
 // 正确：使用Spring注入的实例
 @Autowired
-private ReportService reportService;
+private PdfRenderService pdfRenderService;
 ```
 
 ### 问题3：配置了YAML也配置了代码，不知道哪个生效

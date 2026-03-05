@@ -34,7 +34,7 @@ public class SectionTypeDecouplingTest {
 
     @Test
     public void testSectionTypeBasedIdentification() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -63,7 +63,7 @@ public class SectionTypeDecouplingTest {
 
     @Test
     public void testBackwardCompatibilityWithTitlePrefix() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -92,7 +92,7 @@ public class SectionTypeDecouplingTest {
 
     @Test
     public void testMixedSectionTypesAndTitles() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);

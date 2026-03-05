@@ -125,7 +125,7 @@ public class MarkdownPdfRenderTest {
                 .withMarkdownContent(md.toString()))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
 
         configureChineseFont(service);
@@ -178,7 +178,7 @@ public class MarkdownPdfRenderTest {
                 .withMarkdownContent(md.toString(), true))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
 
@@ -257,7 +257,7 @@ public class MarkdownPdfRenderTest {
             .addSection(mixedSection)
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
 
         configureChineseFont(service);
@@ -278,7 +278,7 @@ public class MarkdownPdfRenderTest {
      * matching the same approach used by Spring Boot auto-configuration.
      * Uses the bundled HarmonyOS Sans SC font with Identity-H encoding for CJK support.
      */
-    private void configureChineseFont(ReportService service) {
+    private void configureChineseFont(PdfRenderService service) {
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");

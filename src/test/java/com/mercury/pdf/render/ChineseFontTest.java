@@ -37,7 +37,7 @@ public class ChineseFontTest {
     @Test
     public void testChineseTextWithDefaultFonts() throws IOException {
         // Test with default fonts (no custom font configuration)
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         ReportData reportData = createChineseReportData();
 
@@ -56,7 +56,7 @@ public class ChineseFontTest {
     @Test
     public void testChineseTextWithCustomFonts() throws IOException {
         // Test with custom font configuration using HarmonyOS Sans SC
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         // Configure custom fonts - use HarmonyOS Sans SC
         FontConfig fontConfig = new FontConfig();
@@ -89,7 +89,7 @@ public class ChineseFontTest {
     @Test
     public void testMatcherReportWithCustomFonts() throws IOException {
         // Test the matcher report with HarmonyOS Sans SC font configuration
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         // Configure HarmonyOS Sans SC font for Chinese
         FontConfig fontConfig = new FontConfig();

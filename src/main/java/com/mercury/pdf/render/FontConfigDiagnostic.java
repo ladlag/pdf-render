@@ -169,7 +169,7 @@ public class FontConfigDiagnostic {
         try {
             // Test 1: Without font config
             System.out.println("测试 1: 不配置字体 Test 1: Without font configuration");
-            ReportService service1 = new ReportService();
+            PdfRenderService service1 = new PdfRenderService();
             ReportData data = createTestData();
             byte[] pdf1 = service1.generatePdf(data, "flexible");
             
@@ -184,7 +184,7 @@ public class FontConfigDiagnostic {
             
             // Test 2: With font config
             System.out.println("测试 2: 配置字体 Test 2: With font configuration");
-            ReportService service2 = new ReportService();
+            PdfRenderService service2 = new PdfRenderService();
             
             FontConfig fontConfig = new FontConfig();
             fontConfig.setRegularFontPath(FONT_PATHS[0]);

@@ -143,7 +143,7 @@ pdf-render:
 ```java
 package com.example;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.Section;
@@ -159,7 +159,7 @@ public class FontFamilyTest {
             System.out.println("Font Family Name Verification Test");
             System.out.println("========================================\n");
             
-            ReportService service = new ReportService();
+            PdfRenderService service = new PdfRenderService();
             
             FontConfig fontConfig = new FontConfig();
             
@@ -284,7 +284,7 @@ fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
 ### 纯Java项目
 
 ```java
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");

@@ -35,7 +35,7 @@ public class CoverDisclaimerAndFooterTest {
                 .addParagraph("同时测试页脚自定义文本功能。"))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("financial-report");
         configureChineseFont(service);
 
@@ -70,7 +70,7 @@ public class CoverDisclaimerAndFooterTest {
                 .addParagraph("使用灵活模板测试封面声明和页脚功能。"))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         configureChineseFont(service);
 
@@ -98,7 +98,7 @@ public class CoverDisclaimerAndFooterTest {
                 .addParagraph("测试默认声明文字。"))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("financial-report");
         configureChineseFont(service);
 
@@ -129,7 +129,7 @@ public class CoverDisclaimerAndFooterTest {
         assertEquals("Test footer", report.getFooterText());
     }
 
-    private void configureChineseFont(ReportService service) {
+    private void configureChineseFont(PdfRenderService service) {
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");

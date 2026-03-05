@@ -66,7 +66,7 @@ public class JarResourceLoadingTest {
         System.out.println("========================================\n");
         
         // Simulate JAR integration scenario
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Configure font using classpath: prefix (as users would do)
         FontConfig fontConfig = new FontConfig();

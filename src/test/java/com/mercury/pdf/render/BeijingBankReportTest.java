@@ -47,7 +47,7 @@ public class BeijingBankReportTest {
                         .withMarkdownContent(markdown))
                 .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("financial-report");
 
         // Configure Chinese font
@@ -111,7 +111,7 @@ public class BeijingBankReportTest {
     /**
      * Configures Chinese font using PdfRenderProperties.FontProperties directly.
      */
-    private void configureChineseFont(ReportService service) {
+    private void configureChineseFont(PdfRenderService service) {
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");

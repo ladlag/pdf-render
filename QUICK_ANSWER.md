@@ -87,15 +87,15 @@ pdf-render:
 public class YourApplication { }
 ```
 
-2. ✅ 使用Spring注入的ReportService（不要手动new）：
+2. ✅ 使用Spring注入的PdfRenderService（不要手动new）：
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✓ 正确：构造器注入
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
 }
 ```
@@ -264,7 +264,7 @@ public class YourApplication {
 
 **为什么必须**：
 - 没有这个注解，application.yml中的pdf-render配置不会被读取
-- PdfRenderAutoConfiguration需要这个配置对象来初始化ReportService
+- PdfRenderAutoConfiguration需要这个配置对象来初始化PdfRenderService
 
 ---
 
@@ -289,7 +289,7 @@ cp /path/to/pdf-render/src/main/resources/templates/report.html \
 
 ---
 
-#### 步骤7: 创建Service使用ReportService
+#### 步骤7: 创建Service使用PdfRenderService
 
 **目的**：在代码中使用PDF生成功能
 
@@ -298,7 +298,7 @@ cp /path/to/pdf-render/src/main/resources/templates/report.html \
 ```java
 package com.example.yourapp.service;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -307,13 +307,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class PdfReportService {
+public class PdfPdfRenderService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // 构造器注入（Spring自动注入）
-    public PdfReportService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfPdfRenderService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     // 生成PDF的方法
@@ -325,15 +325,15 @@ public class PdfReportService {
                 .addParagraph("这是中文测试内容。"))
             .build();
         
-        return reportService.generatePdf(reportData);
+        return pdfRenderService.generatePdf(reportData);
     }
 }
 ```
 
 **重要**：
 - ✅ 使用构造器注入，让Spring自动注入
-- ✅ ReportService已由PdfRenderAutoConfiguration配置好
-- ❌ 不要手动new ReportService()
+- ✅ PdfRenderService已由PdfRenderAutoConfiguration配置好
+- ❌ 不要手动new PdfRenderService()
 - ❌ 不要调用setFontProperties()（会覆盖YAML配置）
 
 ---
@@ -347,7 +347,7 @@ public class PdfReportService {
 ```java
 package com.example.yourapp.controller;
 
-import com.example.yourapp.service.PdfReportService;
+import com.example.yourapp.service.PdfPdfRenderService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -359,16 +359,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/pdf")
 public class PdfController {
     
-    private final PdfReportService pdfReportService;
+    private final PdfPdfRenderService pdfPdfRenderService;
     
-    public PdfController(PdfReportService pdfReportService) {
-        this.pdfReportService = pdfReportService;
+    public PdfController(PdfPdfRenderService pdfPdfRenderService) {
+        this.pdfPdfRenderService = pdfPdfRenderService;
     }
     
     @GetMapping(value = "/test", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> generateTestPdf() {
         try {
-            byte[] pdf = pdfReportService.generateTestReport();
+            byte[] pdf = pdfPdfRenderService.generateTestReport();
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
@@ -460,7 +460,7 @@ pdf-render:
     default-family: HarmonyOS Sans SC, sans-serif
 ```
 
-然后在任何Service中注入`ReportService`使用即可。
+然后在任何Service中注入`PdfRenderService`使用即可。
 
 ---
 
@@ -470,22 +470,22 @@ pdf-render:
 
 **症状**: 
 ```
-Field reportService required a bean of type 'ReportService' that could not be found.
+Field pdfRenderService required a bean of type 'PdfRenderService' that could not be found.
 ```
 
 **解决**: 在主类添加`@EnableConfigurationProperties(PdfRenderProperties.class)`
 
-### ❌ 错误2: 手动创建ReportService
+### ❌ 错误2: 手动创建PdfRenderService
 
 **错误代码**:
 ```java
-ReportService service = new ReportService();  // ✗ 错误
+PdfRenderService service = new PdfRenderService();  // ✗ 错误
 ```
 
 **正确做法**:
 ```java
 @Autowired
-private ReportService reportService;  // ✓ 正确：使用注入
+private PdfRenderService pdfRenderService;  // ✓ 正确：使用注入
 ```
 
 ### ❌ 错误3: 在代码中覆盖YAML配置
@@ -495,7 +495,7 @@ private ReportService reportService;  // ✓ 正确：使用注入
 service.getHtmlRenderer().setFontProperties(fonts);  // ✗ 会覆盖YAML
 ```
 
-**正确做法**: 不要调用这个方法，直接使用注入的ReportService
+**正确做法**: 不要调用这个方法，直接使用注入的PdfRenderService
 
 ---
 

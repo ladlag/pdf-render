@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Demonstrates the table pagination issue with PDFBox and validates
  * the HTML/CSS pipeline solution.
  */
-public class ReportServiceTest {
+public class PdfRenderServiceTest {
     
     @TempDir
     Path tempDir;
@@ -42,7 +42,7 @@ public class ReportServiceTest {
 
     @Test
     public void testReportGenerationWithHtmlPipeline() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         ReportData reportData = createTestReportData();
         
@@ -65,7 +65,7 @@ public class ReportServiceTest {
 
     @Test
     public void testDefaultPipelineIsHtml() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         // Default should be HTML pipeline now
         
         ReportData reportData = createTestReportData();
@@ -83,7 +83,7 @@ public class ReportServiceTest {
     
     @Test
     public void testGeneratePdfWithSpecificTemplate() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         ReportData reportData = createTestReportData();
         
