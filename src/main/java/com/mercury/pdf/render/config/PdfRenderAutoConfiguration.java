@@ -2,6 +2,7 @@ package com.mercury.pdf.render.config;
 
 import com.mercury.pdf.render.HtmlReportRenderer;
 import com.mercury.pdf.render.PdfRenderService;
+import com.mercury.pdf.render.ReportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -65,8 +66,29 @@ public class PdfRenderAutoConfiguration {
     @ConditionalOnMissingBean
     public PdfRenderService pdfRenderService() {
         PdfRenderService service = new PdfRenderService();
-        
-        // Configure HTML renderer with properties
+        configureService(service);
+        return service;
+    }
+    
+    /**
+     * Creates a backward-compatible ReportService bean.
+     * This allows existing code that injects {@code ReportService} to continue working.
+     *
+     * @deprecated Inject {@link PdfRenderService} instead.
+     */
+    @Bean
+    @ConditionalOnMissingBean(ReportService.class)
+    @Deprecated
+    public ReportService reportService() {
+        ReportService service = new ReportService();
+        configureService(service);
+        return service;
+    }
+    
+    /**
+     * Applies all configuration properties to a PdfRenderService instance.
+     */
+    private void configureService(PdfRenderService service) {
         HtmlReportRenderer htmlRenderer = service.getHtmlRenderer();
         if (htmlRenderer != null) {
             // Configure template settings
@@ -83,8 +105,6 @@ public class PdfRenderAutoConfiguration {
             // Configure watermark settings
             configureWatermark(htmlRenderer);
         }
-        
-        return service;
     }
     
     /**
