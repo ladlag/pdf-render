@@ -7,7 +7,7 @@
 ```java
 package com.example;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.Section;
@@ -22,7 +22,7 @@ public class ChinesePdfExample {
     public static void main(String[] args) {
         try {
             // 创建报表服务
-            ReportService service = new ReportService();
+            PdfRenderService service = new PdfRenderService();
             
             // ============================================
             // 关键步骤：配置中文字体
@@ -158,7 +158,7 @@ pdf-render:
 ```java
 package com.example.service;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import com.lowagie.text.DocumentException;
 import org.springframework.stereotype.Service;
@@ -168,11 +168,11 @@ import java.io.IOException;
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ 构造函数注入 - 自动配置已生效
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     /**
@@ -181,7 +181,7 @@ public class PdfService {
     public byte[] generateChineseReport(ReportData reportData) 
             throws IOException, DocumentException {
         // 直接调用即可，字体配置已经从YAML加载
-        return reportService.generatePdf(reportData);
+        return pdfRenderService.generatePdf(reportData);
     }
 }
 ```
@@ -252,13 +252,13 @@ public class PdfController {
 public class PdfService {
     
     @Autowired
-    private ReportService reportService;
+    private PdfRenderService pdfRenderService;
     
     @PostConstruct  // ❌ 这会覆盖YAML配置！
     public void init() {
         FontConfig config = new FontConfig();
         config.setRegularFontPath("...");
-        reportService.getHtmlRenderer().setFontConfig(config);
+        pdfRenderService.getHtmlRenderer().setFontConfig(config);
     }
 }
 ```
@@ -268,10 +268,10 @@ public class PdfService {
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService; // 自动配置已生效
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService; // 自动配置已生效
     }
 }
 ```

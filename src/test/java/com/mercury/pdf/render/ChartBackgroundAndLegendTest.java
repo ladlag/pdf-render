@@ -31,7 +31,7 @@ public class ChartBackgroundAndLegendTest {
 
     @Test
     public void testDefaultWhiteBackground() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -79,7 +79,7 @@ public class ChartBackgroundAndLegendTest {
 
     @Test
     public void testTransparentBackground() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -133,7 +133,7 @@ public class ChartBackgroundAndLegendTest {
 
     @Test
     public void testLegendCustomization() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -204,7 +204,7 @@ public class ChartBackgroundAndLegendTest {
 
     @Test
     public void testCustomPlotBackground() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);

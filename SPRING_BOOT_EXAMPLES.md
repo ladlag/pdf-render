@@ -62,7 +62,7 @@ public class PdfApplication {
 ```java
 package com.example.pdfapp.config;
 
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.context.annotation.Bean;
@@ -81,8 +81,8 @@ public class PdfRenderConfig {
     }
 
     @Bean
-    public ReportService reportService() {
-        ReportService service = new ReportService();
+    public PdfRenderService pdfRenderService() {
+        PdfRenderService service = new PdfRenderService();
         service.setUseHtmlPipeline(true);
 
         // Configure template settings

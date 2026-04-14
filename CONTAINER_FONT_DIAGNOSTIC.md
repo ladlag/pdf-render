@@ -407,13 +407,13 @@ docker logs -f pdf-service | grep -i font
 public class DebugController {
     
     @Autowired
-    private ReportService reportService;
+    private PdfRenderService pdfRenderService;
     
     @GetMapping("/font-config")
     public Map<String, Object> getFontConfig() {
         Map<String, Object> config = new HashMap<>();
         
-        HtmlReportRenderer renderer = reportService.getHtmlRenderer();
+        HtmlReportRenderer renderer = pdfRenderService.getHtmlRenderer();
         PdfRenderProperties.FontProperties fontProps = renderer.getFontProperties();
         
         if (fontProps != null) {

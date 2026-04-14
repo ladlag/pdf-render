@@ -27,10 +27,10 @@ public class MinimalFontTest {
         System.out.println("╚══════════════════════════════════════════════════════════════════╝\n");
         
         try {
-            System.out.println("步骤 1/5: 创建 ReportService");
-            System.out.println("Step 1/5: Creating ReportService");
-            ReportService service = new ReportService();
-            System.out.println("✓ ReportService 创建成功\n");
+            System.out.println("步骤 1/5: 创建 PdfRenderService");
+            System.out.println("Step 1/5: Creating PdfRenderService");
+            PdfRenderService service = new PdfRenderService();
+            System.out.println("✓ PdfRenderService 创建成功\n");
             
             System.out.println("步骤 2/5: 配置 FontConfig");
             System.out.println("Step 2/5: Configuring FontConfig");
@@ -42,8 +42,8 @@ public class MinimalFontTest {
             System.out.println("  字体族 Font family: " + fontConfig.getDefaultFontFamily());
             System.out.println();
             
-            System.out.println("步骤 3/5: 应用 FontConfig 到 ReportService");
-            System.out.println("Step 3/5: Applying FontConfig to ReportService");
+            System.out.println("步骤 3/5: 应用 FontConfig 到 PdfRenderService");
+            System.out.println("Step 3/5: Applying FontConfig to PdfRenderService");
             service.getHtmlRenderer().setFontConfig(fontConfig);
             
             // 验证配置是否成功设置

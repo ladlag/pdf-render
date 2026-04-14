@@ -58,7 +58,7 @@ public class UnlimitedSectionsTest {
             "Report should have 10 sections, not limited to 4");
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -95,7 +95,7 @@ public class UnlimitedSectionsTest {
         assertEquals(20, report.getSections().size());
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -164,7 +164,7 @@ public class UnlimitedSectionsTest {
             "Report should have 8 sections");
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -211,7 +211,7 @@ public class UnlimitedSectionsTest {
             "Report should have 3 sections");
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdfBytes = service.generatePdf(report);
         
         assertNotNull(pdfBytes);

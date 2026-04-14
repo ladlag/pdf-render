@@ -18,7 +18,7 @@
 ### 必须的配置步骤
 
 ```java
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 // ⚠️ 这一步是必需的！没有这个配置，中文会显示为方框
 FontConfig fontConfig = new FontConfig();
@@ -37,14 +37,14 @@ byte[] pdf = service.generatePdf(data, "matcher-report-final");
 ### ❌ 错误示例（会导致方框）
 ```java
 // 没有设置字体配置
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 byte[] pdf = service.generatePdf(data, "matcher-report-final");  // ❌ 中文会显示为方框
 ```
 
 ### ✅ 正确示例
 ```java
 // 正确设置字体
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
@@ -86,7 +86,7 @@ mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.FontFileVerifier"
 ```java
 @Test
 public void testMatcherReportFinalWithCompleteData() throws IOException {
-    ReportService service = new ReportService();
+    PdfRenderService service = new PdfRenderService();
     
     // 配置字体 - 这一步是必需的！
     FontConfig fontConfig = new FontConfig();

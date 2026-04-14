@@ -25,7 +25,7 @@ public class UniversalTemplateTest {
         // Create ONE data model
         ReportData universalData = createUniversalDataModel();
         
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Generate with DIFFERENT templates
         byte[] reportPdf = service.generatePdf(universalData, "report");
@@ -71,7 +71,7 @@ public class UniversalTemplateTest {
             .build();
         
         // Any template name works - no code changes needed
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         assertDoesNotThrow(() -> {
             service.generatePdf(data, "report");

@@ -39,7 +39,7 @@ mvn compile exec:java -Dexec.mainClass="com.mercury.pdf.render.MinimalFontTest"
 
 **如果您在使用 Spring Boot，请勿使用 `@PostConstruct` 手动配置！**
 
-本库内置了 Spring Boot 自动配置。只需配置 `application.yml`，然后注入 `ReportService` 即可：
+本库内置了 Spring Boot 自动配置。只需配置 `application.yml`，然后注入 `PdfRenderService` 即可：
 
 ```yaml
 # application.yml
@@ -52,15 +52,15 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ 直接注入即可 - 不需要 @PostConstruct！
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws IOException, DocumentException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -116,7 +116,7 @@ ReportData data = ReportDataBuilder.create()
     .build();
 
 // 生成不同格式 - 无需代码更改！
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 byte[] reportPdf = service.generatePdf(data, "report");      // 标准报告
 byte[] invoicePdf = service.generatePdf(data, "invoice");    // 发票
 byte[] certPdf = service.generatePdf(data, "certificate");   // 证书
@@ -138,10 +138,10 @@ byte[] certPdf = service.generatePdf(data, "certificate");   // 证书
 **如果您的PDF需要显示中文，必须配置 FontConfig，否则中文会显示为方框（□）**
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 service.
 
 setUseHtmlPipeline(true);
@@ -223,7 +223,7 @@ mvn test -Dtest=WatermarkTest
 ### 示例1：创建简单报告
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import com.mercury.pdf.render.model.ReportDataBuilder;
 import com.mercury.pdf.render.model.Section;
@@ -250,7 +250,7 @@ public class SimpleReportExample {
                 .build();
 
         // 生成PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdfBytes = service.generatePdf(reportData);
 
         // 保存到文件
@@ -317,7 +317,7 @@ public class CompleteReportExample {
             .build();
         
         // 生成PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdfBytes = service.generatePdf(reportData, "flexible");
         Files.write(Paths.get("完整财务报告.pdf"), pdfBytes);
         
@@ -345,7 +345,7 @@ public class MultiTemplateExample {
         // 创建一次数据
         ReportData data = createUniversalData();
         
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // 1. 生成标准报告
         byte[] standardReport = service.generatePdf(data, "report");
@@ -566,7 +566,7 @@ public class ComplexOrderExample {
             .build();
         
         // 生成PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdf = service.generatePdf(report, "flexible");
         Files.write(Paths.get("销售分析报告.pdf"), pdf);
         
@@ -821,7 +821,7 @@ pdf-render:
 @Service
 public class PdfReportService {
     
-    private final ReportService reportService = new ReportService();
+    private final PdfRenderService pdfRenderService = new PdfRenderService();
     
     public byte[] generateQuarterlyReport(QuarterlyData data) throws IOException {
         ReportData reportData = ReportDataBuilder.create()
@@ -832,7 +832,7 @@ public class PdfReportService {
                 .addTable(data.getMetricsTable()))
             .build();
         
-        return reportService.generatePdf(reportData, "flexible");
+        return pdfRenderService.generatePdf(reportData, "flexible");
     }
 }
 ```
@@ -1152,7 +1152,7 @@ public class SignatureLayoutExample {
             .build();
         
         // 生成PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdf = service.generatePdf(report, "flexible");
         Files.write(Paths.get("验收报告.pdf"), pdf);
         
@@ -1201,7 +1201,7 @@ pdf-render/
 │   │   ├── TableData.java     # 表格
 │   │   ├── ChartData.java     # 图表
 │   │   └── ReportDataBuilder.java  # 构建器
-│   ├── ReportService.java     # 主服务
+│   ├── PdfRenderService.java     # 主服务
 │   ├── HtmlReportRenderer.java # 渲染引擎
 │   └── util/
 │       └── ReportDataValidator.java  # 验证器

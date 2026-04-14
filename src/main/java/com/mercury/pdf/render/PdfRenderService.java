@@ -10,7 +10,7 @@ import java.io.IOException;
  * Uses HTML/CSS -> PDF pipeline with Flying Saucer and OpenPDF.
  * Supports unlimited flexible sections through the Section model.
  */
-public class ReportService {
+public class PdfRenderService {
     
     private final HtmlReportRenderer htmlRenderer = new HtmlReportRenderer();
 

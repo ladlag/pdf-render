@@ -60,7 +60,7 @@ public class TwoColumnLayoutTest {
             .build();
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdf = service.generatePdf(report, "flexible");
         
         assertNotNull(pdf);
@@ -114,7 +114,7 @@ public class TwoColumnLayoutTest {
             .build();
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdf = service.generatePdf(report, "flexible");
         
         assertNotNull(pdf);
@@ -158,7 +158,7 @@ public class TwoColumnLayoutTest {
             .build();
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         byte[] pdf = service.generatePdf(report, "flexible");
         
         assertNotNull(pdf);

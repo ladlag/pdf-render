@@ -23,12 +23,12 @@ src/main/resources/fonts/
 #### 方式1：纯Java代码配置（推荐用于非Spring Boot项目）
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 
 // 创建服务
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 // 配置中文字体 - 关键步骤！
 FontConfig fontConfig = new FontConfig();
@@ -57,20 +57,20 @@ pdf-render:
 **在Service中注入使用：**
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ 直接注入 - 自动配置已生效
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -94,13 +94,13 @@ mvn test -Dtest=ChineseFontTest
 
 ```java
 // ❌ 错误 - 没有配置字体
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 byte[] pdf = service.generatePdf(data); // 中文会显示为 □
 ```
 
 ```java
 // ✅ 正确 - 必须配置字体
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 FontConfig fontConfig = new FontConfig();
 fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
 fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, sans-serif");
@@ -127,13 +127,13 @@ fontConfig.setRegularFontPath("classpath:/fonts/xxx.ttf");
 @Service
 public class PdfService {
     @Autowired
-    private ReportService reportService;
+    private PdfRenderService pdfRenderService;
     
     @PostConstruct
     public void init() {
         FontConfig config = new FontConfig();
         config.setRegularFontPath("...");
-        reportService.getHtmlRenderer().setFontConfig(config);
+        pdfRenderService.getHtmlRenderer().setFontConfig(config);
     }
 }
 ```
@@ -142,10 +142,10 @@ public class PdfService {
 // ✅ 正确 - 直接注入，依赖YAML配置
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService; // 自动配置已生效
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService; // 自动配置已生效
     }
 }
 ```
@@ -229,10 +229,10 @@ src/main/resources/fonts/
 #### Option 1: Java Code Configuration (for non-Spring Boot)
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 // Configure Chinese font - Critical step!
 FontConfig fontConfig = new FontConfig();
@@ -262,15 +262,15 @@ pdf-render:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ Direct injection - auto-configuration active
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```

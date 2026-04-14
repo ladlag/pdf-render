@@ -78,7 +78,7 @@ public class FlexibleReportDemo {
             .build();
         
         // Generate PDF using flexible template
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         
@@ -126,7 +126,7 @@ public class FlexibleReportDemo {
             .build();
         
         // Generate PDF
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         byte[] pdfBytes = service.generatePdf(report);
         

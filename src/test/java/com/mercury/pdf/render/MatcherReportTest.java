@@ -33,7 +33,7 @@ public class MatcherReportTest {
 
     @Test
     public void testMatcherReportWithCompleteData() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
 
         // Configure HarmonyOS Sans SC font for Chinese text display
         FontConfig fontConfig = new FontConfig();

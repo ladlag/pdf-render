@@ -194,17 +194,17 @@ pdf-render:
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ 构造函数注入 - Spring Boot 会自动配置字体
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
     
     public byte[] generatePdf(ReportData data) throws Exception {
         // 字体已经通过 Spring Boot 自动配置注册
         // 直接生成 PDF 即可
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```

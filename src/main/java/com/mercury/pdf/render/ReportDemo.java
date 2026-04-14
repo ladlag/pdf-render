@@ -19,7 +19,7 @@ public class ReportDemo {
         ReportData reportData = createSampleReport();
         
         // Generate PDF using HTML/CSS pipeline
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         System.out.println("Generating PDF using HTML/CSS pipeline...");
         
         long startTime = System.currentTimeMillis();

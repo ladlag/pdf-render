@@ -36,14 +36,14 @@ Confirm you're not using @PostConstruct:
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     @PostConstruct  // ❌ 不要这样做！
     public void init() {
-        reportService = new ReportService();
+        pdfRenderService = new PdfRenderService();
         FontConfig fontConfig = new FontConfig();
         // ... 手动配置
-        reportService.getHtmlRenderer().setFontConfig(fontConfig);
+        pdfRenderService.getHtmlRenderer().setFontConfig(fontConfig);
     }
 }
 ```
@@ -52,11 +52,11 @@ public class PdfService {
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     // ✅ 只需注入，Spring Boot 自动配置
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
     }
 }
 ```
@@ -91,8 +91,8 @@ PDF Render: Font configuration applied from properties
 2. 缩进格式不正确 (YAML 对缩进敏感)
 3. 可能使用了 `@PostConstruct` 覆盖了配置
 
-### 第六步：验证 ReportService Bean 来源
-Verify ReportService bean source:
+### 第六步：验证 PdfRenderService Bean 来源
+Verify PdfRenderService bean source:
 
 添加日志检查 bean 是从哪里来的：
 
@@ -100,14 +100,14 @@ Verify ReportService bean source:
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
         
         // 添加日志
-        HtmlReportRenderer renderer = reportService.getHtmlRenderer();
-        System.out.println("ReportService bean injected");
+        HtmlReportRenderer renderer = pdfRenderService.getHtmlRenderer();
+        System.out.println("PdfRenderService bean injected");
         System.out.println("Font properties: " + renderer.getFontProperties());
         System.out.println("Debug enabled: " + renderer.isDebugHtmlEnabled());
     }
@@ -118,7 +118,7 @@ public class PdfService {
 - `Font properties: null` - 说明配置未应用
 - `Debug enabled: false` - 说明 debug 配置未应用
 
-**这意味着您可能在某处手动创建了 `new ReportService()`，而不是使用 Spring 注入的 bean！**
+**这意味着您可能在某处手动创建了 `new PdfRenderService()`，而不是使用 Spring 注入的 bean！**
 
 ## 完整的工作示例 / Complete Working Example
 
@@ -198,7 +198,7 @@ public class Application {
 package com.example.service;
 
 import com.lowagie.text.DocumentException;
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import org.springframework.stereotype.Service;
 
@@ -207,22 +207,22 @@ import java.io.IOException;
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
-    // ✅ 构造函数注入 - Spring Boot 会自动注入配置好的 ReportService
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    // ✅ 构造函数注入 - Spring Boot 会自动注入配置好的 PdfRenderService
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
         
         // 验证配置（可选）
         System.out.println("PdfService initialized");
         System.out.println("  Font config: " + 
-            reportService.getHtmlRenderer().getFontProperties());
+            pdfRenderService.getHtmlRenderer().getFontProperties());
         System.out.println("  Debug enabled: " + 
-            reportService.getHtmlRenderer().isDebugHtmlEnabled());
+            pdfRenderService.getHtmlRenderer().isDebugHtmlEnabled());
     }
     
     public byte[] generatePdf(ReportData data) throws IOException, DocumentException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -315,7 +315,7 @@ curl http://localhost:8080/pdf/test --output test.pdf
 ### Q: 为什么我的配置不生效？
 **A:** 最常见的原因：
 1. ❌ 使用了 `@PostConstruct` 手动配置，覆盖了 application.yml
-2. ❌ 手动创建了 `new ReportService()`，而不是使用注入的 bean
+2. ❌ 手动创建了 `new PdfRenderService()`，而不是使用注入的 bean
 3. ❌ `application.yml` 文件不在 `src/main/resources/` 目录
 4. ❌ YAML 缩进不正确（必须使用空格，不能用 Tab）
 
@@ -336,7 +336,7 @@ curl http://localhost:8080/pdf/test --output test.pdf
 **A:** 检查：
 1. `pdf-render.debug.enabled` 是否设置为 `true`
 2. 是否有写入权限到输出目录
-3. 是否使用了注入的 `ReportService` bean（不是手动创建的）
+3. 是否使用了注入的 `PdfRenderService` bean（不是手动创建的）
 
 ## 需要更多帮助？ / Need More Help?
 

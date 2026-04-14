@@ -36,7 +36,7 @@ public class PdfChineseVerificationTest {
         System.out.println("测试：配置字体后的PDF中文渲染");
         System.out.println("========================================\n");
         
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // 配置中文字体
         FontConfig fontConfig = new FontConfig();
@@ -111,7 +111,7 @@ public class PdfChineseVerificationTest {
         System.out.println("测试：不配置字体的PDF中文渲染（对照组）");
         System.out.println("========================================\n");
         
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         // 故意不配置字体
         
         // 创建相同的报告

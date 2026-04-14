@@ -43,12 +43,12 @@ src/main/resources/fonts/
 #### 2. 编程方式配置
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 
 // 创建报表服务
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
         // 配置中文字体
         FontConfig fontConfig = new FontConfig();
@@ -96,7 +96,7 @@ pdf-render:
 在 Service 中使用：
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,13 +105,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PdfReportService {
 
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     private final PdfRenderProperties properties;
 
     @Autowired
     public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
-        this.reportService = new ReportService();
+        this.pdfRenderService = new PdfRenderService();
 
         // 从配置创建 FontConfig
         FontConfig fontConfig = new FontConfig();
@@ -120,11 +120,11 @@ public class PdfReportService {
         fontConfig.setDefaultFontFamily(properties.getFonts().getDefaultFamily());
 
         // 应用字体配置
-        reportService.getHtmlRenderer().setFontConfig(fontConfig);
+        pdfRenderService.getHtmlRenderer().setFontConfig(fontConfig);
     }
 
     public byte[] generateReport(ReportData reportData) throws IOException {
-        return reportService.generatePdf(reportData);
+        return pdfRenderService.generatePdf(reportData);
     }
 }
 ```
@@ -161,21 +161,21 @@ public class PdfReportService {
 ```java
 @Service
 public class PdfService {
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     @PostConstruct
     public void init() {
-        reportService = new ReportService();
+        pdfRenderService = new PdfRenderService();
         
         // 配置字体（只需配置一次）
         FontConfig fontConfig = new FontConfig();
         fontConfig.setRegularFontPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontConfig.setDefaultFontFamily("HarmonyOS Sans SC, DejaVu Sans, sans-serif");
-        reportService.getHtmlRenderer().setFontConfig(fontConfig);
+        pdfRenderService.getHtmlRenderer().setFontConfig(fontConfig);
     }
     
     public byte[] generatePdf(ReportData data) throws IOException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
 }
 ```
@@ -281,12 +281,12 @@ src/main/resources/fonts/
 #### 2. Programmatic Configuration
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.model.ReportData;
 
 // Create report service
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
         // Configure Chinese fonts
         FontConfig fontConfig = new FontConfig();
@@ -339,7 +339,7 @@ pdf-render:
 Use in Service:
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.config.FontConfig;
 import com.mercury.pdf.render.config.PdfRenderProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -348,13 +348,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PdfReportService {
 
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     private final PdfRenderProperties properties;
 
     @Autowired
     public PdfReportService(PdfRenderProperties properties) {
         this.properties = properties;
-        this.reportService = new ReportService();
+        this.pdfRenderService = new PdfRenderService();
 
         // Create FontConfig from properties
         FontConfig fontConfig = new FontConfig();
@@ -363,11 +363,11 @@ public class PdfReportService {
         fontConfig.setDefaultFontFamily(properties.getFonts().getDefaultFamily());
 
         // Apply font configuration
-        reportService.getHtmlRenderer().setFontConfig(fontConfig);
+        pdfRenderService.getHtmlRenderer().setFontConfig(fontConfig);
     }
 
     public byte[] generateReport(ReportData reportData) throws IOException {
-        return reportService.generatePdf(reportData);
+        return pdfRenderService.generatePdf(reportData);
     }
 }
 ```

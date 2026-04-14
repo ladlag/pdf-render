@@ -33,7 +33,7 @@ public class MatcherReportNonDebugTest {
 
     @Test
     public void testMatcherReportFinalWithoutDebugMode() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // IMPORTANT: Debug mode is DISABLED (production mode)
         service.getHtmlRenderer().setDebugHtmlEnabled(false);

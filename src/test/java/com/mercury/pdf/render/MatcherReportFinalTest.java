@@ -33,7 +33,7 @@ public class MatcherReportFinalTest {
 
     @Test
     public void testMatcherReportFinalWithCompleteData() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);
@@ -150,7 +150,7 @@ public class MatcherReportFinalTest {
      */
     @Test
     public void testMatcherReportFinalWithSectionType() throws IOException {
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         
         // Enable HTML debug output
         service.getHtmlRenderer().setDebugHtmlEnabled(true);

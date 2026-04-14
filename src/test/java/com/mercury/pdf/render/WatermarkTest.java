@@ -30,7 +30,7 @@ public class WatermarkTest {
                 .addParagraph("This report should have a watermark."))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         configureChineseFont(service);
 
@@ -68,7 +68,7 @@ public class WatermarkTest {
                 .addParagraph("本报告包含中文水印。"))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
         configureChineseFont(service);
 
@@ -106,7 +106,7 @@ public class WatermarkTest {
                 .addParagraph("This report should NOT have a watermark."))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("flexible");
 
         // No watermark configured — default behavior
@@ -131,7 +131,7 @@ public class WatermarkTest {
                 .withMarkdownContent("## Test\n\nThis financial report has a watermark.\n\n| Item | Value |\n|------|-------|\n| Revenue | 100 |\n| Cost | 80 |"))
             .build();
 
-        ReportService service = new ReportService();
+        PdfRenderService service = new PdfRenderService();
         service.getHtmlRenderer().setDefaultTemplateName("financial-report");
         configureChineseFont(service);
 
@@ -171,7 +171,7 @@ public class WatermarkTest {
     /**
      * Configures Chinese font for CJK watermark text support.
      */
-    private void configureChineseFont(ReportService service) {
+    private void configureChineseFont(PdfRenderService service) {
         PdfRenderProperties.FontProperties fontProps = new PdfRenderProperties.FontProperties();
         fontProps.setRegularPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");
         fontProps.setCjkPath("classpath:/fonts/HarmonyOS_Sans_SC_Regular.ttf");

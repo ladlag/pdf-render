@@ -11,11 +11,11 @@ PDF渲染库现在支持保存中间态HTML文件用于调试。此功能帮助�
 ### Method 1: Programmatic Configuration / 方法1：编程方式配置
 
 ```java
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.HtmlReportRenderer;
 
 // Create report service
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 service.
 
         setUseHtmlPipeline(true);
@@ -204,7 +204,7 @@ grep -c "border:" debug-html/matcher-report-1.0.html
 ```java
 @Test
 public void debugBorderIssue() throws IOException {
-    ReportService service = new ReportService();
+    PdfRenderService service = new PdfRenderService();
     service.setUseHtmlPipeline(true);
     
     // Enable debug HTML
@@ -224,7 +224,7 @@ public void debugBorderIssue() throws IOException {
 ```java
 @Test
 public void compareMultipleVersions() throws IOException {
-    ReportService service = new ReportService();
+    PdfRenderService service = new PdfRenderService();
     service.setUseHtmlPipeline(true);
     
     // Enable with timestamp

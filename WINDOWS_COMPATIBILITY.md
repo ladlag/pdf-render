@@ -78,7 +78,7 @@ pdf-render:
 // 正确的配置方式 - 在所有平台上都能工作
 // Correct configuration - works on all platforms
 
-ReportService service = new ReportService();
+PdfRenderService service = new PdfRenderService();
 
 FontConfig fontConfig = new FontConfig();
 // ✅ 使用 classpath: 和正斜杠
@@ -109,7 +109,7 @@ service.getHtmlRenderer().setFontConfig(fontConfig);
    ```java
    // 在Windows上测试
    // Test on Windows
-   ReportService service = new ReportService();
+   PdfRenderService service = new PdfRenderService();
    // ... 配置字体 configure fonts ...
    byte[] pdf = service.generatePdf(data);
    

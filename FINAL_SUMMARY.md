@@ -163,7 +163,7 @@
 1. **Spring Boot集成 (推荐):**
    - 添加Maven依赖
    - 配置application.yml
-   - 注入ReportService使用
+   - 注入PdfRenderService使用
    - 零配置集成
 
 2. **Standalone JAR集成:**

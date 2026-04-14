@@ -29,13 +29,13 @@ example-spring-boot-app/
 ### ✅ 正确的做法 (Correct Way)
 
 1. **不使用 @PostConstruct** - 完全依赖 Spring Boot 自动配置
-2. **通过构造函数注入 ReportService** - 使用 Spring 管理的 bean
+2. **通过构造函数注入 PdfRenderService** - 使用 Spring 管理的 bean
 3. **所有配置在 application.yml** - 集中管理，易于维护
 
 ### ❌ 错误的做法 (Wrong Way)
 
 1. **使用 @PostConstruct 手动配置** - 覆盖 application.yml
-2. **手动创建 `new ReportService()`** - 跳过 Spring 配置
+2. **手动创建 `new PdfRenderService()`** - 跳过 Spring 配置
 3. **在代码中硬编码配置** - 难以维护和修改
 
 ## 完整代码 / Complete Code
@@ -176,7 +176,7 @@ public class Application {
 package com.example.pdf.service;
 
 import com.lowagie.text.DocumentException;
-import com.mercury.pdf.render.ReportService;
+import com.mercury.pdf.render.PdfRenderService;
 import com.mercury.pdf.render.model.ReportData;
 import org.springframework.stereotype.Service;
 
@@ -186,7 +186,7 @@ import java.io.IOException;
  * PDF 生成服务
  * 
  * 关键点：
- * 1. 使用构造函数注入 ReportService
+ * 1. 使用构造函数注入 PdfRenderService
  * 2. 不使用 @PostConstruct
  * 3. 不手动配置字体
  * 
@@ -195,28 +195,28 @@ import java.io.IOException;
 @Service
 public class PdfService {
     
-    private final ReportService reportService;
+    private final PdfRenderService pdfRenderService;
     
     /**
-     * 构造函数注入 - Spring Boot 会自动注入配置好的 ReportService
+     * 构造函数注入 - Spring Boot 会自动注入配置好的 PdfRenderService
      * 
-     * 这个 ReportService bean 已经包含了：
+     * 这个 PdfRenderService bean 已经包含了：
      * - application.yml 中配置的字体
      * - application.yml 中配置的调试设置
      * - application.yml 中配置的模板设置
      */
-    public PdfService(ReportService reportService) {
-        this.reportService = reportService;
+    public PdfService(PdfRenderService pdfRenderService) {
+        this.pdfRenderService = pdfRenderService;
         
         // 可选：打印配置信息用于验证
         System.out.println("===========================================");
         System.out.println("PdfService initialized with configuration:");
         System.out.println("  Font properties: " + 
-            reportService.getHtmlRenderer().getFontProperties());
+            pdfRenderService.getHtmlRenderer().getFontProperties());
         System.out.println("  Debug enabled: " + 
-            reportService.getHtmlRenderer().isDebugHtmlEnabled());
+            pdfRenderService.getHtmlRenderer().isDebugHtmlEnabled());
         System.out.println("  Default template: " + 
-            reportService.getHtmlRenderer().getDefaultTemplateName());
+            pdfRenderService.getHtmlRenderer().getDefaultTemplateName());
         System.out.println("===========================================");
     }
     
@@ -229,7 +229,7 @@ public class PdfService {
      * - 使用默认模板(如果未指定)
      */
     public byte[] generatePdf(ReportData data) throws IOException, DocumentException {
-        return reportService.generatePdf(data);
+        return pdfRenderService.generatePdf(data);
     }
     
     /**
@@ -237,7 +237,7 @@ public class PdfService {
      */
     public byte[] generatePdf(ReportData data, String templateName) 
             throws IOException, DocumentException {
-        return reportService.generatePdf(data, templateName);
+        return pdfRenderService.generatePdf(data, templateName);
     }
 }
 ```
@@ -292,7 +292,7 @@ public class PdfController {
                 .addParagraph("1. 确保 application.yml 在 src/main/resources/ 目录")
                 .addParagraph("2. 确保字体文件在 src/main/resources/fonts/ 目录")
                 .addParagraph("3. 不要使用 @PostConstruct 手动配置")
-                .addParagraph("4. 通过构造函数注入 ReportService"))
+                .addParagraph("4. 通过构造函数注入 PdfRenderService"))
             .reportNotice("本报告用于验证 Spring Boot 自动配置")
             .build();
         
@@ -404,7 +404,7 @@ PdfService initialized with configuration:
 1. 检查 `application.yml` 是否在 `src/main/resources/` 目录
 2. 检查字体文件是否在 `src/main/resources/fonts/` 目录  
 3. 检查是否使用了 `@PostConstruct` 覆盖配置
-4. 检查是否手动创建了 `new ReportService()`
+4. 检查是否手动创建了 `new PdfRenderService()`
 
 ### 问题：Debug HTML 没有生成
 
@@ -413,7 +413,7 @@ PdfService initialized with configuration:
 **解决方案**：
 1. 确认 `pdf-render.debug.enabled: true`
 2. 检查输出目录是否有写入权限
-3. 确认使用的是注入的 `ReportService` bean
+3. 确认使用的是注入的 `PdfRenderService` bean
 
 ### 问题：配置不生效
 
