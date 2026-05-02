@@ -4,6 +4,7 @@ import com.mercury.pdf.render.model.ChartConfig;
 import com.mercury.pdf.render.model.ChartData;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.PieSectionLabelGenerator;
 import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
@@ -12,14 +13,17 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.AttributedString;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +36,12 @@ public class ChartRenderer {
     
     private static final int DEFAULT_CHART_WIDTH = 500;
     private static final int DEFAULT_CHART_HEIGHT = 300;
+    
+    // Warning message for charts with Chinese characters but no font configured
+    private static final String CHINESE_FONT_WARNING = 
+        "WARNING: Chart contains Chinese characters but no custom font is configured. " +
+        "Chinese characters may not display correctly (will show as boxes □). " +
+        "Use ChartRenderer.setChartFont() or configure fonts via FontConfig/PdfRenderProperties.";
     
     // Font configuration for charts
     private Font chartFont = null; // Default is null, will use JFreeChart defaults
@@ -115,6 +125,29 @@ public class ChartRenderer {
         // Apply custom font if configured (for Chinese/CJK support)
         if (chartFont != null) {
             applyChartFont(chart);
+        } else {
+            // Check if data contains Chinese characters and warn if no font is configured
+            boolean hasChinese = chartData.getData().keySet().stream()
+                .anyMatch(key -> key.matches(".*[\\u4e00-\\u9fa5].*"));
+            
+            // Also check axis labels for Chinese characters
+            boolean hasChineseInLabels = false;
+            if (chartData.getConfig() != null) {
+                String xLabel = chartData.getConfig().getXAxisLabel();
+                String yLabel = chartData.getConfig().getYAxisLabel();
+                if ((xLabel != null && xLabel.matches(".*[\\u4e00-\\u9fa5].*")) ||
+                    (yLabel != null && yLabel.matches(".*[\\u4e00-\\u9fa5].*"))) {
+                    hasChineseInLabels = true;
+                }
+            }
+            
+            if (hasChinese || hasChineseInLabels) {
+                // Log warning via SLF4J if available
+                logWarn(CHINESE_FONT_WARNING);
+                // Also print to stderr to ensure visibility when SLF4J is not configured
+                // (SLF4J's NOP logger silently discards messages, so we need this fallback)
+                System.err.println(CHINESE_FONT_WARNING);
+            }
         }
         
         int width = (chartData.getConfig() != null && chartData.getConfig().getWidth() != null) 
@@ -391,40 +424,86 @@ public class ChartRenderer {
     /**
      * Applies the custom font to all text elements in the chart.
      * This ensures Chinese/CJK characters are rendered correctly.
+     * 
+     * Font is applied to:
+     * - CategoryPlot: X-axis and Y-axis labels and tick labels (where Chinese city names, months, etc. appear)
+     * - PiePlot: Section labels (where Chinese category names appear)
+     * - Legend: Legend item labels (where Chinese series names appear)
      */
     private void applyChartFont(JFreeChart chart) {
         if (chartFont == null) {
             return;
         }
         
+        logInfo("Applying custom font to chart: " + chartFont.getFamily(Locale.ROOT) + " (supports Chinese/CJK characters)");
+        
         Plot plot = chart.getPlot();
         
-        // Apply font to category plot axes
+        // Apply font to category plot axes (bar, line, area charts)
         if (plot instanceof CategoryPlot) {
             CategoryPlot categoryPlot = (CategoryPlot) plot;
             
-            // Domain axis (X-axis)
+            // Domain axis (X-axis) - THIS IS WHERE CHINESE CATEGORY LABELS APPEAR
             if (categoryPlot.getDomainAxis() != null) {
                 categoryPlot.getDomainAxis().setLabelFont(chartFont.deriveFont(Font.BOLD, 12f));
                 categoryPlot.getDomainAxis().setTickLabelFont(chartFont.deriveFont(11f));
+                logInfo("  ✓ Applied font to X-axis labels (e.g., Chinese category names)");
             }
             
-            // Range axis (Y-axis)
+            // Range axis (Y-axis) - THIS IS WHERE CHINESE VALUE LABELS APPEAR
             if (categoryPlot.getRangeAxis() != null) {
                 categoryPlot.getRangeAxis().setLabelFont(chartFont.deriveFont(Font.BOLD, 12f));
                 categoryPlot.getRangeAxis().setTickLabelFont(chartFont.deriveFont(11f));
+                logInfo("  ✓ Applied font to Y-axis labels");
             }
         }
         
-        // Apply font to pie plot labels
+        // Apply font to pie plot labels - THIS IS WHERE CHINESE SLICE LABELS APPEAR
         if (plot instanceof PiePlot) {
-            PiePlot piePlot = (PiePlot) plot;
-            piePlot.setLabelFont(chartFont.deriveFont(11f));
+            final PiePlot piePlot = (PiePlot) plot;
+            final Font labelFont = chartFont.deriveFont(11f);
+            
+            // Set the label font
+            piePlot.setLabelFont(labelFont);
+            
+            // CRITICAL FIX: For Chinese characters to display on pie slice labels,
+            // we need to create a custom label generator that uses AttributedString
+            // with the Chinese font explicitly set. Otherwise, JFreeChart may use
+            // a default font that doesn't support Chinese characters.
+            PieSectionLabelGenerator customLabelGenerator = new PieSectionLabelGenerator() {
+                @Override
+                public String generateSectionLabel(PieDataset dataset, Comparable key) {
+                    if (key == null) {
+                        return null;
+                    }
+                    return key.toString();
+                }
+                
+                @Override
+                public AttributedString generateAttributedSectionLabel(PieDataset dataset, Comparable key) {
+                    if (key == null) {
+                        return null;
+                    }
+                    String label = key.toString();
+                    // Guard against empty strings to avoid IllegalArgumentException
+                    if (label == null || label.isEmpty()) {
+                        return null;
+                    }
+                    AttributedString as = new AttributedString(label);
+                    // Apply font to the entire string range explicitly
+                    as.addAttribute(TextAttribute.FONT, labelFont, 0, label.length());
+                    return as;
+                }
+            };
+            
+            piePlot.setLabelGenerator(customLabelGenerator);
+            logInfo("  ✓ Applied font to pie chart labels with custom generator (Chinese category names)");
         }
         
-        // Apply font to legend
+        // Apply font to legend - THIS IS WHERE CHINESE LEGEND ITEMS APPEAR
         if (chart.getLegend() != null) {
             chart.getLegend().setItemFont(chartFont.deriveFont(11f));
+            logInfo("  ✓ Applied font to legend (Chinese series names)");
         }
     }
 
