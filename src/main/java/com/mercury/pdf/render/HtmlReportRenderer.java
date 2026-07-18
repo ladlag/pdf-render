@@ -127,6 +127,46 @@ public class HtmlReportRenderer {
         this.fontProperties = fontProperties;
         logFontProperties("FontProperties", fontProperties);
         
+        // Extract and validate font names IMMEDIATELY to ensure CSS font-family matches registered fonts
+        // This must happen BEFORE template rendering (prepareTemplateData)
+        if (fontProperties != null) {
+            try {
+                // Extract and auto-correct CJK font family name if CJK font is configured
+                if (fontProperties.getCjkPath() != null) {
+                    String fontPath = resolveFontPath(fontProperties.getCjkPath());
+                    String realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    
+                    if (realFontName != null && !realFontName.isEmpty()) {
+                        // Auto-correct CJK family if not set or doesn't contain the real font name
+                        if (fontProperties.getCjkFamily() == null || fontProperties.getCjkFamily().isEmpty() ||
+                            !containsFontName(fontProperties.getCjkFamily(), realFontName)) {
+                            fontProperties.setCjkFamily(realFontName + ", sans-serif");
+                            logInfo("✓ Auto-configured CJK font-family: " + fontProperties.getCjkFamily());
+                        }
+                    }
+                }
+                
+                // Extract and auto-correct regular font family name if regular font is configured
+                if (fontProperties.getRegularPath() != null) {
+                    String fontPath = resolveFontPath(fontProperties.getRegularPath());
+                    String realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
+                    
+                    if (realFontName != null && !realFontName.isEmpty()) {
+                        // Auto-correct default family if not set or doesn't contain the real font name
+                        if (fontProperties.getDefaultFamily() == null || fontProperties.getDefaultFamily().isEmpty() ||
+                            !containsFontName(fontProperties.getDefaultFamily(), realFontName)) {
+                            fontProperties.setDefaultFamily(realFontName + ", sans-serif");
+                            logInfo("✓ Auto-configured default font-family: " + fontProperties.getDefaultFamily());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                logWarn("Warning: Could not extract font names during configuration: " + e.getMessage());
+                logWarn("Please verify the font file path is correct and the file is a valid TrueType/OpenType font.");
+                // Continue - fonts will still be registered, but without auto-correction
+            }
+        }
+        
         // Also configure chart renderer with CJK font (preferred) or regular font for consistent rendering
         // This is wrapped in try-catch to ensure safe initialization
         try {
@@ -648,20 +688,12 @@ public class HtmlReportRenderer {
                 try {
                     realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
                     if (realFontName != null && !realFontName.isEmpty()) {
-                        // Register with real font name first (allows user-configured font-family to work)
+                        // Register with real font name (auto-corrected in setFontProperties earlier)
                         renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
                         registeredNames.add(realFontName);
                         logInfo("✓ CJK font registered with Flying Saucer: " + fontPath);
                         logInfo("  Font family name: " + realFontName);
                         logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
-                        
-                        // Update user's CJK family config to match extracted name if not already set correctly
-                        if (fontProperties.getCjkFamily() == null || fontProperties.getCjkFamily().isEmpty() ||
-                            !containsFontName(fontProperties.getCjkFamily(), realFontName)) {
-                            // Auto-correct the configuration to use extracted font name
-                            fontProperties.setCjkFamily(realFontName + ", sans-serif");
-                            logInfo("  Auto-configured CJK font-family: " + fontProperties.getCjkFamily());
-                        }
                     }
                 } catch (Exception e) {
                     logWarn("Could not extract font name from " + fontPath + ": " + e.getMessage());
@@ -688,20 +720,12 @@ public class HtmlReportRenderer {
                 try {
                     realFontName = FontNameExtractor.extractFontFamilyName(fontPath);
                     if (realFontName != null && !realFontName.isEmpty()) {
-                        // Register with real font name first (allows user-configured font-family to work)
+                        // Register with real font name (auto-corrected in setFontProperties earlier)
                         renderer.getFontResolver().addFont(fontPath, realFontName, BaseFont.IDENTITY_H, true, null);
                         registeredNames.add(realFontName);
                         logInfo("✓ Regular font registered with Flying Saucer: " + fontPath);
                         logInfo("  Font family name: " + realFontName);
                         logInfo("  Encoding: " + BaseFont.IDENTITY_H + " | Embedded: true");
-                        
-                        // Update user's default family config to match extracted name if not already set correctly
-                        if (fontProperties.getDefaultFamily() == null || fontProperties.getDefaultFamily().isEmpty() ||
-                            !containsFontName(fontProperties.getDefaultFamily(), realFontName)) {
-                            // Auto-correct the configuration to use extracted font name
-                            fontProperties.setDefaultFamily(realFontName + ", sans-serif");
-                            logInfo("  Auto-configured default font-family: " + fontProperties.getDefaultFamily());
-                        }
                     }
                 } catch (Exception e) {
                     logWarn("Could not extract font name from " + fontPath + ": " + e.getMessage());
